@@ -54,7 +54,7 @@ Plans:
 - [ ] P1.7-typed-config-env-PLAN.md - Per-service typed `defaults.ts` (zod-parsed env), `.env.example` materializing every Open Configuration Value, env-schema tests
 - [ ] P1.8-adrs-PLAN.md - ADR-001 through ADR-006 + ADR catalogue README
 - [x] P1.9-readme-PLAN.md - Repo root README with Phase 1 surface (Quickstart, Env vars table, Demo user, Healthchecks, Project structure, ADRs, Roadmap)
-- [ ] P1.10-healthcheck-smoke-test-PLAN.md - Bootstrap `/health` controllers, env-driven main.ts, `scripts/smoke-health.sh` (7 probes), full-stack bring-up checkpoint
+- [x] P1.10-healthcheck-smoke-test-PLAN.md - Bootstrap `/health` controllers, env-driven main.ts, `scripts/smoke-health.sh` (7 probes), full-stack bring-up checkpoint
 
 ### Phase 2: Outbox/Inbox Messaging Spine
 **Goal**: Two services can exchange messages over RabbitMQ with at-least-once delivery, exactly-once processing, and survive a `kill -9` without losing or duplicating side-effects.

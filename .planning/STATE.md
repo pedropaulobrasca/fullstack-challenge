@@ -22,11 +22,11 @@
 
 - **Milestone**: 1 (initial submission)
 - **Phase**: 1 — Foundation & Infra
-- **Plan**: P1.9 complete → P1.10 next (healthcheck smoke test)
-- **Status**: Phase 1 executing — README landed, smoke test pending
-- **Progress**: `▱▱▱▱▱▱▱▱▱▱` 0/10 phases complete
+- **Plan**: P1.10 complete → Phase 1 closeout (verify + review)
+- **Status**: Phase 1 implementation complete — `bun run docker:up` brings every container healthy; `bun run smoke:health` reports 7/7 probes passing
+- **Progress**: `▰▱▱▱▱▱▱▱▱▱` 1/10 phases complete (pending verifier sign-off)
 
-**Next action**: Execute P1.10 (healthcheck smoke test) to close out Phase 1.
+**Next action**: Run `/gsd:verify-phase 1` for goal-backward verification, then `/gsd:code-review` over the Phase 1 changeset.
 
 ---
 
@@ -76,7 +76,7 @@ See `.planning/REQUIREMENTS.md` Open Configuration Values table. All 14 constant
 
 | Phase | Plans | Status | Notes |
 |-------|-------|--------|-------|
-| 1. Foundation & Infra | 9 / 10 plans landed (P1.9 README executed) | In progress | P1.10 (smoke test) remaining |
+| 1. Foundation & Infra | 10 / 10 plans landed (P1.10 smoke test green) | Implementation complete, verifier pending | All seven smoke probes pass cold and warm |
 | 2. Outbox/Inbox Messaging Spine | — | Not started | Depends on Phase 1 |
 | 3. Wallet Service | — | Not started | Parallel with Phase 4 (post Phase 2) |
 | 4. Game Core (domain only) | — | Not started | Parallel with Phase 3 (post Phase 2) |
@@ -89,6 +89,7 @@ See `.planning/REQUIREMENTS.md` Open Configuration Values table. All 14 constant
 
 ### Recent activity
 
+- **2026-05-24** — P1.10 (healthcheck smoke test) executed: HealthController per service, env-driven NestJS bootstrap, `scripts/smoke-health.sh` covers 7 probes (postgres, rabbitmq, keycloak health + token, kong, games, wallets), all green on cold + warm bootstrap. Commits `3c0bad2`, `b5d37ec`, `438c7df`. Deviations: postgres 18 mount layout, mikro-orm warnWhenNoEntities=false, healthcheck pinned to 127.0.0.1 for Alpine IPv6.
 - **2026-05-24** — P1.9 (repo README) executed: rewrote `README.md` with the Phase 1 surface — Quickstart, 19-row env table, demo-user curl flow, healthcheck probes, ADR + Roadmap links. Commit `bba12a0`.
 - **2026-05-24** — Roadmap created (10 phases, 95/95 v1 REQ-IDs mapped, stretch backlog defined). STATE.md initialized. REQUIREMENTS.md traceability appended.
 - **2026-05-24** — Research synthesis completed (SUMMARY, STACK, ARCHITECTURE, FEATURES, PITFALLS).
