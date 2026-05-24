@@ -1,0 +1,17 @@
+node_modules
+**/node_modules
+.git
+.gitignore
+**/.env
+**/.env.*
+!**/.env.example
+dist
+**/dist
+tests
+**/tests
+**/*.test.ts
+**/*.spec.ts
+.planning
+.claude
+docker
+*.md
