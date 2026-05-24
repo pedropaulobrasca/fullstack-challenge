@@ -1,10 +1,4 @@
-import { Controller, Get } from "@nestjs/common";
-import { HealthCheckResponseDto } from "../dtos/health-check-response.dto";
+import { Controller } from "@nestjs/common";
 
-@Controller()
-export class GamesController {
-  @Get("health")
-  check(): HealthCheckResponseDto {
-    return { status: "ok", service: "games" };
-  }
-}
+@Controller("games")
+export class GamesController {}

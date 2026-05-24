@@ -3,7 +3,7 @@ import { defineConfig } from "@mikro-orm/postgresql";
 import { Migrator } from "@mikro-orm/migrations";
 
 export default defineConfig({
-  clientUrl: process.env.DATABASE_URL,
+  clientUrl: process.env.DATABASE_URL ?? "",
   entities: [],
   entitiesTs: [],
   migrations: {
