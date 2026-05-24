@@ -5,6 +5,7 @@
     "": {
       "name": "crash-game",
       "devDependencies": {
+        "@crash/eslint-plugin": "workspace:*",
         "@typescript-eslint/eslint-plugin": "^8.0.0",
         "@typescript-eslint/parser": "^8.0.0",
         "@typescript-eslint/utils": "^8.0.0",

@@ -1,6 +1,7 @@
 {
   "name": "crash-game",
   "private": true,
+  "type": "module",
   "packageManager": "bun@1.3.11",
   "workspaces": [
     "services/*",
@@ -18,6 +19,7 @@
     "smoke:health": "bash scripts/smoke-health.sh"
   },
   "devDependencies": {
+    "@crash/eslint-plugin": "workspace:*",
     "@typescript-eslint/parser": "^8.0.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/utils": "^8.0.0",
