@@ -32,7 +32,7 @@
 - [ ] **REQ-AUTH-02**: System persists access + refresh tokens client-side and silently renews via the OIDC iframe before expiry.
 - [ ] **REQ-AUTH-03**: System coordinates token refresh across multiple browser tabs via `BroadcastChannel` so all tabs renew once per token rotation.
 - [ ] **REQ-AUTH-04**: Each backend service validates incoming JWTs via cached JWKS (issuer + audience + signature + expiry checks); JWKS cache respects Keycloak `Cache-Control` headers.
-- [ ] **REQ-AUTH-05**: System uses Keycloak's pre-seeded `player / player123` for the demo user with the Keycloak realm/client imported automatically during `docker:up`.
+- [x] **REQ-AUTH-05**: System uses Keycloak's pre-seeded `player / player123` for the demo user with the Keycloak realm/client imported automatically during `docker:up`.
 
 ### Wallet Service (WALL)
 
@@ -146,7 +146,7 @@
 
 - [ ] **REQ-DOC-01**: README documents setup, decisions, trade-offs, architecture diagram, saga flow, provably-fair algorithm, scripts, env vars, troubleshooting.
 - [ ] **REQ-DOC-02**: Architecture Decision Records (ADRs) committed in `.planning/adrs/` (and surfaced in README) for each significant choice — ORM, money lib, outbox hand-roll vs library, raw `amqplib` + `@golevelup/nestjs-rabbitmq` split, server-tick rate, hash-chain depth, light-CQRS-no-ES, bet-202-cashout-200 asymmetry, single-lobby-vs-per-round-room.
-- [ ] **REQ-DOC-03**: Demo user `player / player123` is pre-configured in Keycloak with a wallet provisioned and seeded with `1000.00 CRD`.
+- [x] **REQ-DOC-03**: Demo user `player / player123` is pre-configured in Keycloak with a wallet provisioned and seeded with `1000.00 CRD`.
 
 ---
 
@@ -232,8 +232,8 @@ Each v1 REQ-ID maps to exactly one phase in `ROADMAP.md`. v2 (REQ-STRETCH-*) liv
 | REQ-INFRA-05 | Runtime constants from env (no hardcoded business values) | Pending |
 | REQ-DOM-05 | Wallet balance never negative (Postgres CHECK + invariant) | Pending |
 | REQ-DOM-06 | Money VO with bigint cents (no `number` for amounts) | Pending |
-| REQ-AUTH-05 | Pre-seeded `player/player123` + realm auto-import | Pending |
-| REQ-DOC-03 | Demo user wallet seeded with 1000.00 CRD | Pending |
+| REQ-AUTH-05 | Pre-seeded `player/player123` + realm auto-import | Done (P1.2 + P1.9) |
+| REQ-DOC-03 | Demo user wallet seeded with 1000.00 CRD | Done (P1.9 documented; Phase 3 will land actual provisioning endpoint) |
 
 #### Phase 2 — Outbox/Inbox Messaging Spine (4 reqs)
 | REQ-ID | Title | Status |

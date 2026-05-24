@@ -22,11 +22,11 @@
 
 - **Milestone**: 1 (initial submission)
 - **Phase**: 1 — Foundation & Infra
-- **Plan**: (none yet — pending `/gsd:plan-phase 1`)
-- **Status**: Roadmap created, awaiting first phase plan
+- **Plan**: P1.9 complete → P1.10 next (healthcheck smoke test)
+- **Status**: Phase 1 executing — README landed, smoke test pending
 - **Progress**: `▱▱▱▱▱▱▱▱▱▱` 0/10 phases complete
 
-**Next action**: Run `/gsd:plan-phase 1` to decompose Phase 1 into executable plans.
+**Next action**: Execute P1.10 (healthcheck smoke test) to close out Phase 1.
 
 ---
 
@@ -76,7 +76,7 @@ See `.planning/REQUIREMENTS.md` Open Configuration Values table. All 14 constant
 
 | Phase | Plans | Status | Notes |
 |-------|-------|--------|-------|
-| 1. Foundation & Infra | — | Not started | Awaiting `/gsd:plan-phase 1` |
+| 1. Foundation & Infra | 9 / 10 plans landed (P1.9 README executed) | In progress | P1.10 (smoke test) remaining |
 | 2. Outbox/Inbox Messaging Spine | — | Not started | Depends on Phase 1 |
 | 3. Wallet Service | — | Not started | Parallel with Phase 4 (post Phase 2) |
 | 4. Game Core (domain only) | — | Not started | Parallel with Phase 3 (post Phase 2) |
@@ -89,6 +89,7 @@ See `.planning/REQUIREMENTS.md` Open Configuration Values table. All 14 constant
 
 ### Recent activity
 
+- **2026-05-24** — P1.9 (repo README) executed: rewrote `README.md` with the Phase 1 surface — Quickstart, 19-row env table, demo-user curl flow, healthcheck probes, ADR + Roadmap links. Commit `bba12a0`.
 - **2026-05-24** — Roadmap created (10 phases, 95/95 v1 REQ-IDs mapped, stretch backlog defined). STATE.md initialized. REQUIREMENTS.md traceability appended.
 - **2026-05-24** — Research synthesis completed (SUMMARY, STACK, ARCHITECTURE, FEATURES, PITFALLS).
 - **2026-05-24** — Project initialized (PROJECT.md, REQUIREMENTS.md, config.json).

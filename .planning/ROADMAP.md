@@ -53,7 +53,7 @@ Plans:
 - [ ] P1.6-eslint-plugin-PLAN.md - Custom `@crash/no-number-for-money` ESLint rule + flat config + Prettier + `process.env` ban outside config layer
 - [ ] P1.7-typed-config-env-PLAN.md - Per-service typed `defaults.ts` (zod-parsed env), `.env.example` materializing every Open Configuration Value, env-schema tests
 - [ ] P1.8-adrs-PLAN.md - ADR-001 through ADR-006 + ADR catalogue README
-- [ ] P1.9-readme-PLAN.md - Repo root README with Phase 1 surface (Quickstart, Env vars table, Demo user, Healthchecks, Project structure, ADRs, Roadmap)
+- [x] P1.9-readme-PLAN.md - Repo root README with Phase 1 surface (Quickstart, Env vars table, Demo user, Healthchecks, Project structure, ADRs, Roadmap)
 - [ ] P1.10-healthcheck-smoke-test-PLAN.md - Bootstrap `/health` controllers, env-driven main.ts, `scripts/smoke-health.sh` (7 probes), full-stack bring-up checkpoint
 
 ### Phase 2: Outbox/Inbox Messaging Spine
@@ -240,7 +240,7 @@ These are not numbered phases. Pull from this list during Phase 10 if time permi
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Infra | 0/10 | Planned | - |
+| 1. Foundation & Infra | 9/10 | In progress | - |
 | 2. Outbox/Inbox Messaging Spine | 0/0 | Not started | - |
 | 3. Wallet Service | 0/0 | Not started | - |
 | 4. Game Core (domain only) | 0/0 | Not started | - |
