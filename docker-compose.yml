@@ -93,12 +93,45 @@ services:
         condition: service_healthy
 
   # ---------------------------------------------------------------------------
+  # Games Migration Init Container (Dockerfile multi-stage target lands in P1.3)
+  # ---------------------------------------------------------------------------
+  games-migrate:
+    build:
+      context: ./
+      dockerfile: services/games/Dockerfile
+      target: migrate
+    env_file:
+      - ./services/games/.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: ["bunx", "mikro-orm", "migration:up"]
+    restart: "no"
+
+  # ---------------------------------------------------------------------------
+  # Wallets Migration Init Container (Dockerfile multi-stage target lands in P1.3)
+  # ---------------------------------------------------------------------------
+  wallets-migrate:
+    build:
+      context: ./
+      dockerfile: services/wallets/Dockerfile
+      target: migrate
+    env_file:
+      - ./services/wallets/.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: ["bunx", "mikro-orm", "migration:up"]
+    restart: "no"
+
+  # ---------------------------------------------------------------------------
   # Games Service
   # ---------------------------------------------------------------------------
   games:
     build:
-      context: ./services/games
-      dockerfile: Dockerfile
+      context: ./
+      dockerfile: services/games/Dockerfile
+      target: runtime
     ports:
       - "4001:4001"
     env_file:
@@ -108,8 +141,12 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      games-migrate:
+        condition: service_completed_successfully
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:4001/health || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://localhost:4001/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -120,8 +157,9 @@ services:
   # ---------------------------------------------------------------------------
   wallets:
     build:
-      context: ./services/wallets
-      dockerfile: Dockerfile
+      context: ./
+      dockerfile: services/wallets/Dockerfile
+      target: runtime
     ports:
       - "4002:4002"
     env_file:
@@ -131,8 +169,12 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      wallets-migrate:
+        condition: service_completed_successfully
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:4002/health || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://localhost:4002/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 10
