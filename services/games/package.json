@@ -6,19 +6,34 @@
     "dev": "bun run --watch src/main.ts",
     "start": "bun run src/main.ts",
     "test": "bun test tests/unit",
-    "test:e2e": "bun test tests/e2e"
+    "test:e2e": "bun test tests/e2e",
+    "migration:create": "bunx mikro-orm migration:create",
+    "migration:up": "bunx mikro-orm migration:up",
+    "migration:down": "bunx mikro-orm migration:down"
   },
   "dependencies": {
     "@crash/shared-kernel": "workspace:*",
-    "@nestjs/common": "^11.1.17",
-    "@nestjs/core": "^11.1.17",
-    "@nestjs/platform-express": "^11.1.17",
+    "@crash/contracts": "workspace:*",
+    "@nestjs/common": "^11.1.21",
+    "@nestjs/core": "^11.1.21",
+    "@nestjs/platform-express": "^11.1.21",
+    "@nestjs/config": "^4.0.0",
+    "@mikro-orm/core": "^7.1.0",
+    "@mikro-orm/postgresql": "^7.1.0",
+    "@mikro-orm/nestjs": "^7.0.0",
+    "@mikro-orm/migrations": "^7.1.0",
+    "@mikro-orm/cli": "^7.1.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
     "zod": "^3.23.0"
   },
   "devDependencies": {
+    "@crash/eslint-plugin": "workspace:*",
     "bun-types": "latest",
     "typescript": "^5.8.3"
+  },
+  "mikro-orm": {
+    "useTsNode": true,
+    "configPaths": ["./mikro-orm.config.ts"]
   }
 }
