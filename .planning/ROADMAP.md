@@ -41,6 +41,20 @@
   - ADR-002: Money representation (Dinero v2 wrapped in local VO over raw bigint+scale / decimal.js)
   - ADR-003: Bun + NestJS pinning strategy (Bun version in `.bun-version`, decorator metadata explicit in every tsconfig)
   - ADR-004: Configuration source-of-truth shape (`.env.example` + typed `config/defaults.ts`)
+  - ADR-005: Wallet seed strategy (first-login provisioning over one-shot SQL seed / boot seeder)
+  - ADR-006: Custom ESLint plugin location (`packages/eslint-plugin` workspace package via `@typescript-eslint/utils` RuleCreator)
+**Plans:** 10 plans
+Plans:
+- [ ] P1.1-version-pinning-PLAN.md - Pin Bun 1.3.11, extend root package.json scripts + dev deps, commit bun.lock
+- [ ] P1.2-docker-compose-fixes-PLAN.md - Fix Keycloak healthcheck (port 9000), reshape service blocks for repo-root build context, verify realm export carries demo user
+- [ ] P1.3-workspace-dockerfile-refactor-PLAN.md - Multi-stage workspace-aware Dockerfiles (deps -> migrate -> runtime), expand service manifests with MikroORM 7.1 + NestJS 11.1.21, add migrate containers to compose
+- [ ] P1.4-shared-kernel-PLAN.md - Ship Money VO, error taxonomy, DomainEventEnvelope, branded IDs, sharedEnvSchema in `packages/shared-kernel`
+- [ ] P1.5-contracts-PLAN.md - Ship `packages/contracts` skeleton with money snapshot wire-format helpers (serializeMoney, parseMoneySnapshot)
+- [ ] P1.6-eslint-plugin-PLAN.md - Custom `@crash/no-number-for-money` ESLint rule + flat config + Prettier + `process.env` ban outside config layer
+- [ ] P1.7-typed-config-env-PLAN.md - Per-service typed `defaults.ts` (zod-parsed env), `.env.example` materializing every Open Configuration Value, env-schema tests
+- [ ] P1.8-adrs-PLAN.md - ADR-001 through ADR-006 + ADR catalogue README
+- [ ] P1.9-readme-PLAN.md - Repo root README with Phase 1 surface (Quickstart, Env vars table, Demo user, Healthchecks, Project structure, ADRs, Roadmap)
+- [ ] P1.10-healthcheck-smoke-test-PLAN.md - Bootstrap `/health` controllers, env-driven main.ts, `scripts/smoke-health.sh` (7 probes), full-stack bring-up checkpoint
 
 ### Phase 2: Outbox/Inbox Messaging Spine
 **Goal**: Two services can exchange messages over RabbitMQ with at-least-once delivery, exactly-once processing, and survive a `kill -9` without losing or duplicating side-effects.
@@ -226,7 +240,7 @@ These are not numbered phases. Pull from this list during Phase 10 if time permi
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Infra | 0/0 | Not started | - |
+| 1. Foundation & Infra | 0/10 | Planned | - |
 | 2. Outbox/Inbox Messaging Spine | 0/0 | Not started | - |
 | 3. Wallet Service | 0/0 | Not started | - |
 | 4. Game Core (domain only) | 0/0 | Not started | - |
