@@ -6,6 +6,7 @@ export default defineConfig({
   clientUrl: process.env.DATABASE_URL ?? "",
   entities: [],
   entitiesTs: [],
+  discovery: { warnWhenNoEntities: false },
   migrations: {
     path: "./src/infrastructure/mikro-orm/migrations",
     pathTs: "./src/infrastructure/mikro-orm/migrations",

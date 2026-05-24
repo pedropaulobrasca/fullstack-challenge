@@ -12,7 +12,7 @@ services:
       POSTGRES_DB: postgres
       POSTGRES_EXTRA_DATABASES: games,wallets
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
       - ./docker/postgres/init-databases.sh:/docker-entrypoint-initdb.d/init-databases.sh:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U admin"]
@@ -146,7 +146,7 @@ services:
       games-migrate:
         condition: service_completed_successfully
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:4001/health || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:4001/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -174,7 +174,7 @@ services:
       wallets-migrate:
         condition: service_completed_successfully
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:4002/health || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:4002/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 10
