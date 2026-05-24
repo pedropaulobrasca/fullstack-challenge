@@ -70,9 +70,22 @@ Plans:
 **Parallelizable with**: None (foundational for both services)
 **UI hint**: no
 **Key decisions to make** (ADRs):
-  - ADR-005: Hand-rolled outbox/inbox over `nestjs-outbox` / `pg-transactional-outbox` libraries
-  - ADR-006: `amqplib` raw publisher + `@golevelup/nestjs-rabbitmq` consumer ergonomics split (over `@nestjs/microservices` transport alone)
-  - ADR-007: DLX-with-delivery-limit-on-the-DLQ-itself topology (with quorum queues)
+  - ADR-007: Hand-rolled `@crash/messaging-spine` workspace package over `nestjs-outbox` / `pg-transactional-outbox`
+  - ADR-008: `amqplib` raw publisher + `@golevelup/nestjs-rabbitmq` consumer split (over `@nestjs/microservices` transport alone)
+  - ADR-009: DLX-with-x-delivery-limit-on-the-DLQ-itself topology (quorum queues)
+  - ADR-010: Dedicated `pg.Client` for LISTEN/NOTIFY (separate from MikroORM pool)
+**Plans:** 10 plans
+Plans:
+- [ ] 02-01-PLAN.md — Workspace package scaffold + dependency installs
+- [ ] 02-02-PLAN.md — Outbox/Inbox/DeadLetter entities + canonical SQL fragments
+- [ ] 02-03-PLAN.md — Envelope helpers + topology defaults + nestjs-cls module
+- [ ] 02-04-PLAN.md — OutboxRepository + OutboxListenerService + OutboxPublisher
+- [ ] 02-05-PLAN.md — InboxRepository + @IdempotentSubscribe + DeadLetterConsumer base
+- [ ] 02-06-PLAN.md — TopologyBootstrap + MessagingSpineModule composition
+- [ ] 02-07-PLAN.md — Service wiring (env, migrations, AppModule, per-service DLQ consumers)
+- [ ] 02-08-PLAN.md — Unit tests (envelope, topology, inbox SQL, dead-letter, CLS)
+- [ ] 02-09-PLAN.md — Integration tests (6 scenarios via testcontainers + MessagingProbe)
+- [ ] 02-10-PLAN.md — ADRs 007-010 + ROADMAP/STATE closeout
 
 ### Phase 3: Wallet Service
 **Goal**: A player has a provisioned wallet on first login and can be debited or credited exclusively via RabbitMQ commands with non-negative-balance and exact-precision guarantees.
