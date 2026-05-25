@@ -107,9 +107,9 @@ Plans:
 Plans:
 - [x] 03-01-PLAN.md — Patch messaging-spine: OI-1 envelope unwrap + OI-3 txEm propagation; re-run Phase 2 tests
 - [x] 03-02-PLAN.md — Wallet domain layer: Wallet + Transaction aggregates, errors, repository interfaces, unit tests
-- [ ] 03-03-PLAN.md — MikroORM entities + migrations (wallets CHECK constraint, transactions UNIQUE message_id, FK)
-- [ ] 03-04-PLAN.md — JWT guard via jose JWKS + KEYCLOAK_* env trio + KC_HOSTNAME alignment + audience decision
-- [ ] 03-05-PLAN.md — REST: POST /wallets idempotent + GET /wallets/me, JwtGuard, nestjs-zod DTOs, ProvisionWalletUseCase
+- [x] 03-03-PLAN.md — MikroORM entities + migrations (wallets CHECK constraint, transactions UNIQUE message_id, FK)
+- [x] 03-04-PLAN.md — JWT guard via jose JWKS + KEYCLOAK_* env trio + KC_HOSTNAME alignment + audience decision
+- [x] 03-05-PLAN.md — REST: POST /wallets idempotent + GET /wallets/me, JwtGuard, nestjs-zod DTOs, ProvisionWalletUseCase
 - [ ] 03-06-PLAN.md — AMQP debit/credit handlers via @IdempotentSubscribe, atomic conditional UPDATE, Transaction + outbox same-TX
 - [ ] 03-07-PLAN.md — Kong route narrowing (POST /wallets + GET /wallets/me only; mutation paths return 404 at gateway)
 - [ ] 03-08-PLAN.md — Property test (fast-check 10k zero-net) + ProvisionWalletUseCase idempotency unit tests

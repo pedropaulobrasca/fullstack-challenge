@@ -14,19 +14,19 @@
 
 **Core value**: Demonstrate senior-level engineering through a Crash Game that is correct, fair, real-time, and deeply considered — not a generic AI-assisted submission. Every decision must be defensible during the recruiter's arguição.
 
-**Current focus**: Phase 3 in progress (Wallet Service) — Plans 03-01 and 03-02 landed; Wave 2 in progress (03-03 / 03-04 remain).
+**Current focus**: Phase 3 in progress (Wallet Service) — Wave 2 (03-02 / 03-03 / 03-04) complete; Wave 3 in progress (03-05 REST surface landed, 03-07 Kong parallel).
 
 ---
 
 ## Current Position
 
 - **Milestone**: 1 (initial submission)
-- **Phase**: 3 — Wallet Service (in progress, 2/10 plans complete)
-- **Plan**: P3.02 complete → pure-domain Wallet bounded context (aggregates, errors, repository interfaces) with 13 unit tests, zero infra imports, full snapshot/immutability discipline
-- **Status**: Domain layer ready for Wave 2 siblings (Plan 03-03 MikroORM entities + migrations; Plan 03-04 JWT guard). Synchronous Wallet.debit/credit predicate is now available as the building block for Plan 03-08 property test.
+- **Phase**: 3 — Wallet Service (in progress, 5/10 plans complete inside the phase; 2/10 phases complete overall)
+- **Plan**: P3.05 complete → read+provision REST surface (POST /wallets idempotent 201/200, GET /wallets/me 200/404), MikroWalletRepository read paths, ProvisionWalletUseCase inside em.transactional with 23505 race fallback, WalletViewDto via nestjs-zod, JwtGuard applied at controller class level
+- **Status**: Wallet service exposes its public read+provision contract behind Keycloak JWTs. Mutation paths (applyDebit/applyCredit) are explicit stubs reserved for Plan 03-06.
 - **Progress**: `▰▰▱▱▱▱▱▱▱▱` 2/10 phases complete
 
-**Next action**: Execute Plans 03-03 (MikroORM entities + migrations) and 03-04 (JWT guard + auth context) — both can run in parallel with this work as Wave 2 siblings under the same dependency root.
+**Next action**: Plan 03-06 (mutation repository — applyDebitAtomically + applyCreditAtomically + AMQP wallet.debit / wallet.credit handlers). Plan 03-07 (Kong DB-less route map) can land in parallel.
 
 ---
 
@@ -37,7 +37,7 @@
 | Phases planned | 10 |
 | Phases complete | 2 / 10 |
 | v1 requirements mapped | 95 / 95 (100%) |
-| v1 requirements complete | 5 / 95 (REQ-AUTH-05 + REQ-WALL-05 + REQ-WALL-06 + REQ-SAGA-05 + REQ-SAGA-06) |
+| v1 requirements complete | 9 / 95 (REQ-AUTH-04 + REQ-AUTH-05 + REQ-WALL-01 + REQ-WALL-02 + REQ-WALL-03 + REQ-WALL-05 + REQ-WALL-06 + REQ-SAGA-05 + REQ-SAGA-06) |
 | Stretch backlog items | 8 |
 | ADRs landed | 10 (Phase 1: 6, Phase 2: 4) |
 | ADRs anticipated | 30+ (Phase 1: 6, Phase 2: 4, Phase 3: 2, Phase 4: 4, Phase 5: 2, Phase 6: 3, Phase 7: 4, Phase 8: 2, Phase 9: 3, Phase 10: 3) |

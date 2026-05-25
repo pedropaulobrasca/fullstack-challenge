@@ -31,14 +31,14 @@
 - [ ] **REQ-AUTH-01**: System redirects unauthenticated users to Keycloak via OIDC Authorization Code + PKCE (S256) flow using `oidc-spa` adapter for TanStack Start.
 - [ ] **REQ-AUTH-02**: System persists access + refresh tokens client-side and silently renews via the OIDC iframe before expiry.
 - [ ] **REQ-AUTH-03**: System coordinates token refresh across multiple browser tabs via `BroadcastChannel` so all tabs renew once per token rotation.
-- [ ] **REQ-AUTH-04**: Each backend service validates incoming JWTs via cached JWKS (issuer + audience + signature + expiry checks); JWKS cache respects Keycloak `Cache-Control` headers.
+- [x] **REQ-AUTH-04**: Each backend service validates incoming JWTs via cached JWKS (issuer + audience + signature + expiry checks); JWKS cache respects Keycloak `Cache-Control` headers.
 - [x] **REQ-AUTH-05**: System uses Keycloak's pre-seeded `player / player123` for the demo user with the Keycloak realm/client imported automatically during `docker:up`.
 
 ### Wallet Service (WALL)
 
-- [ ] **REQ-WALL-01**: Wallet service exposes `POST /wallets` to create a wallet for the authenticated player (idempotent — returns 409 or no-op on existing).
-- [ ] **REQ-WALL-02**: Wallet service exposes `GET /wallets/me` returning the authenticated player's wallet balance and metadata.
-- [ ] **REQ-WALL-03**: Wallet service provisions a new wallet with `INITIAL_BALANCE_CENTS=100000` (1000.00 CRD), env-configurable.
+- [x] **REQ-WALL-01**: Wallet service exposes `POST /wallets` to create a wallet for the authenticated player (idempotent — returns 409 or no-op on existing).
+- [x] **REQ-WALL-02**: Wallet service exposes `GET /wallets/me` returning the authenticated player's wallet balance and metadata.
+- [x] **REQ-WALL-03**: Wallet service provisions a new wallet with `INITIAL_BALANCE_CENTS=100000` (1000.00 CRD), env-configurable.
 - [ ] **REQ-WALL-04**: Wallet service consumes debit/credit commands from RabbitMQ exclusively (no REST exposure for mutations).
 - [x] **REQ-WALL-05**: Wallet service uses an inbox table for exactly-once command processing (dedup on `messageId`, same TX as state mutation).
 - [x] **REQ-WALL-06**: Wallet service writes domain events to its outbox in the same TX as the state change; a polling publisher with `confirmSelect` + `waitForConfirms` ships them to RabbitMQ at-least-once.
@@ -247,10 +247,10 @@ Each v1 REQ-ID maps to exactly one phase in `ROADMAP.md`. v2 (REQ-STRETCH-*) liv
 | REQ-ID | Title | Status |
 |--------|-------|--------|
 | REQ-DOM-03 | Wallet aggregate balance + precision invariants | Pending |
-| REQ-AUTH-04 | JWT validation via cached JWKS at each service | Pending |
-| REQ-WALL-01 | `POST /wallets` idempotent provisioning | Pending |
-| REQ-WALL-02 | `GET /wallets/me` returns balance + metadata | Pending |
-| REQ-WALL-03 | Initial balance from `INITIAL_BALANCE_CENTS` | Pending |
+| REQ-AUTH-04 | JWT validation via cached JWKS at each service | Complete (P3.04) |
+| REQ-WALL-01 | `POST /wallets` idempotent provisioning | Complete (P3.05) |
+| REQ-WALL-02 | `GET /wallets/me` returns balance + metadata | Complete (P3.05) |
+| REQ-WALL-03 | Initial balance from `INITIAL_BALANCE_CENTS` | Complete (P3.05) |
 | REQ-WALL-04 | Debit/credit only via RabbitMQ (no REST mutations) | Pending |
 | REQ-WALL-07 | Immutable Transaction ledger row per debit/credit | Pending |
 
