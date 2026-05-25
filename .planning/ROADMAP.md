@@ -103,6 +103,18 @@ Plans:
 **Key decisions to make** (ADRs):
   - ADR-008: Ledger model (Wallet snapshot + immutable Transaction aggregate) over event sourcing
   - ADR-009: JWT validation at each service via cached JWKS (over Kong JWT plugin)
+**Plans:** 10 plans
+Plans:
+- [ ] 03-01-PLAN.md — Patch messaging-spine: OI-1 envelope unwrap + OI-3 txEm propagation; re-run Phase 2 tests
+- [ ] 03-02-PLAN.md — Wallet domain layer: Wallet + Transaction aggregates, errors, repository interfaces, unit tests
+- [ ] 03-03-PLAN.md — MikroORM entities + migrations (wallets CHECK constraint, transactions UNIQUE message_id, FK)
+- [ ] 03-04-PLAN.md — JWT guard via jose JWKS + KEYCLOAK_* env trio + KC_HOSTNAME alignment + audience decision
+- [ ] 03-05-PLAN.md — REST: POST /wallets idempotent + GET /wallets/me, JwtGuard, nestjs-zod DTOs, ProvisionWalletUseCase
+- [ ] 03-06-PLAN.md — AMQP debit/credit handlers via @IdempotentSubscribe, atomic conditional UPDATE, Transaction + outbox same-TX
+- [ ] 03-07-PLAN.md — Kong route narrowing (POST /wallets + GET /wallets/me only; mutation paths return 404 at gateway)
+- [ ] 03-08-PLAN.md — Property test (fast-check 10k zero-net) + ProvisionWalletUseCase idempotency unit tests
+- [ ] 03-09-PLAN.md — Integration tests (6 scenarios) + smoke-health probes 23-26 + live walkthrough checkpoint
+- [ ] 03-10-PLAN.md — ADR-011 + ADR-012 + ADR-013 + STATE/ROADMAP/REQUIREMENTS closeout
 
 ### Phase 4: Game Core (domain only, no WS)
 **Goal**: A `games-service` instance runs an autonomous round loop with rich Round + Bet aggregates and a provably-fair crash point derived from a verifiable hash chain — all without a WebSocket gateway or saga yet.
@@ -255,7 +267,7 @@ These are not numbered phases. Pull from this list during Phase 10 if time permi
 |-------|----------------|--------|-----------|
 | 1. Foundation & Infra | 10/10 | Complete | 2026-05-24 |
 | 2. Outbox/Inbox Messaging Spine | 10/10 | Complete | 2026-05-24 |
-| 3. Wallet Service | 0/0 | Not started | - |
+| 3. Wallet Service | 0/10 | Not started | - |
 | 4. Game Core (domain only) | 0/0 | Not started | - |
 | 5. Saga Integration | 0/0 | Not started | - |
 | 6. WebSocket Gateway & Multiplier Sync | 0/0 | Not started | - |
