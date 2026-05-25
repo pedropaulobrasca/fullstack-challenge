@@ -2,6 +2,7 @@ import {
   CanActivate,
   ExecutionContext,
   Injectable,
+  Optional,
   UnauthorizedException,
 } from "@nestjs/common";
 import { createRemoteJWKSet, jwtVerify, type JWTVerifyGetKey } from "jose";
@@ -32,7 +33,7 @@ export class JwtGuard implements CanActivate {
   private readonly audience: string;
   private readonly jwks: JWTVerifyGetKey;
 
-  constructor(options?: JwtGuardOptions) {
+  constructor(@Optional() options?: JwtGuardOptions) {
     const resolved = options ?? loadEnvOptions();
     this.issuer = resolved.issuer;
     this.audience = resolved.audience;
