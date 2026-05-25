@@ -65,6 +65,8 @@ export class MikroWalletRepository implements WalletRepository {
          WHERE player_id = ? AND balance_cents >= ?
          RETURNING id, balance_cents, (balance_cents + ?) AS previous_balance_cents`,
         [cents, playerId, cents, cents],
+        "all",
+        em.getTransactionContext(),
       );
 
     if (rows.length === 0) {
@@ -95,6 +97,8 @@ export class MikroWalletRepository implements WalletRepository {
          WHERE player_id = ?
          RETURNING id, balance_cents, (balance_cents - ?) AS previous_balance_cents`,
         [cents, playerId, cents],
+        "all",
+        em.getTransactionContext(),
       );
 
     if (rows.length === 0) {
@@ -126,6 +130,8 @@ export class MikroWalletRepository implements WalletRepository {
       .execute<SelectBalanceRow[]>(
         `SELECT id, balance_cents FROM wallets WHERE player_id = ?`,
         [playerId],
+        "all",
+        em.getTransactionContext(),
       );
     if (rows.length === 0) {
       return { kind: "NOT_FOUND" };
