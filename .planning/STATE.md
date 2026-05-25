@@ -89,6 +89,7 @@ See `.planning/REQUIREMENTS.md` Open Configuration Values table. All 14 constant
 
 ### Recent activity
 
+- **2026-05-25** — P2.3 (envelope/topology/CLS contracts) executed: shipped `buildEnvelope`/`parseEnvelope` with required `causationId`, AMQP header bridge (`envelopeToAmqpHeaders`/`amqpHeadersToEnvelopeMeta`/`AMQP_HEADER_KEYS`), topology constants (`EXCHANGES`/`QUEUES`/`buildQuorumArgs`/`deriveDlxFromExchange`), zod `topologyConfigSchema`, `MessagingClsModule.forRoot()`, and `withMessagingContext()`. Commits `3005f81`, `728bc3a`, `c6fa3f6`. Deviation: added `zod` to messaging-spine peer dependencies (Rule 3 — `topologyConfigSchema` import). Deferred: pre-existing MikroORM decorator typecheck errors in `src/outbox`, `src/inbox`, `src/dead-letter` (P2.2 scope, untracked stubs).
 - **2026-05-24** — P1.10 (healthcheck smoke test) executed: HealthController per service, env-driven NestJS bootstrap, `scripts/smoke-health.sh` covers 7 probes (postgres, rabbitmq, keycloak health + token, kong, games, wallets), all green on cold + warm bootstrap. Commits `3c0bad2`, `b5d37ec`, `438c7df`. Deviations: postgres 18 mount layout, mikro-orm warnWhenNoEntities=false, healthcheck pinned to 127.0.0.1 for Alpine IPv6.
 - **2026-05-24** — P1.9 (repo README) executed: rewrote `README.md` with the Phase 1 surface — Quickstart, 19-row env table, demo-user curl flow, healthcheck probes, ADR + Roadmap links. Commit `bba12a0`.
 - **2026-05-24** — Roadmap created (10 phases, 95/95 v1 REQ-IDs mapped, stretch backlog defined). STATE.md initialized. REQUIREMENTS.md traceability appended.
@@ -97,4 +98,4 @@ See `.planning/REQUIREMENTS.md` Open Configuration Values table. All 14 constant
 
 ---
 
-*Last updated: 2026-05-24 by gsd-roadmapper.*
+*Last updated: 2026-05-25 by gsd-executor (P2.3).*
