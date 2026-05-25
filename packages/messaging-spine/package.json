@@ -17,13 +17,25 @@
   "peerDependencies": {
     "@nestjs/common": "^11.1.21",
     "@nestjs/core": "^11.1.21",
-    "@mikro-orm/core": "^7.1.0",
-    "@mikro-orm/postgresql": "^7.1.0",
+    "@mikro-orm/core": "^7.1.1",
+    "@mikro-orm/postgresql": "^7.1.1",
     "@mikro-orm/nestjs": "^7.0.0",
     "@crash/shared-kernel": "workspace:*"
   },
-  "dependencies": {},
+  "dependencies": {
+    "amqplib": "^0.10.9",
+    "@golevelup/nestjs-rabbitmq": "^9.0.2",
+    "nestjs-cls": "^6.2.0",
+    "pg": "^8.21.0",
+    "uuid": "^14.0.0"
+  },
   "devDependencies": {
+    "@types/amqplib": "^0.10.8",
+    "@types/pg": "^8.20.0",
+    "@types/uuid": "^11.0.0",
+    "testcontainers": "latest",
+    "@testcontainers/postgresql": "latest",
+    "@testcontainers/rabbitmq": "latest",
     "typescript": "^5.8.3",
     "bun-types": "latest"
   }
