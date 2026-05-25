@@ -1,5 +1,7 @@
 import { Module } from "@nestjs/common";
+import { APP_PIPE } from "@nestjs/core";
 import { MikroOrmModule } from "@mikro-orm/nestjs";
+import { ZodValidationPipe } from "nestjs-zod";
 import {
   MessagingSpineModule,
   EXCHANGES,
@@ -10,6 +12,10 @@ import { env } from "./config/defaults";
 import { WalletsController } from "./presentation/controllers/wallets.controller";
 import { HealthController } from "./presentation/controllers/health.controller";
 import { WalletsDeadLetterConsumer } from "./infrastructure/messaging/wallets-dead-letter.consumer";
+import { JwtGuard } from "./presentation/guards/jwt.guard";
+import { ProvisionWalletUseCase } from "./application/use-cases/provision-wallet.use-case";
+import { WALLET_REPOSITORY } from "./application/use-cases/tokens";
+import { MikroWalletRepository } from "./infrastructure/repositories/mikro-wallet.repository";
 
 @Module({
   imports: [
@@ -62,6 +68,12 @@ import { WalletsDeadLetterConsumer } from "./infrastructure/messaging/wallets-de
     }),
   ],
   controllers: [WalletsController, HealthController],
-  providers: [WalletsDeadLetterConsumer],
+  providers: [
+    WalletsDeadLetterConsumer,
+    JwtGuard,
+    ProvisionWalletUseCase,
+    { provide: WALLET_REPOSITORY, useClass: MikroWalletRepository },
+    { provide: APP_PIPE, useClass: ZodValidationPipe },
+  ],
 })
 export class AppModule {}
