@@ -53,6 +53,8 @@ services:
       KC_BOOTSTRAP_ADMIN_PASSWORD: admin
       KC_HEALTH_ENABLED: "true"
       KC_HTTP_MANAGEMENT_PORT: "9000"
+      KC_HOSTNAME: localhost
+      KC_HOSTNAME_STRICT: "false"
     volumes:
       - ./docker/keycloak:/opt/keycloak/data/import:ro
     healthcheck:
