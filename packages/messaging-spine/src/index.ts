@@ -41,7 +41,18 @@ export {
   InboxMessage,
   InboxMessageSchema,
 } from "./inbox/inbox-message.entity";
+export { InboxRepository } from "./inbox/inbox-repository";
+export {
+  IdempotentSubscribe,
+  type IdempotentSubscribeOptions,
+} from "./inbox/idempotent-subscribe.decorator";
+export { CONSUMER_NAME_META } from "./inbox/consumer-name.token";
 export {
   DeadLetterMessage,
   DeadLetterMessageSchema,
 } from "./dead-letter/dead-letter-message.entity";
+export {
+  DeadLetterRepository,
+  type DeadLetterRecord,
+} from "./dead-letter/dead-letter-repository";
+export { DeadLetterConsumer } from "./dead-letter/dead-letter-consumer.service";
