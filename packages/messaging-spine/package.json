@@ -20,7 +20,8 @@
     "@mikro-orm/core": "^7.1.1",
     "@mikro-orm/postgresql": "^7.1.1",
     "@mikro-orm/nestjs": "^7.0.0",
-    "@crash/shared-kernel": "workspace:*"
+    "@crash/shared-kernel": "workspace:*",
+    "zod": "^3.23.0"
   },
   "dependencies": {
     "amqplib": "^0.10.9",
