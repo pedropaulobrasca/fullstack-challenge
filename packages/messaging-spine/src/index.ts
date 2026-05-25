@@ -56,3 +56,13 @@ export {
   type DeadLetterRecord,
 } from "./dead-letter/dead-letter-repository";
 export { DeadLetterConsumer } from "./dead-letter/dead-letter-consumer.service";
+export {
+  OutboxRepository,
+  type OutboxRoute,
+} from "./outbox/outbox-repository";
+export { OutboxListenerService } from "./outbox/outbox-listener.service";
+export { OutboxPublisher } from "./outbox/outbox-publisher.service";
+export {
+  MESSAGING_OPTIONS,
+  type MessagingOptions,
+} from "./outbox/messaging-options";
