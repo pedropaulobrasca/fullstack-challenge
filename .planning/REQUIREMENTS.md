@@ -19,7 +19,7 @@
 
 - [ ] **REQ-DOM-01**: System enforces Round lifecycle `BETTING → RUNNING → CRASHED → SETTLED`; no illegal transitions are possible from any code path (enforced at aggregate boundary, not service layer).
 - [ ] **REQ-DOM-02**: System enforces single bet per player per round (DB partial unique index + aggregate guard).
-- [ ] **REQ-DOM-03**: System enforces Bet lifecycle `PENDING → ACTIVE → CASHED_OUT | LOST`; cashout is rejected if Bet is not in `ACTIVE` state.
+- [x] **REQ-DOM-03**: System enforces Bet lifecycle `PENDING → ACTIVE → CASHED_OUT | LOST`; cashout is rejected if Bet is not in `ACTIVE` state.
 - [ ] **REQ-DOM-04**: System enforces bet bounds: min `1.00`, max `1000.00` (spec values, env-overridable for non-prod).
 - [ ] **REQ-DOM-05**: System guarantees wallet balance never goes negative (Postgres CHECK constraint + domain invariant).
 - [ ] **REQ-DOM-06**: System represents all monetary amounts using a `Money` value object wrapping bigint-of-cents (no `number` for any amount-like field, anywhere — backend, frontend, wire format).
@@ -42,7 +42,7 @@
 - [x] **REQ-WALL-04**: Wallet service consumes debit/credit commands from RabbitMQ exclusively (no REST exposure for mutations).
 - [x] **REQ-WALL-05**: Wallet service uses an inbox table for exactly-once command processing (dedup on `messageId`, same TX as state mutation).
 - [x] **REQ-WALL-06**: Wallet service writes domain events to its outbox in the same TX as the state change; a polling publisher with `confirmSelect` + `waitForConfirms` ships them to RabbitMQ at-least-once.
-- [ ] **REQ-WALL-07**: Wallet service stores immutable Transaction records (ledger model) — every debit/credit produces a Transaction row referencing the source command.
+- [x] **REQ-WALL-07**: Wallet service stores immutable Transaction records (ledger model) — every debit/credit produces a Transaction row referencing the source command.
 
 ### Game Service — REST (GAME)
 
@@ -216,6 +216,7 @@ Each v1 REQ-ID maps to exactly one phase in `ROADMAP.md`. v2 (REQ-STRETCH-*) liv
 ### Coverage summary
 
 - **v1 mapped**: 95 / 95 (100%)
+- **v1 complete**: 12 / 95 (Phase 1: REQ-AUTH-05 + REQ-DOC-03; Phase 2: REQ-WALL-05 + REQ-WALL-06 + REQ-SAGA-05 + REQ-SAGA-06; Phase 3: REQ-DOM-03 + REQ-AUTH-04 + REQ-WALL-01 + REQ-WALL-02 + REQ-WALL-03 + REQ-WALL-04 + REQ-WALL-07)
 - **Orphans**: 0
 - **Duplicates**: 0
 - **Stretch (v2) deferred**: 8
@@ -246,13 +247,13 @@ Each v1 REQ-ID maps to exactly one phase in `ROADMAP.md`. v2 (REQ-STRETCH-*) liv
 #### Phase 3 — Wallet Service (7 reqs)
 | REQ-ID | Title | Status |
 |--------|-------|--------|
-| REQ-DOM-03 | Wallet aggregate balance + precision invariants | Pending |
-| REQ-AUTH-04 | JWT validation via cached JWKS at each service | Complete (P3.04) |
-| REQ-WALL-01 | `POST /wallets` idempotent provisioning | Complete (P3.05) |
-| REQ-WALL-02 | `GET /wallets/me` returns balance + metadata | Complete (P3.05) |
-| REQ-WALL-03 | Initial balance from `INITIAL_BALANCE_CENTS` | Complete (P3.05) |
-| REQ-WALL-04 | Debit/credit only via RabbitMQ (no REST mutations) | Complete (P3.07 — Kong gateway-side closure; P3.06 will land AMQP consumers) |
-| REQ-WALL-07 | Immutable Transaction ledger row per debit/credit | Pending |
+| REQ-DOM-03 | Wallet aggregate balance + precision invariants | Done (P3.02 + P3.03 + P3.08) |
+| REQ-AUTH-04 | JWT validation via cached JWKS at each service | Done (P3.04) |
+| REQ-WALL-01 | `POST /wallets` idempotent provisioning | Done (P3.05) |
+| REQ-WALL-02 | `GET /wallets/me` returns balance + metadata | Done (P3.05) |
+| REQ-WALL-03 | Initial balance from `INITIAL_BALANCE_CENTS` | Done (P3.05) |
+| REQ-WALL-04 | Debit/credit only via RabbitMQ (no REST mutations) | Done (P3.06 AMQP consumers + P3.07 Kong gateway closure) |
+| REQ-WALL-07 | Immutable Transaction ledger row per debit/credit | Done (P3.03 schema + P3.06 ledger append) |
 
 #### Phase 4 — Game Core (domain only) (19 reqs)
 | REQ-ID | Title | Status |
@@ -381,4 +382,4 @@ A v1 requirement is done when:
 
 ---
 
-*Last updated: 2026-05-24 after research synthesis + user input on multi-bet / leaderboard / replay / initial-balance.*
+*Last updated: 2026-05-25 by gsd-executor (P3.10 closeout — Phase 3 traceability marked Done; v1-complete count incremented to 12/95).*

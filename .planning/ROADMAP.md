@@ -10,7 +10,7 @@
 
 - [ ] **Phase 1: Foundation & Infra** — Docker bootstrap, shared kernel (Money VO), contracts package, ESLint money guard, ADR scaffolding
 - [x] **Phase 2: Outbox/Inbox Messaging Spine** — Hand-rolled transactional outbox/inbox, quorum queues + DLX, publisher confirms
-- [ ] **Phase 3: Wallet Service** — Wallet + Transaction aggregates, REST provisioning, AMQP debit/credit consumers, ledger model
+- [x] **Phase 3: Wallet Service** — Wallet + Transaction aggregates, REST provisioning, AMQP debit/credit consumers, ledger model
 - [ ] **Phase 4: Game Core (domain only)** — Round + Bet aggregates, provably-fair hash chain, autonomous round loop with crash recovery
 - [ ] **Phase 5: Saga Integration** — End-to-end bet + cashout sagas, persistent saga state, kill-9 recovery, timeout compensation
 - [ ] **Phase 6: WebSocket Gateway & Multiplier Sync** — JWT-at-handshake, lobby + user rooms, 30Hz volatile tick broadcast, server-authoritative cashout timestamping
@@ -113,8 +113,8 @@ Plans:
 - [x] 03-06-PLAN.md — AMQP debit/credit handlers via @IdempotentSubscribe, atomic conditional UPDATE, Transaction + outbox same-TX
 - [x] 03-07-PLAN.md — Kong route narrowing (POST /wallets + GET /wallets/me only; mutation paths return 404 at gateway)
 - [x] 03-08-PLAN.md — Property test (fast-check 10k zero-net) + ProvisionWalletUseCase idempotency unit tests
-- [ ] 03-09-PLAN.md — Integration tests (6 scenarios) + smoke-health probes 23-26 + live walkthrough checkpoint
-- [ ] 03-10-PLAN.md — ADR-011 + ADR-012 + ADR-013 + STATE/ROADMAP/REQUIREMENTS closeout
+- [x] 03-09-PLAN.md — Integration tests (6 scenarios) + smoke-health probes 23-26 + live walkthrough checkpoint
+- [x] 03-10-PLAN.md — ADR-011 + ADR-012 + ADR-013 + STATE/ROADMAP/REQUIREMENTS closeout
 
 ### Phase 4: Game Core (domain only, no WS)
 **Goal**: A `games-service` instance runs an autonomous round loop with rich Round + Bet aggregates and a provably-fair crash point derived from a verifiable hash chain — all without a WebSocket gateway or saga yet.
@@ -267,7 +267,7 @@ These are not numbered phases. Pull from this list during Phase 10 if time permi
 |-------|----------------|--------|-----------|
 | 1. Foundation & Infra | 10/10 | Complete | 2026-05-24 |
 | 2. Outbox/Inbox Messaging Spine | 10/10 | Complete | 2026-05-24 |
-| 3. Wallet Service | 6/10 | In progress | - |
+| 3. Wallet Service | 10/10 | Complete | 2026-05-25 |
 | 4. Game Core (domain only) | 0/0 | Not started | - |
 | 5. Saga Integration | 0/0 | Not started | - |
 | 6. WebSocket Gateway & Multiplier Sync | 0/0 | Not started | - |
@@ -303,4 +303,4 @@ No structural deviations. The 10 phases map 1:1 to the SUMMARY clusters. Refinem
 
 ---
 
-*Last updated: 2026-05-24 by gsd-roadmapper.*
+*Last updated: 2026-05-25 by gsd-executor (P3.10 closeout — Phase 3 complete, 3/10 phases done).*
