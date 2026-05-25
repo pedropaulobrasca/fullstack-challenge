@@ -14,19 +14,19 @@
 
 **Core value**: Demonstrate senior-level engineering through a Crash Game that is correct, fair, real-time, and deeply considered — not a generic AI-assisted submission. Every decision must be defensible during the recruiter's arguição.
 
-**Current focus**: Phase 3 in progress (Wallet Service) — Wave 2 (03-02 / 03-03 / 03-04) complete; Wave 3 in progress (03-05 REST surface landed, 03-07 Kong parallel).
+**Current focus**: Phase 3 in progress (Wallet Service) — Wave 2 (03-02 / 03-03 / 03-04) complete; Wave 3 in progress (03-05 REST surface landed, 03-07 Kong gateway narrowing landed). Remaining: 03-06 AMQP debit/credit consumers, 03-08 property tests + use-case unit tests, 03-09 smoke probes, 03-10 ADRs.
 
 ---
 
 ## Current Position
 
 - **Milestone**: 1 (initial submission)
-- **Phase**: 3 — Wallet Service (in progress, 5/10 plans complete inside the phase; 2/10 phases complete overall)
-- **Plan**: P3.05 complete → read+provision REST surface (POST /wallets idempotent 201/200, GET /wallets/me 200/404), MikroWalletRepository read paths, ProvisionWalletUseCase inside em.transactional with 23505 race fallback, WalletViewDto via nestjs-zod, JwtGuard applied at controller class level
-- **Status**: Wallet service exposes its public read+provision contract behind Keycloak JWTs. Mutation paths (applyDebit/applyCredit) are explicit stubs reserved for Plan 03-06.
-- **Progress**: `▰▰▱▱▱▱▱▱▱▱` 2/10 phases complete
+- **Phase**: 3 — Wallet Service (in progress, 6/10 plans complete inside the phase; 2/10 phases complete overall)
+- **Plan**: P3.07 complete → Kong gateway map narrowed to two regex-anchored, method-constrained wallets routes (`POST ~/wallets$`, `GET ~/wallets/me$`); five mutation probes return Kong-origin 404 before reaching wallets:4002 (verified body signature: `no Route matched with those values` + `request_id` field). REQ-WALL-04 closed at the gateway layer; AMQP-side closure still owned by Plan 03-06.
+- **Status**: Gateway surface is verifiably tightened. Mutation paths (applyDebit/applyCredit) are still reserved for Plan 03-06; once that lands the AMQP-side of REQ-WALL-04 is also closed.
+- **Progress**: `▰▰▱▱▱▱▱▱▱▱` 2/10 phases complete (Phase 3 in progress: 6/10 plans)
 
-**Next action**: Plan 03-06 (mutation repository — applyDebitAtomically + applyCreditAtomically + AMQP wallet.debit / wallet.credit handlers). Plan 03-07 (Kong DB-less route map) can land in parallel.
+**Next action**: Plan 03-06 (mutation repository — applyDebitAtomically + applyCreditAtomically + AMQP wallet.debit / wallet.credit handlers) is the unblocking work remaining on the wallet-service mutation path.
 
 ---
 
@@ -37,7 +37,7 @@
 | Phases planned | 10 |
 | Phases complete | 2 / 10 |
 | v1 requirements mapped | 95 / 95 (100%) |
-| v1 requirements complete | 9 / 95 (REQ-AUTH-04 + REQ-AUTH-05 + REQ-WALL-01 + REQ-WALL-02 + REQ-WALL-03 + REQ-WALL-05 + REQ-WALL-06 + REQ-SAGA-05 + REQ-SAGA-06) |
+| v1 requirements complete | 10 / 95 (REQ-AUTH-04 + REQ-AUTH-05 + REQ-WALL-01 + REQ-WALL-02 + REQ-WALL-03 + REQ-WALL-04 + REQ-WALL-05 + REQ-WALL-06 + REQ-SAGA-05 + REQ-SAGA-06) |
 | Stretch backlog items | 8 |
 | ADRs landed | 10 (Phase 1: 6, Phase 2: 4) |
 | ADRs anticipated | 30+ (Phase 1: 6, Phase 2: 4, Phase 3: 2, Phase 4: 4, Phase 5: 2, Phase 6: 3, Phase 7: 4, Phase 8: 2, Phase 9: 3, Phase 10: 3) |
@@ -86,7 +86,7 @@ See `.planning/REQUIREMENTS.md` Open Configuration Values table. All 14 constant
 |-------|-------|--------|-------|
 | 1. Foundation & Infra | 10 / 10 plans landed (P1.10 smoke test green) | Implementation complete, verifier pending | All seven smoke probes pass cold and warm |
 | 2. Outbox/Inbox Messaging Spine | 10 / 10 plans landed (P2.10 ADRs + closeout) | Implementation complete, verifier pending | `@crash/messaging-spine` wired into both services; 4 ADRs landed; 22/22 smoke probes; unit + integration tests green |
-| 3. Wallet Service | 2 / 10 plans landed (P3.01 spine OI, P3.02 domain) | In progress | Domain layer (Wallet + Transaction aggregates, errors, repo interfaces) green with 13 unit tests; ready for Wave 2 siblings |
+| 3. Wallet Service | 6 / 10 plans landed (P3.01 spine OI, P3.02 domain, P3.03 schema, P3.04 JWT guard, P3.05 REST surface, P3.07 Kong narrowing) | In progress | Gateway surface verifiably tightened; mutation-side closure pending P3.06 AMQP consumers |
 | 4. Game Core (domain only) | — | Not started | Parallel with Phase 3 (post Phase 2) |
 | 5. Saga Integration | — | Not started | Depends on Phase 3 + Phase 4 |
 | 6. WebSocket Gateway & Multiplier Sync | — | Not started | Depends on Phase 5 |
@@ -97,6 +97,7 @@ See `.planning/REQUIREMENTS.md` Open Configuration Values table. All 14 constant
 
 ### Recent activity
 
+- **2026-05-25** — P3.07 (Kong wallets route narrowing) executed: `docker/kong/kong.yml` wallets-service block replaced with two named, method-constrained, regex-anchored routes (`wallets-provision` POST `~/wallets$`, `wallets-me` GET `~/wallets/me$`). Two commits — `ae853d0` (initial narrowing with plain prefix paths) and `fdd5ec5` (Rule 1 deviation: plain prefix leaked POST /wallets/me/debit to the service, switched to PCRE-anchored regex paths to force exact-match). Live probe matrix records 5/5 mutation methods/paths returning Kong-origin 404 (`no Route matched with those values` + `request_id`), 2/2 allowed paths forwarding to wallets:4002, games-routes untouched. Admin API confirms exactly three loaded routes: `wallets-provision`, `wallets-me`, `games-routes`. REQ-WALL-04 closed at the perimeter; the AMQP-side closure (debit/credit only via RabbitMQ) is still owned by Plan 03-06. P3.09 smoke probes will lift this matrix verbatim once P3.05 controllers land in the container image.
 - **2026-05-25** — P3.02 (Wallet domain layer) executed: pure-domain Wallet bounded context landed in `services/wallets/src/domain/`. Three commits — `78aa2c8` (errors + repository interfaces), `24759d0` (Transaction aggregate — immutable factory-constructed ledger entry, frozen instance + props, MoneySnapshot on wire), `4172735` (Wallet aggregate — provision/rehydrate/debit/credit with snapshot semantics, translates NegativeMoneyError into InsufficientFundsError with both requested + available snapshots). 13/13 unit tests pass, `bunx tsc --noEmit` clean, zero infra imports inside `src/domain/`. Synchronous Wallet.debit/credit predicate is the building block Plan 03-08 will hammer with `fast-check`.
 - **2026-05-25** — P3.01 (messaging-spine OI follow-ups) executed: closed OI-1 (envelope unwrap), OI-3 (txEm propagation to handler), and W3 (`OutboxRepository.add` accepts optional EM). Three commits — `d0ebe44` (RED unit regressions: 3 fail / 2 pass against unpatched decorator), `ff110d5` (GREEN patch — decorator + outbox repo + docstring), `1eb453a` (integration tests updated: 5 of 6 probes peeled by one hop, 10 lines net). Final suite: 61 unit pass + 6 integration pass + typecheck clean. Public-API change documented for ADR-013 (handler third-arg `txEm` is part of the spine's surface).
 - **2026-05-24** — P2.10 (Phase 2 closeout) executed: ADR-007 (hand-rolled `@crash/messaging-spine` over `nestjs-outbox` / `pg-transactional-outbox`), ADR-008 (`amqplib` raw publisher + `@golevelup/nestjs-rabbitmq` consumer split), ADR-009 (DLX with `x-delivery-limit` on the DLQ itself, quorum queues), ADR-010 (dedicated `pg.Client` for LISTEN/NOTIFY outside MikroORM pool) authored; ADR catalogue README extended with the Phase 2 section; STATE + ROADMAP advanced to Phase 2 complete (2/10); REQUIREMENTS traceability marked REQ-WALL-05, REQ-WALL-06, REQ-SAGA-05, REQ-SAGA-06 as Done. Phase 2 is provably complete: 10/10 plans, 4 ADRs, integration tests green, smoke-health 22/22.
@@ -113,4 +114,4 @@ See `.planning/REQUIREMENTS.md` Open Configuration Values table. All 14 constant
 
 ---
 
-*Last updated: 2026-05-25 by gsd-executor (P3.02 — Wallet domain layer).*
+*Last updated: 2026-05-25 by gsd-executor (P3.07 — Kong wallets route narrowing; REQ-WALL-04 closed at the gateway perimeter).*

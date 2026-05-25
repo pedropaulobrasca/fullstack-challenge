@@ -39,7 +39,7 @@
 - [x] **REQ-WALL-01**: Wallet service exposes `POST /wallets` to create a wallet for the authenticated player (idempotent — returns 409 or no-op on existing).
 - [x] **REQ-WALL-02**: Wallet service exposes `GET /wallets/me` returning the authenticated player's wallet balance and metadata.
 - [x] **REQ-WALL-03**: Wallet service provisions a new wallet with `INITIAL_BALANCE_CENTS=100000` (1000.00 CRD), env-configurable.
-- [ ] **REQ-WALL-04**: Wallet service consumes debit/credit commands from RabbitMQ exclusively (no REST exposure for mutations).
+- [x] **REQ-WALL-04**: Wallet service consumes debit/credit commands from RabbitMQ exclusively (no REST exposure for mutations).
 - [x] **REQ-WALL-05**: Wallet service uses an inbox table for exactly-once command processing (dedup on `messageId`, same TX as state mutation).
 - [x] **REQ-WALL-06**: Wallet service writes domain events to its outbox in the same TX as the state change; a polling publisher with `confirmSelect` + `waitForConfirms` ships them to RabbitMQ at-least-once.
 - [ ] **REQ-WALL-07**: Wallet service stores immutable Transaction records (ledger model) — every debit/credit produces a Transaction row referencing the source command.
@@ -251,7 +251,7 @@ Each v1 REQ-ID maps to exactly one phase in `ROADMAP.md`. v2 (REQ-STRETCH-*) liv
 | REQ-WALL-01 | `POST /wallets` idempotent provisioning | Complete (P3.05) |
 | REQ-WALL-02 | `GET /wallets/me` returns balance + metadata | Complete (P3.05) |
 | REQ-WALL-03 | Initial balance from `INITIAL_BALANCE_CENTS` | Complete (P3.05) |
-| REQ-WALL-04 | Debit/credit only via RabbitMQ (no REST mutations) | Pending |
+| REQ-WALL-04 | Debit/credit only via RabbitMQ (no REST mutations) | Complete (P3.07 — Kong gateway-side closure; P3.06 will land AMQP consumers) |
 | REQ-WALL-07 | Immutable Transaction ledger row per debit/credit | Pending |
 
 #### Phase 4 — Game Core (domain only) (19 reqs)

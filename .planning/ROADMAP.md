@@ -111,7 +111,7 @@ Plans:
 - [x] 03-04-PLAN.md — JWT guard via jose JWKS + KEYCLOAK_* env trio + KC_HOSTNAME alignment + audience decision
 - [x] 03-05-PLAN.md — REST: POST /wallets idempotent + GET /wallets/me, JwtGuard, nestjs-zod DTOs, ProvisionWalletUseCase
 - [ ] 03-06-PLAN.md — AMQP debit/credit handlers via @IdempotentSubscribe, atomic conditional UPDATE, Transaction + outbox same-TX
-- [ ] 03-07-PLAN.md — Kong route narrowing (POST /wallets + GET /wallets/me only; mutation paths return 404 at gateway)
+- [x] 03-07-PLAN.md — Kong route narrowing (POST /wallets + GET /wallets/me only; mutation paths return 404 at gateway)
 - [ ] 03-08-PLAN.md — Property test (fast-check 10k zero-net) + ProvisionWalletUseCase idempotency unit tests
 - [ ] 03-09-PLAN.md — Integration tests (6 scenarios) + smoke-health probes 23-26 + live walkthrough checkpoint
 - [ ] 03-10-PLAN.md — ADR-011 + ADR-012 + ADR-013 + STATE/ROADMAP/REQUIREMENTS closeout
@@ -267,7 +267,7 @@ These are not numbered phases. Pull from this list during Phase 10 if time permi
 |-------|----------------|--------|-----------|
 | 1. Foundation & Infra | 10/10 | Complete | 2026-05-24 |
 | 2. Outbox/Inbox Messaging Spine | 10/10 | Complete | 2026-05-24 |
-| 3. Wallet Service | 0/10 | Not started | - |
+| 3. Wallet Service | 6/10 | In progress | - |
 | 4. Game Core (domain only) | 0/0 | Not started | - |
 | 5. Saga Integration | 0/0 | Not started | - |
 | 6. WebSocket Gateway & Multiplier Sync | 0/0 | Not started | - |
