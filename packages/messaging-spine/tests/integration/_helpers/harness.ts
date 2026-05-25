@@ -5,8 +5,11 @@ import { MikroOrmModule } from "@mikro-orm/nestjs";
 import { EntityManager } from "@mikro-orm/postgresql";
 import { Test } from "@nestjs/testing";
 import { Client as PgClient } from "pg";
-import { PostgreSqlContainer, type StartedPostgreSqlContainer } from "@testcontainers/postgresql";
-import { RabbitMQContainer, type StartedRabbitMQContainer } from "@testcontainers/rabbitmq";
+import {
+  GenericContainer,
+  Wait,
+  type StartedTestContainer,
+} from "testcontainers";
 
 import { MessagingSpineModule } from "../../../src/module";
 import { OutboxRepository } from "../../../src/outbox/outbox-repository";
@@ -21,8 +24,8 @@ export interface TestHarness {
   outboxRepo: OutboxRepository;
   inboxRepo: InboxRepository;
   deadLetterRepo: DeadLetterRepository;
-  pgContainer: StartedPostgreSqlContainer;
-  rmqContainer: StartedRabbitMQContainer;
+  pgContainer: StartedTestContainer;
+  rmqContainer: StartedTestContainer;
   amqpUrl: string;
   databaseUrl: string;
   teardown: () => Promise<void>;
@@ -73,18 +76,34 @@ async function runMigrations(connectionString: string): Promise<void> {
 export async function bootHarness(
   options: BootHarnessOptions = {},
 ): Promise<TestHarness> {
-  const pgContainer = await new PostgreSqlContainer("postgres:18-alpine")
-    .withDatabase("messaging_test")
-    .withUsername("test")
-    .withPassword("test")
+  const pgContainer = await new GenericContainer("postgres:18-alpine")
+    .withEnvironment({
+      POSTGRES_DB: "messaging_test",
+      POSTGRES_USER: "test",
+      POSTGRES_PASSWORD: "test",
+    })
+    .withExposedPorts(5432)
+    .withWaitStrategy(
+      Wait.forLogMessage(/database system is ready to accept connections/, 2),
+    )
+    .withStartupTimeout(120_000)
     .start();
 
-  const rmqContainer = await new RabbitMQContainer(
-    "rabbitmq:4.2-management-alpine",
-  ).start();
+  const rmqContainer = await new GenericContainer(
+    "rabbitmq:4.2.4-management-alpine",
+  )
+    .withExposedPorts(5672, 15672)
+    .withWaitStrategy(Wait.forLogMessage(/Server startup complete/, 1))
+    .withStartupTimeout(120_000)
+    .start();
 
-  const databaseUrl = pgContainer.getConnectionUri();
-  const amqpUrl = rmqContainer.getAmqpUrl();
+  const pgHost = pgContainer.getHost();
+  const pgPort = pgContainer.getMappedPort(5432);
+  const rmqHost = rmqContainer.getHost();
+  const rmqPort = rmqContainer.getMappedPort(5672);
+
+  const databaseUrl = `postgres://test:test@${pgHost}:${pgPort}/messaging_test`;
+  const amqpUrl = `amqp://guest:guest@${rmqHost}:${rmqPort}`;
 
   await runMigrations(databaseUrl);
 
@@ -103,16 +122,16 @@ export async function bootHarness(
           outbox: { pollIntervalMs, batchSize: 100 },
           topology: {
             exchangesToAssert: [
-              { name: "test.events", type: "topic", durable: true },
-              { name: "test.dlx", type: "fanout", durable: true },
+              { name: "wallet.events", type: "topic", durable: true },
+              { name: "wallet.dlx", type: "fanout", durable: true },
             ],
             queuesToAssert: [
-              { name: "test.q", deliveryLimit: 5, dlx: "test.dlx" },
+              { name: "test.q", deliveryLimit: 5, dlx: "wallet.dlx" },
               { name: "test.dlq", deliveryLimit: 3 },
             ],
             bindings: [
-              { queue: "test.q", exchange: "test.events", routingKey: "test.*" },
-              { queue: "test.dlq", exchange: "test.dlx", routingKey: "" },
+              { queue: "test.q", exchange: "wallet.events", routingKey: "test.*" },
+              { queue: "test.dlq", exchange: "wallet.dlx", routingKey: "" },
             ],
           },
         }),
