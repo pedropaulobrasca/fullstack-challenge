@@ -42,9 +42,9 @@ class DedupProbeConsumer {
     consumerName: "test.probe.dedup",
   })
   async onProbe(envelope: {
-    payload: { payload: { probeId: string } };
+    payload: { probeId: string };
   }): Promise<void> {
-    const probeId = envelope.payload.payload.probeId;
+    const probeId = envelope.payload.probeId;
     await this.em
       .getConnection()
       .execute(

@@ -44,10 +44,10 @@ class HeaderProbeConsumer {
   })
   async onProbe(envelope: {
     messageId: string;
-    payload: { payload: { probeId: string } };
+    payload: { probeId: string };
   }): Promise<void> {
     const observedCorrelationId = this.cls.get<string>(CORRELATION_ID_KEY);
-    const probeId = envelope.payload.payload.probeId;
+    const probeId = envelope.payload.probeId;
     await this.em
       .getConnection()
       .execute(
