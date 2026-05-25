@@ -72,6 +72,10 @@ export async function ensureTestEnv(): Promise<{
   return { jwksUri: jwksUri!, issuer: ISSUER, audience: AUDIENCE };
 }
 
+let sharedApp: any | undefined;
+let sharedEm: any | undefined;
+let sharedBaseUrl: string | undefined;
+
 export async function bootstrapWalletsApp(): Promise<{
   app: any;
   em: any;
@@ -79,6 +83,14 @@ export async function bootstrapWalletsApp(): Promise<{
   stop: () => Promise<void>;
 }> {
   await ensureTestEnv();
+  if (sharedApp && sharedEm && sharedBaseUrl) {
+    return {
+      app: sharedApp,
+      em: sharedEm,
+      baseUrl: sharedBaseUrl,
+      stop: async () => undefined,
+    };
+  }
   const { Test } = await import("@nestjs/testing");
   const { AppModule } = await import("../../src/app.module");
   const { EntityManager } = await import("@mikro-orm/postgresql");
@@ -97,13 +109,14 @@ export async function bootstrapWalletsApp(): Promise<{
   const port = address.port ?? 0;
   const baseUrl = `http://127.0.0.1:${port}`;
   const em = app.get(EntityManager).fork();
+  sharedApp = app;
+  sharedEm = em;
+  sharedBaseUrl = baseUrl;
   return {
     app,
     em,
     baseUrl,
-    stop: async () => {
-      await app.close().catch(() => undefined);
-    },
+    stop: async () => undefined,
   };
 }
 
@@ -145,9 +158,7 @@ export async function resetWalletsSchema(em: any): Promise<void> {
 }
 
 export async function stopJwksServer(): Promise<void> {
-  if (jwksServer) {
-    jwksServer.stop(true);
-    jwksServer = undefined;
-    jwksUri = undefined;
-  }
+  // Intentional no-op. The JWKS server is shared across test files via the
+  // singleton above; tearing it down between files would invalidate the
+  // KEYCLOAK_JWKS_URI captured by the cached Nest AppModule.
 }
