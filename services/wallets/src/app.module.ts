@@ -43,7 +43,12 @@ import { WalletCreditHandler } from "./application/handlers/wallet-credit.handle
           ],
           queuesToAssert: [
             {
-              name: QUEUES.WALLET_COMMANDS,
+              name: QUEUES.WALLET_DEBIT,
+              deliveryLimit: env.RMQ_DELIVERY_LIMIT_MAIN,
+              dlx: EXCHANGES.WALLET_DLX,
+            },
+            {
+              name: QUEUES.WALLET_CREDIT,
               deliveryLimit: env.RMQ_DELIVERY_LIMIT_MAIN,
               dlx: EXCHANGES.WALLET_DLX,
             },
@@ -54,12 +59,12 @@ import { WalletCreditHandler } from "./application/handlers/wallet-credit.handle
           ],
           bindings: [
             {
-              queue: QUEUES.WALLET_COMMANDS,
+              queue: QUEUES.WALLET_DEBIT,
               exchange: EXCHANGES.WALLET_COMMANDS,
               routingKey: "wallet.debit",
             },
             {
-              queue: QUEUES.WALLET_COMMANDS,
+              queue: QUEUES.WALLET_CREDIT,
               exchange: EXCHANGES.WALLET_COMMANDS,
               routingKey: "wallet.credit",
             },

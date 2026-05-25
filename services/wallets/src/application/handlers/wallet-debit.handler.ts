@@ -45,7 +45,7 @@ export class WalletDebitHandler {
     consumerName: "wallets.debit",
     exchange: EXCHANGES.WALLET_COMMANDS,
     routingKey: "wallet.debit",
-    queue: QUEUES.WALLET_COMMANDS,
+    queue: QUEUES.WALLET_DEBIT,
   })
   async handle(
     envelope: WalletDebitEnvelope,

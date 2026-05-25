@@ -8,6 +8,8 @@ export const EXCHANGES = {
 
 export const QUEUES = {
   WALLET_COMMANDS: "wallet.commands.q",
+  WALLET_DEBIT: "wallet.debit.q",
+  WALLET_CREDIT: "wallet.credit.q",
   GAMES_WALLET_EVENTS: "games.wallet-events.q",
   WALLET_DLQ: "wallet.dlq",
   GAMES_DLQ: "games.dlq",
