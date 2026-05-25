@@ -29,3 +29,19 @@ export {
   MessagingClsModule,
   withMessagingContext,
 } from "./context/messaging-cls";
+export {
+  OutboxMessage,
+  OutboxMessageSchema,
+} from "./outbox/outbox-message.entity";
+export {
+  OUTBOX_STATUSES,
+  type OutboxStatus,
+} from "./outbox/outbox-status";
+export {
+  InboxMessage,
+  InboxMessageSchema,
+} from "./inbox/inbox-message.entity";
+export {
+  DeadLetterMessage,
+  DeadLetterMessageSchema,
+} from "./dead-letter/dead-letter-message.entity";
