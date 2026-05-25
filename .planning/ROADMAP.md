@@ -106,7 +106,7 @@ Plans:
 **Plans:** 10 plans
 Plans:
 - [x] 03-01-PLAN.md — Patch messaging-spine: OI-1 envelope unwrap + OI-3 txEm propagation; re-run Phase 2 tests
-- [ ] 03-02-PLAN.md — Wallet domain layer: Wallet + Transaction aggregates, errors, repository interfaces, unit tests
+- [x] 03-02-PLAN.md — Wallet domain layer: Wallet + Transaction aggregates, errors, repository interfaces, unit tests
 - [ ] 03-03-PLAN.md — MikroORM entities + migrations (wallets CHECK constraint, transactions UNIQUE message_id, FK)
 - [ ] 03-04-PLAN.md — JWT guard via jose JWKS + KEYCLOAK_* env trio + KC_HOSTNAME alignment + audience decision
 - [ ] 03-05-PLAN.md — REST: POST /wallets idempotent + GET /wallets/me, JwtGuard, nestjs-zod DTOs, ProvisionWalletUseCase
