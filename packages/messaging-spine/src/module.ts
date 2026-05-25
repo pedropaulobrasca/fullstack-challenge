@@ -22,6 +22,7 @@ import {
   type MessagingOptions,
 } from "./outbox/messaging-options";
 import { TopologyBootstrap } from "./topology/topology-bootstrap.service";
+import { buildQuorumArgs } from "./topology/topology-defaults";
 
 export interface MessagingSpineModuleAsyncOptions {
   imports?: ModuleMetadata["imports"];
@@ -32,20 +33,55 @@ export interface MessagingSpineModuleAsyncOptions {
 }
 
 @Module({})
-export class MessagingSpineModule {
+class MessagingOptionsModule {
   static forRootAsync(
     asyncOptions: MessagingSpineModuleAsyncOptions,
   ): DynamicModule {
     return {
+      module: MessagingOptionsModule,
+      global: true,
+      imports: [...(asyncOptions.imports ?? [])],
+      providers: [
+        {
+          provide: MESSAGING_OPTIONS,
+          useFactory: asyncOptions.useFactory,
+          inject: asyncOptions.inject ?? [],
+        },
+      ],
+      exports: [MESSAGING_OPTIONS],
+    };
+  }
+}
+
+@Module({})
+export class MessagingSpineModule {
+  static forRootAsync(
+    asyncOptions: MessagingSpineModuleAsyncOptions,
+  ): DynamicModule {
+    const optionsModule = MessagingOptionsModule.forRootAsync(asyncOptions);
+    return {
       module: MessagingSpineModule,
       imports: [
-        ...(asyncOptions.imports ?? []),
+        optionsModule,
         MessagingClsModule.forRoot(),
         RabbitMQModule.forRootAsync({
+          imports: [optionsModule],
           useFactory: (opts: MessagingOptions) => ({
             uri: opts.amqpUrl,
             connectionInitOptions: { wait: true, timeout: 30_000 },
             enableControllerDiscovery: true,
+            exchanges: opts.topology.exchangesToAssert.map((ex) => ({
+              name: ex.name,
+              type: ex.type,
+              options: { durable: ex.durable },
+            })),
+            queues: opts.topology.queuesToAssert.map((q) => ({
+              name: q.name,
+              options: {
+                durable: true,
+                arguments: buildQuorumArgs(q.deliveryLimit, q.dlx),
+              },
+            })),
           }),
           inject: [MESSAGING_OPTIONS],
         }),
@@ -56,11 +92,6 @@ export class MessagingSpineModule {
         ]),
       ],
       providers: [
-        {
-          provide: MESSAGING_OPTIONS,
-          useFactory: asyncOptions.useFactory,
-          inject: asyncOptions.inject ?? [],
-        },
         Logger,
         OutboxRepository,
         InboxRepository,
@@ -70,7 +101,7 @@ export class MessagingSpineModule {
         TopologyBootstrap,
       ],
       exports: [
-        MESSAGING_OPTIONS,
+        MessagingOptionsModule,
         OutboxRepository,
         InboxRepository,
         DeadLetterRepository,

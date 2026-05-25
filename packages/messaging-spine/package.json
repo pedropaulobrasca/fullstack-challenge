@@ -6,7 +6,8 @@
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./src/migrations/shared/*.sql": "./src/migrations/shared/*.sql"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
