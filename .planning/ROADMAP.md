@@ -81,7 +81,7 @@ Plans:
 - [ ] 02-03-PLAN.md — Envelope helpers + topology defaults + nestjs-cls module
 - [ ] 02-04-PLAN.md — OutboxRepository + OutboxListenerService + OutboxPublisher
 - [ ] 02-05-PLAN.md — InboxRepository + @IdempotentSubscribe + DeadLetterConsumer base
-- [ ] 02-06-PLAN.md — TopologyBootstrap + MessagingSpineModule composition
+- [x] 02-06-PLAN.md — TopologyBootstrap + MessagingSpineModule composition
 - [ ] 02-07-PLAN.md — Service wiring (env, migrations, AppModule, per-service DLQ consumers)
 - [ ] 02-08-PLAN.md — Unit tests (envelope, topology, inbox SQL, dead-letter, CLS)
 - [ ] 02-09-PLAN.md — Integration tests (6 scenarios via testcontainers + MessagingProbe)
