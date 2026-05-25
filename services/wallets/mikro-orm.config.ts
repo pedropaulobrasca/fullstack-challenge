@@ -5,14 +5,24 @@ import {
   InboxMessageSchema,
   DeadLetterMessageSchema,
 } from "@crash/messaging-spine";
+import { WalletEntitySchema } from "./src/infrastructure/persistence/wallet.entity";
+import { TransactionEntitySchema } from "./src/infrastructure/persistence/transaction.entity";
 
 export default defineConfig({
   clientUrl: process.env.DATABASE_URL ?? "",
-  entities: [OutboxMessageSchema, InboxMessageSchema, DeadLetterMessageSchema],
+  entities: [
+    OutboxMessageSchema,
+    InboxMessageSchema,
+    DeadLetterMessageSchema,
+    WalletEntitySchema,
+    TransactionEntitySchema,
+  ],
   entitiesTs: [
     OutboxMessageSchema,
     InboxMessageSchema,
     DeadLetterMessageSchema,
+    WalletEntitySchema,
+    TransactionEntitySchema,
   ],
   migrations: {
     path: "./src/infrastructure/mikro-orm/migrations",
