@@ -14,19 +14,19 @@
 
 **Core value**: Demonstrate senior-level engineering through a Crash Game that is correct, fair, real-time, and deeply considered — not a generic AI-assisted submission. Every decision must be defensible during the recruiter's arguição.
 
-**Current focus**: Phase 3 in progress (Wallet Service) — Wave 4 (P3.06 AMQP handlers + P3.08 property + use-case unit tests) complete. Remaining: 03-09 smoke probes, 03-10 ADRs.
+**Current focus**: Phase 3 complete (Wallet Service, 10/10 plans landed). Ready for `/gsd:verify-phase 3` then `/gsd:plan-phase 4` (Game Core, parallelizable with Phase 3 already done).
 
 ---
 
 ## Current Position
 
 - **Milestone**: 1 (initial submission)
-- **Phase**: 3 — Wallet Service (in progress, 8/10 plans complete inside the phase; 2/10 phases complete overall)
-- **Plan**: P3.08 complete → ROADMAP SC#5 locked (10_000-case fast-check property on the pure-domain Wallet aggregate confirms zero-net debit/credit sequences preserve the balance) + ProvisionWalletUseCase idempotency + SQLSTATE 23505 race contract under unit tests. Two commits — `681947c` (property test, fast-check ^3.23.0 devDep) and `bdd0779` (in-memory repo + fake EM unit tests). Property suite runs in ~170ms for 10k cases; unit suite 25/25 green.
-- **Status**: All five Phase 3 ROADMAP success criteria are observably true at code level (CHECK constraint, no-mutation REST surface, inbox-replay no-op, idempotent provisioning, 10k property test). Remaining work in P3.09 (smoke probes) and P3.10 (ADRs + closeout).
-- **Progress**: `▰▰▱▱▱▱▱▱▱▱` 2/10 phases complete (Phase 3 in progress: 8/10 plans)
+- **Phase**: 3 — Wallet Service (complete, 10/10 plans landed; 3/10 phases complete overall)
+- **Plan**: P3.10 complete. All 10 Phase 3 plans landed. Wallet bounded context functional: domain aggregates (Wallet snapshot + immutable Transaction ledger), atomic conditional UPDATE bound to `txEm` transaction context, JWT guard via `jose` cached JWKS, REST provisioning + balance read endpoints behind `JwtGuard`, AMQP debit/credit consumers via `@IdempotentSubscribe` with same-TX guarantee across four writes, Kong route narrowing to exclude mutation paths at the gateway, ADRs 011/012/013 landed. STATE + ROADMAP advanced. 26/26 smoke probes pass against the live docker stack; 15/15 integration tests (`INTEGRATION=1 bun test services/wallets/tests/integration`); 10_000-case fast-check property test under ~170ms; 61/61 messaging-spine unit tests still green.
+- **Status**: All five Phase 3 ROADMAP success criteria observably true end-to-end (CHECK constraint at the DB, no-mutation REST surface verified at Kong + smoke probe 26, inbox-replay no-op proved by `inbox-replay.test.ts`, idempotent provisioning proved by `provision-wallet.test.ts` + smoke probe 24, 10k property test green in P3.08).
+- **Progress**: `▰▰▰▱▱▱▱▱▱▱` 3/10 phases complete
 
-**Next action**: Plan 03-09 (smoke-health probes 23-25 for token + provision + GET /wallets/me + Kong mutation block) is the last verification gate before P3.10 closeout.
+**Next action**: Run `/gsd:verify-phase 3` (goal-backward audit against ROADMAP Phase 3 Success Criteria) then `/gsd:plan-phase 4` (Game Core domain) — Phase 4 can run in parallel with the verifier work since the Game core has no Wallet dependency at the domain layer.
 
 ---
 
@@ -35,12 +35,12 @@
 | Metric | Value |
 |--------|-------|
 | Phases planned | 10 |
-| Phases complete | 2 / 10 |
+| Phases complete | 3 / 10 |
 | v1 requirements mapped | 95 / 95 (100%) |
-| v1 requirements complete | 10 / 95 (REQ-AUTH-04 + REQ-AUTH-05 + REQ-WALL-01 + REQ-WALL-02 + REQ-WALL-03 + REQ-WALL-04 + REQ-WALL-05 + REQ-WALL-06 + REQ-SAGA-05 + REQ-SAGA-06) |
+| v1 requirements complete | 12 / 95 (REQ-AUTH-04 + REQ-AUTH-05 + REQ-WALL-01 + REQ-WALL-02 + REQ-WALL-03 + REQ-WALL-04 + REQ-WALL-05 + REQ-WALL-06 + REQ-WALL-07 + REQ-SAGA-05 + REQ-SAGA-06 + REQ-DOM-03) |
 | Stretch backlog items | 8 |
-| ADRs landed | 10 (Phase 1: 6, Phase 2: 4) |
-| ADRs anticipated | 30+ (Phase 1: 6, Phase 2: 4, Phase 3: 2, Phase 4: 4, Phase 5: 2, Phase 6: 3, Phase 7: 4, Phase 8: 2, Phase 9: 3, Phase 10: 3) |
+| ADRs landed | 13 (Phase 1: 6, Phase 2: 4, Phase 3: 3) |
+| ADRs anticipated | 30+ (Phase 1: 6, Phase 2: 4, Phase 3: 3, Phase 4: 4, Phase 5: 2, Phase 6: 3, Phase 7: 4, Phase 8: 2, Phase 9: 3, Phase 10: 3) |
 | Critical pitfalls addressed pre-saga | 5 / 5 (C1-C5 covered in Phases 1-4) |
 | Phases with UI hint | 3 (Phases 7, 8, 9) |
 
@@ -86,7 +86,7 @@ See `.planning/REQUIREMENTS.md` Open Configuration Values table. All 14 constant
 |-------|-------|--------|-------|
 | 1. Foundation & Infra | 10 / 10 plans landed (P1.10 smoke test green) | Implementation complete, verifier pending | All seven smoke probes pass cold and warm |
 | 2. Outbox/Inbox Messaging Spine | 10 / 10 plans landed (P2.10 ADRs + closeout) | Implementation complete, verifier pending | `@crash/messaging-spine` wired into both services; 4 ADRs landed; 22/22 smoke probes; unit + integration tests green |
-| 3. Wallet Service | 8 / 10 plans landed (P3.01 spine OI, P3.02 domain, P3.03 schema, P3.04 JWT guard, P3.05 REST surface, P3.06 AMQP handlers + atomic UPDATE repo, P3.07 Kong narrowing, P3.08 property + use-case unit tests) | In progress | Five ROADMAP success criteria observably true at code level; remaining: smoke probes (P3.09) + ADRs/closeout (P3.10) |
+| 3. Wallet Service | 10 / 10 plans landed (P3.10 ADRs + closeout) | Complete | All 10 Phase 3 plans landed; 26/26 smoke probes; 15/15 integration tests; 10k fast-check property green; ADRs 011/012/013 authored |
 | 4. Game Core (domain only) | — | Not started | Parallel with Phase 3 (post Phase 2) |
 | 5. Saga Integration | — | Not started | Depends on Phase 3 + Phase 4 |
 | 6. WebSocket Gateway & Multiplier Sync | — | Not started | Depends on Phase 5 |
@@ -97,6 +97,8 @@ See `.planning/REQUIREMENTS.md` Open Configuration Values table. All 14 constant
 
 ### Recent activity
 
+- **2026-05-25** — P3.10 (Phase 3 closeout) executed: ADR-011 (ledger model — Wallet snapshot + immutable Transaction aggregate, written together in a single Postgres TX over event sourcing or transactions-only-no-snapshot), ADR-012 (JWT validation via `jose@^6.2.3` `createRemoteJWKSet` + `jwtVerify` over `passport-jwt + jwks-rsa + @nestjs/passport` chain or Kong JWT plugin; audience strategy Option B = `account`), ADR-013 (`@IdempotentSubscribe` propagates the transactional EM as the wrapped handler's third positional argument + `OutboxRepository.add(env, route, em?)` accepts an optional EM — spine public API minor-version change) authored under `.planning/adrs/`. ADR catalogue README extended with the Phase 3 section linking all three; "Future ADRs" rewound to ADR-014+ and Phase 3's entry removed from the anticipated catalogue. STATE + ROADMAP advanced to Phase 3 complete (3/10 phases). REQUIREMENTS traceability marked REQ-DOM-03 + REQ-WALL-07 as Done (REQ-AUTH-04, REQ-WALL-01..04 were already marked Complete by their respective plans); v1-complete count incremented from 10 to 12 (+REQ-DOM-03 + REQ-WALL-07). Phase 3 is provably complete: 10/10 plans landed, three ADRs, 26/26 smoke probes, 15/15 integration tests, 10_000-case fast-check property under ~170ms, 61/61 messaging-spine unit tests still green. Re-verification gates passed locally for this closeout: `bun test packages/messaging-spine/tests/unit` → 61/61 pass / 0 fail / 114 expect() calls in ~178ms. Lint surfaced 35 errors in `services/wallets/tests/integration/*.test.ts` + `tests/unit/provision-wallet.use-case.test.ts` (pre-existing `no-restricted-properties` violations against `process.env` access in test fixtures — out of P3.10 scope, logged to `phases/03-wallet-service/deferred-items.md` for the verifier). Integration suite was not re-run by this plan because it requires `docker:up` to be live (the suite was 15/15 green in P3.09 with the stack up; P3.10 is offline ADR + memory work). One commit (this plan's per-task #1): `e58e8de docs(adrs): ADR-011, ADR-012, ADR-013 for Phase 3 closeout`.
+- **2026-05-25** — P3.09 (wallet integration tests + smoke probes 23-26) executed: six integration test files under `services/wallets/tests/integration/` (`provision-wallet`, `jwt-guard`, `wallet-debit`, `wallet-credit`, `wallet-debit-rejected`, `inbox-replay`) covering all five Phase 3 ROADMAP success criteria; 15/15 pass / 31 expect() in ~3.85s. Smoke probes 23-26 added to `scripts/smoke-health.sh`: 23 Keycloak password grant returns access token, 24 POST /wallets via Kong is idempotent (first call → 201/200, second call → 200 no-op), 25 GET /wallets/me returns `balance.amount === "100000"`, 26 POST /wallets/me/debit returns Kong-origin 404 (mutation blocked at gateway). `bun run smoke:health` → 26/26 pass against the live docker stack. Critical Rule-1 bug found and fixed during execution: `applyDebitAtomically` / `applyCreditAtomically` raw SQL via `em.getConnection().execute(sql, params)` ran on the pool's autocommit connection — outside the decorator's open TX — so the wallet UPDATE committed BEFORE the Transaction insert + outbox row, breaking the same-TX guarantee. Fixed by binding the raw SQL to the decorator's TX context via `em.getConnection().execute(sql, params, "all", em.getTransactionContext())`. Commits: `1735d8e`, `68dd908`, `4b3aceb`, `6ac05b8`, `edb4560`, `5678c0f`, `0a5a1f1`.
 - **2026-05-25** — P3.08 (property test + ProvisionWalletUseCase idempotency unit tests) executed in Wave 4 in parallel with P3.06. Two commits — `681947c` (`services/wallets/tests/property/wallet-zero-net.test.ts`, `fast-check ^3.23.0` devDep on the wallets service) and `bdd0779` (`services/wallets/tests/unit/provision-wallet.use-case.test.ts`). Property: 10_000 fast-check cases against the pure-domain Wallet aggregate; padding logic prepends a CREDIT when a debit would exceed balance AND counts that credit in the running net so the final balancer keeps the sequence at zero net; final assertion `wallet.balance.toCents() === initialCents`; sanity test (W7 plan-check) wraps a deliberately wrong predicate in `expect(fc.assert(...)).rejects.toThrow()` proving the property machinery detects regressions. Mid-execution side-channel confirmation: temporarily injected an off-by-one into `Wallet.debit` (`nextBalance.add(Money.of(1n))`); fast-check shrunk to a 1-DEBIT counter-example within ~10 attempts; bug reverted before commit. Unit suite covers create-at-INITIAL_BALANCE_CENTS, second-call idempotency, distinct playerIds → distinct walletIds, SQLSTATE 23505 race resolution, em.transactional invocation count. Two Rule-3 deviations: (1) fast-check aligned to `^3.23.0` (shared-kernel's range) instead of plan's 4.8.0 to avoid workspace version drift; the 3.x API used in the test design is exhaustive; (2) test bootstraps env via top-of-file `process.env.X ??= ...` + dynamic import inside `beforeAll` because Bun's test runner doesn't auto-load `.env` and the runtime file is stale on KEYCLOAK_* keys. Property suite 10003 expect() in 170ms, unit suite 14 expect() in 180ms; all 25 unit tests across the wallets service green.
 - **2026-05-25** — P3.06 (mutation repository + AMQP debit/credit handlers) landed in parallel Wave 4. Commits `7884b4e` (atomic UPDATE applyDebit/applyCredit + Transaction append) and `6278d38` (WalletDebitHandler + WalletCreditHandler via `@IdempotentSubscribe`). Closes the AMQP-side of REQ-WALL-04.
 - **2026-05-25** — P3.07 (Kong wallets route narrowing) executed: `docker/kong/kong.yml` wallets-service block replaced with two named, method-constrained, regex-anchored routes (`wallets-provision` POST `~/wallets$`, `wallets-me` GET `~/wallets/me$`). Two commits — `ae853d0` (initial narrowing with plain prefix paths) and `fdd5ec5` (Rule 1 deviation: plain prefix leaked POST /wallets/me/debit to the service, switched to PCRE-anchored regex paths to force exact-match). Live probe matrix records 5/5 mutation methods/paths returning Kong-origin 404 (`no Route matched with those values` + `request_id`), 2/2 allowed paths forwarding to wallets:4002, games-routes untouched. Admin API confirms exactly three loaded routes: `wallets-provision`, `wallets-me`, `games-routes`. REQ-WALL-04 closed at the perimeter; the AMQP-side closure (debit/credit only via RabbitMQ) is still owned by Plan 03-06. P3.09 smoke probes will lift this matrix verbatim once P3.05 controllers land in the container image.
@@ -116,4 +118,4 @@ See `.planning/REQUIREMENTS.md` Open Configuration Values table. All 14 constant
 
 ---
 
-*Last updated: 2026-05-25 by gsd-executor (P3.08 — fast-check 10k zero-net property + ProvisionWalletUseCase idempotency & 23505 race unit tests; ROADMAP SC#5 locked).*
+*Last updated: 2026-05-25 by gsd-executor (P3.10 — Phase 3 closeout, ADR-011/012/013 + STATE/ROADMAP/REQUIREMENTS advanced to 3/10 phases complete).*

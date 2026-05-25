@@ -24,6 +24,14 @@ Each ADR records the constraints that drove the decision, the alternatives that 
 | [ADR-009](./ADR-009-dlx-with-delivery-limit-on-dlq.md) | DLX with `x-delivery-limit` on the DLQ itself (quorum queues) | 2 | Accepted | Every main queue is quorum with `x-delivery-limit=RMQ_DELIVERY_LIMIT_MAIN` (5) + `x-dead-letter-exchange=<dlx>`; every DLQ is quorum with `x-delivery-limit=RMQ_DELIVERY_LIMIT_DLQ` (3) — bounded poison absorption, no cluster-degradation loops. |
 | [ADR-010](./ADR-010-listen-notify-dedicated-pg-client.md) | Dedicated `pg.Client` for LISTEN/NOTIFY outside MikroORM pool | 2 | Accepted | `OutboxListenerService` owns a `new pg.Client(...)` separate from MikroORM's pool with reconnect + 30s `SELECT 1` watchdog; avoids pool starvation that LISTEN's connection-pinning would cause. |
 
+## Phase 3 — Wallet Service
+
+| ADR | Title | Phase | Status | Summary |
+|-----|-------|-------|--------|---------|
+| [ADR-011](./ADR-011-ledger-model-wallet-snapshot.md) | Ledger model — Wallet snapshot + immutable Transaction aggregate over event sourcing | 3 | Accepted | `wallets.balance_cents` carries the mutable snapshot (with `CHECK (balance_cents >= 0)` defence-in-depth); every debit/credit appends an immutable `transactions` row referencing `correlationId` + `message_id` (UNIQUE) in the same Postgres TX; O(1) reads, audit trail intact, no event-sourcing rebuild cost. |
+| [ADR-012](./ADR-012-jwt-validation-via-cached-jwks.md) | JWT validation via `jose` + cached JWKS at each service over passport-jwt + Kong JWT plugin | 3 | Accepted | Per-service `JwtGuard implements CanActivate` using `jose@^6.2.3` `createRemoteJWKSet` (10-minute `cacheMaxAge`, 30-second `cooldownDuration`) + `jwtVerify`; single dependency, no Passport-decorator + Bun-SWC friction; `KEYCLOAK_AUDIENCE=account` (Option B — accept Keycloak's default for public PKCE clients without a realm mapper). |
+| [ADR-013](./ADR-013-idempotent-subscribe-propagates-tx-em.md) | `@IdempotentSubscribe` propagates `txEm` to the handler signature | 3 | Accepted | Decorator passes the transactional `EntityManager` as the third positional argument to wrapped handlers; `OutboxRepository.add(env, route, em?)` accepts an optional EM — handlers thread `txEm` through all four writes (inbox claim, wallet UPDATE, transaction append, outbox row) so they commit in one Postgres TX. Spine public API change (minor). |
+
 ## Conventions
 
 - **Filename**: `ADR-NNN-<kebab-slug>.md` where NNN is a zero-padded three-digit sequence number. ADRs are numbered globally across the project (not per phase).
@@ -34,10 +42,9 @@ Each ADR records the constraints that drove the decision, the alternatives that 
 
 ## Future ADRs
 
-Subsequent phases append ADR-011+ as decisions land. The anticipated catalogue is enumerated in `.planning/ROADMAP.md` under each phase's "Key decisions to make" list. Examples:
+Subsequent phases append ADR-014+ as decisions land. The anticipated catalogue is enumerated in `.planning/ROADMAP.md` under each phase's "Key decisions to make" list. Examples:
 
-- Phase 3: wallet aggregate persistence shape; transaction-row representation for credits and debits.
-- Phase 4: round FSM transition policy; provably-fair hash chain length; `multiply` rounding mode for cashout payouts (ADR-011).
+- Phase 4: round FSM transition policy; provably-fair hash chain length; `multiply` rounding mode for cashout payouts; bet-is-its-own-aggregate vs nested-in-Round; recursive `setTimeout` round loop vs `setInterval` / worker thread.
 - Phase 5: saga state-machine persistence; compensation policy for insufficient-funds and timeout cases.
 - Phase 6: WebSocket room granularity; tick-rate and reconciliation policy.
 - Phase 7: frontend routing and auth-loader pattern; canvas renderer life-cycle.
