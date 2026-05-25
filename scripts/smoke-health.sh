@@ -107,7 +107,63 @@ probe_wallets_health() {
   fi
 }
 
-echo "Running Phase 1 smoke probes against local stack..."
+probe_table_exists() {
+  local label="$1"
+  local db="$2"
+  local table="$3"
+  local name="postgres table ${db}.${table}"
+  local result
+  result=$(docker compose exec -T postgres psql -U admin -d "${db}" -tAc "SELECT to_regclass('public.${table}') IS NOT NULL" 2>/dev/null || echo "ERR")
+  if [[ "${result}" == "t" ]]; then
+    record_pass "${name}"
+  else
+    record_fail "${name}" "expected to_regclass to return t, got '${result}'"
+  fi
+}
+
+probe_outbox_tables() {
+  probe_table_exists "outbox" "games" "outbox"
+  probe_table_exists "outbox" "wallets" "outbox"
+}
+
+probe_inbox_tables() {
+  probe_table_exists "inbox" "games" "inbox"
+  probe_table_exists "inbox" "wallets" "inbox"
+}
+
+probe_dead_letter_tables() {
+  probe_table_exists "dead_letter_messages" "games" "dead_letter_messages"
+  probe_table_exists "dead_letter_messages" "wallets" "dead_letter_messages"
+}
+
+probe_rabbitmq_object() {
+  local kind="$1"
+  local vhost_encoded="$2"
+  local objname="$3"
+  local name="rabbitmq ${kind} ${objname}"
+  local code
+  code=$(curl -s -u admin:admin -o /dev/null -w "%{http_code}" "http://localhost:15672/api/${kind}/${vhost_encoded}/${objname}" || echo "000")
+  if [[ "${code}" == "200" ]]; then
+    record_pass "${name}"
+  else
+    record_fail "${name}" "expected HTTP 200, got ${code}"
+  fi
+}
+
+probe_rabbitmq_topology() {
+  local vhost="%2F"
+  probe_rabbitmq_object "exchanges" "${vhost}" "wallet.commands"
+  probe_rabbitmq_object "exchanges" "${vhost}" "wallet.events"
+  probe_rabbitmq_object "exchanges" "${vhost}" "wallet.dlx"
+  probe_rabbitmq_object "exchanges" "${vhost}" "game.events"
+  probe_rabbitmq_object "exchanges" "${vhost}" "game.dlx"
+  probe_rabbitmq_object "queues" "${vhost}" "wallet.commands.q"
+  probe_rabbitmq_object "queues" "${vhost}" "wallet.dlq"
+  probe_rabbitmq_object "queues" "${vhost}" "games.wallet-events.q"
+  probe_rabbitmq_object "queues" "${vhost}" "games.dlq"
+}
+
+echo "Running Phase 1+2 smoke probes against local stack..."
 echo
 
 probe_postgres
@@ -117,6 +173,10 @@ probe_keycloak_token
 probe_kong
 probe_games_health
 probe_wallets_health
+probe_outbox_tables
+probe_inbox_tables
+probe_dead_letter_tables
+probe_rabbitmq_topology
 
 TOTAL=$((PASS + FAIL))
 echo
