@@ -10,6 +10,17 @@ import type {
 import { WalletEntitySchema, WalletRow } from "../persistence/wallet.entity";
 import { env } from "../../config/defaults";
 
+type UpdateReturningRow = {
+  id: string;
+  balance_cents: string;
+  previous_balance_cents: string;
+};
+
+type SelectBalanceRow = {
+  id: string;
+  balance_cents: string;
+};
+
 @Injectable()
 export class MikroWalletRepository implements WalletRepository {
   constructor(private readonly em: EntityManager) {}
@@ -39,11 +50,90 @@ export class MikroWalletRepository implements WalletRepository {
     await this.em.flush();
   }
 
-  applyDebitAtomically(): Promise<ApplyDebitResult> {
-    throw new Error("not yet implemented — see Plan 03-06");
+  async applyDebitAtomically(
+    playerId: PlayerId,
+    amount: Money,
+    txEm?: unknown,
+  ): Promise<ApplyDebitResult> {
+    const em = this.resolveEm(txEm);
+    const cents = amount.toCents().toString();
+    const rows = await em
+      .getConnection()
+      .execute<UpdateReturningRow[]>(
+        `UPDATE wallets
+         SET balance_cents = balance_cents - ?, updated_at = now()
+         WHERE player_id = ? AND balance_cents >= ?
+         RETURNING id, balance_cents, (balance_cents + ?) AS previous_balance_cents`,
+        [cents, playerId, cents, cents],
+      );
+
+    if (rows.length === 0) {
+      return this.resolveDebitMiss(em, playerId);
+    }
+
+    const row = rows[0]!;
+    return {
+      kind: "OK",
+      walletId: WalletId(row.id),
+      newBalance: Money.of(BigInt(row.balance_cents)),
+      previousBalance: Money.of(BigInt(row.previous_balance_cents)),
+    };
   }
 
-  applyCreditAtomically(): Promise<ApplyCreditResult> {
-    throw new Error("not yet implemented — see Plan 03-06");
+  async applyCreditAtomically(
+    playerId: PlayerId,
+    amount: Money,
+    txEm?: unknown,
+  ): Promise<ApplyCreditResult> {
+    const em = this.resolveEm(txEm);
+    const cents = amount.toCents().toString();
+    const rows = await em
+      .getConnection()
+      .execute<UpdateReturningRow[]>(
+        `UPDATE wallets
+         SET balance_cents = balance_cents + ?, updated_at = now()
+         WHERE player_id = ?
+         RETURNING id, balance_cents, (balance_cents - ?) AS previous_balance_cents`,
+        [cents, playerId, cents],
+      );
+
+    if (rows.length === 0) {
+      return { kind: "NOT_FOUND" };
+    }
+
+    const row = rows[0]!;
+    return {
+      kind: "OK",
+      walletId: WalletId(row.id),
+      newBalance: Money.of(BigInt(row.balance_cents)),
+      previousBalance: Money.of(BigInt(row.previous_balance_cents)),
+    };
+  }
+
+  private resolveEm(txEm: unknown): EntityManager {
+    if (txEm && txEm instanceof EntityManager) {
+      return txEm;
+    }
+    return this.em;
+  }
+
+  private async resolveDebitMiss(
+    em: EntityManager,
+    playerId: PlayerId,
+  ): Promise<ApplyDebitResult> {
+    const rows = await em
+      .getConnection()
+      .execute<SelectBalanceRow[]>(
+        `SELECT id, balance_cents FROM wallets WHERE player_id = ?`,
+        [playerId],
+      );
+    if (rows.length === 0) {
+      return { kind: "NOT_FOUND" };
+    }
+    const row = rows[0]!;
+    return {
+      kind: "INSUFFICIENT_FUNDS",
+      available: Money.of(BigInt(row.balance_cents)),
+    };
   }
 }

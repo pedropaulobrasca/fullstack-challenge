@@ -14,8 +14,12 @@ import { HealthController } from "./presentation/controllers/health.controller";
 import { WalletsDeadLetterConsumer } from "./infrastructure/messaging/wallets-dead-letter.consumer";
 import { JwtGuard } from "./presentation/guards/jwt.guard";
 import { ProvisionWalletUseCase } from "./application/use-cases/provision-wallet.use-case";
-import { WALLET_REPOSITORY } from "./application/use-cases/tokens";
+import {
+  TRANSACTION_REPOSITORY,
+  WALLET_REPOSITORY,
+} from "./application/use-cases/tokens";
 import { MikroWalletRepository } from "./infrastructure/repositories/mikro-wallet.repository";
+import { MikroTransactionRepository } from "./infrastructure/repositories/mikro-transaction.repository";
 
 @Module({
   imports: [
@@ -73,6 +77,7 @@ import { MikroWalletRepository } from "./infrastructure/repositories/mikro-walle
     JwtGuard,
     ProvisionWalletUseCase,
     { provide: WALLET_REPOSITORY, useClass: MikroWalletRepository },
+    { provide: TRANSACTION_REPOSITORY, useClass: MikroTransactionRepository },
     { provide: APP_PIPE, useClass: ZodValidationPipe },
   ],
 })
