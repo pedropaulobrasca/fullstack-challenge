@@ -13,6 +13,7 @@ const walletsEnvSchema = sharedEnvSchema.extend({
   PORT: z.coerce.number().int().positive().default(4002),
   INITIAL_BALANCE_CENTS: bigIntFromString.default("100000"),
   OUTBOX_POLL_INTERVAL_MS: z.coerce.number().int().positive().default(1000),
+  OUTBOX_POLL_BATCH_SIZE: z.coerce.number().int().positive().default(100),
   RMQ_DELIVERY_LIMIT_MAIN: z.coerce.number().int().positive().default(5),
   RMQ_DELIVERY_LIMIT_DLQ: z.coerce.number().int().positive().default(3),
 });
