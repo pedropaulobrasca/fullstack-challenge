@@ -20,6 +20,8 @@ import {
 } from "./application/use-cases/tokens";
 import { MikroWalletRepository } from "./infrastructure/repositories/mikro-wallet.repository";
 import { MikroTransactionRepository } from "./infrastructure/repositories/mikro-transaction.repository";
+import { WalletDebitHandler } from "./application/handlers/wallet-debit.handler";
+import { WalletCreditHandler } from "./application/handlers/wallet-credit.handler";
 
 @Module({
   imports: [
@@ -78,6 +80,8 @@ import { MikroTransactionRepository } from "./infrastructure/repositories/mikro-
     ProvisionWalletUseCase,
     { provide: WALLET_REPOSITORY, useClass: MikroWalletRepository },
     { provide: TRANSACTION_REPOSITORY, useClass: MikroTransactionRepository },
+    WalletDebitHandler,
+    WalletCreditHandler,
     { provide: APP_PIPE, useClass: ZodValidationPipe },
   ],
 })
