@@ -14,19 +14,19 @@
 
 **Core value**: Demonstrate senior-level engineering through a Crash Game that is correct, fair, real-time, and deeply considered — not a generic AI-assisted submission. Every decision must be defensible during the recruiter's arguição.
 
-**Current focus**: Phase 2 complete; ready for Phase 3 (Wallet Service) or Phase 4 (Game Core) — parallelizable.
+**Current focus**: Phase 3 in progress (Wallet Service) — Plan 03-01 landed; Plan 03-02 (Wallet domain layer) is next.
 
 ---
 
 ## Current Position
 
 - **Milestone**: 1 (initial submission)
-- **Phase**: 2 — Outbox/Inbox Messaging Spine (complete)
-- **Plan**: P2.10 complete → ADR-007 through ADR-010 landed, STATE + ROADMAP advanced
-- **Status**: All 10 Phase 2 plans landed. `@crash/messaging-spine` wired into both services; 6 MikroORM migrations sourcing canonical SQL fragments; quorum queues + DLX exchanges asserted with correct arguments; integration tests (P2.9) cover the six scenarios via testcontainers + `MessagingProbe`; unit tests (P2.8) green; smoke-health 22/22 probes pass on cold + warm boot
+- **Phase**: 3 — Wallet Service (in progress, 1/10 plans complete)
+- **Plan**: P3.01 complete → messaging-spine OI-1 + OI-3 + W3 patches landed; unit suite 61/61, integration suite 6/6 green
+- **Status**: Decorator unwraps wire envelope (handlers see `envelope.payload.x` directly), `txEm` threaded as third arg, `OutboxRepository.add(env, route, em?)` accepts optional EM. Five Phase 2 integration test probes updated to the new shape. Public-API change for ADR-013 (Plan 03-10).
 - **Progress**: `▰▰▱▱▱▱▱▱▱▱` 2/10 phases complete
 
-**Next action**: Run `/gsd:verify-phase 2` for the goal-backward audit, then `/gsd:plan-phase 3` (Wallet Service) and `/gsd:plan-phase 4` (Game Core) — these two phases parallelize.
+**Next action**: Execute Plan 03-02 (Wallet domain layer: aggregates, errors, repository interfaces, unit tests) — it has no dependencies on 03-01 (which only patched the spine) and can run in Wave 2 alongside 03-03 / 03-04.
 
 ---
 
@@ -86,7 +86,7 @@ See `.planning/REQUIREMENTS.md` Open Configuration Values table. All 14 constant
 |-------|-------|--------|-------|
 | 1. Foundation & Infra | 10 / 10 plans landed (P1.10 smoke test green) | Implementation complete, verifier pending | All seven smoke probes pass cold and warm |
 | 2. Outbox/Inbox Messaging Spine | 10 / 10 plans landed (P2.10 ADRs + closeout) | Implementation complete, verifier pending | `@crash/messaging-spine` wired into both services; 4 ADRs landed; 22/22 smoke probes; unit + integration tests green |
-| 3. Wallet Service | — | Not started | Parallel with Phase 4 (post Phase 2) |
+| 3. Wallet Service | 1 / 10 plans landed (P3.01 — messaging-spine OI patches) | In progress | OI-1 + OI-3 + W3 closed; spine ready for Phase 3 handlers |
 | 4. Game Core (domain only) | — | Not started | Parallel with Phase 3 (post Phase 2) |
 | 5. Saga Integration | — | Not started | Depends on Phase 3 + Phase 4 |
 | 6. WebSocket Gateway & Multiplier Sync | — | Not started | Depends on Phase 5 |
@@ -97,6 +97,7 @@ See `.planning/REQUIREMENTS.md` Open Configuration Values table. All 14 constant
 
 ### Recent activity
 
+- **2026-05-25** — P3.01 (messaging-spine OI follow-ups) executed: closed OI-1 (envelope unwrap), OI-3 (txEm propagation to handler), and W3 (`OutboxRepository.add` accepts optional EM). Three commits — `d0ebe44` (RED unit regressions: 3 fail / 2 pass against unpatched decorator), `ff110d5` (GREEN patch — decorator + outbox repo + docstring), `1eb453a` (integration tests updated: 5 of 6 probes peeled by one hop, 10 lines net). Final suite: 61 unit pass + 6 integration pass + typecheck clean. Public-API change documented for ADR-013 (handler third-arg `txEm` is part of the spine's surface).
 - **2026-05-24** — P2.10 (Phase 2 closeout) executed: ADR-007 (hand-rolled `@crash/messaging-spine` over `nestjs-outbox` / `pg-transactional-outbox`), ADR-008 (`amqplib` raw publisher + `@golevelup/nestjs-rabbitmq` consumer split), ADR-009 (DLX with `x-delivery-limit` on the DLQ itself, quorum queues), ADR-010 (dedicated `pg.Client` for LISTEN/NOTIFY outside MikroORM pool) authored; ADR catalogue README extended with the Phase 2 section; STATE + ROADMAP advanced to Phase 2 complete (2/10); REQUIREMENTS traceability marked REQ-WALL-05, REQ-WALL-06, REQ-SAGA-05, REQ-SAGA-06 as Done. Phase 2 is provably complete: 10/10 plans, 4 ADRs, integration tests green, smoke-health 22/22.
 - **2026-05-24** — P2.9 (integration tests) executed in parallel with P2.10 (Wave 7). Six scenarios via testcontainers + `MessagingProbe`.
 - **2026-05-24** — P2.8 (unit tests) executed: 5 unit suites (envelope, topology, inbox SQL, dead-letter, CLS) landed under `packages/messaging-spine/tests/unit/`. Commits `d7c9048`, `536cf70`, `4004ca0`.
@@ -111,4 +112,4 @@ See `.planning/REQUIREMENTS.md` Open Configuration Values table. All 14 constant
 
 ---
 
-*Last updated: 2026-05-24 by gsd-executor (P2.10 — Phase 2 closeout).*
+*Last updated: 2026-05-25 by gsd-executor (P3.01 — messaging-spine OI follow-ups).*
