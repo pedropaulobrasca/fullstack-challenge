@@ -25,12 +25,10 @@ export abstract class DeadLetterConsumer {
       : [];
     const firstDeath = xDeath[0] ?? {};
 
-    const originalQueue = String(
-      firstDeath.queue ?? msg?.fields?.routingKey ?? "unknown",
-    );
-    const originalExchange = String(
-      firstDeath.exchange ?? msg?.fields?.exchange ?? "unknown",
-    );
+    const originalQueue =
+      String(firstDeath.queue ?? msg?.fields?.routingKey ?? "") || "unknown";
+    const originalExchange =
+      String(firstDeath.exchange ?? msg?.fields?.exchange ?? "") || "unknown";
     const routingKeysRaw = firstDeath["routing-keys"];
     const firstRoutingKey = Array.isArray(routingKeysRaw)
       ? (routingKeysRaw[0] as string | undefined)
