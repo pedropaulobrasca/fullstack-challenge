@@ -12,7 +12,15 @@ services:
   - name: wallets-service
     url: http://wallets:4002
     routes:
-      - name: wallets-routes
+      - name: wallets-provision
         paths:
           - /wallets
+        methods:
+          - POST
+        strip_path: true
+      - name: wallets-me
+        paths:
+          - /wallets/me
+        methods:
+          - GET
         strip_path: true
