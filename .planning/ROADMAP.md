@@ -110,9 +110,9 @@ Plans:
 - [x] 03-03-PLAN.md — MikroORM entities + migrations (wallets CHECK constraint, transactions UNIQUE message_id, FK)
 - [x] 03-04-PLAN.md — JWT guard via jose JWKS + KEYCLOAK_* env trio + KC_HOSTNAME alignment + audience decision
 - [x] 03-05-PLAN.md — REST: POST /wallets idempotent + GET /wallets/me, JwtGuard, nestjs-zod DTOs, ProvisionWalletUseCase
-- [ ] 03-06-PLAN.md — AMQP debit/credit handlers via @IdempotentSubscribe, atomic conditional UPDATE, Transaction + outbox same-TX
+- [x] 03-06-PLAN.md — AMQP debit/credit handlers via @IdempotentSubscribe, atomic conditional UPDATE, Transaction + outbox same-TX
 - [x] 03-07-PLAN.md — Kong route narrowing (POST /wallets + GET /wallets/me only; mutation paths return 404 at gateway)
-- [ ] 03-08-PLAN.md — Property test (fast-check 10k zero-net) + ProvisionWalletUseCase idempotency unit tests
+- [x] 03-08-PLAN.md — Property test (fast-check 10k zero-net) + ProvisionWalletUseCase idempotency unit tests
 - [ ] 03-09-PLAN.md — Integration tests (6 scenarios) + smoke-health probes 23-26 + live walkthrough checkpoint
 - [ ] 03-10-PLAN.md — ADR-011 + ADR-012 + ADR-013 + STATE/ROADMAP/REQUIREMENTS closeout
 
