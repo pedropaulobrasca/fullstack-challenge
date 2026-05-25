@@ -9,7 +9,7 @@
 ## Phases
 
 - [ ] **Phase 1: Foundation & Infra** — Docker bootstrap, shared kernel (Money VO), contracts package, ESLint money guard, ADR scaffolding
-- [ ] **Phase 2: Outbox/Inbox Messaging Spine** — Hand-rolled transactional outbox/inbox, quorum queues + DLX, publisher confirms
+- [x] **Phase 2: Outbox/Inbox Messaging Spine** — Hand-rolled transactional outbox/inbox, quorum queues + DLX, publisher confirms
 - [ ] **Phase 3: Wallet Service** — Wallet + Transaction aggregates, REST provisioning, AMQP debit/credit consumers, ledger model
 - [ ] **Phase 4: Game Core (domain only)** — Round + Bet aggregates, provably-fair hash chain, autonomous round loop with crash recovery
 - [ ] **Phase 5: Saga Integration** — End-to-end bet + cashout sagas, persistent saga state, kill-9 recovery, timeout compensation
@@ -76,16 +76,16 @@ Plans:
   - ADR-010: Dedicated `pg.Client` for LISTEN/NOTIFY (separate from MikroORM pool)
 **Plans:** 10 plans
 Plans:
-- [ ] 02-01-PLAN.md — Workspace package scaffold + dependency installs
-- [ ] 02-02-PLAN.md — Outbox/Inbox/DeadLetter entities + canonical SQL fragments
-- [ ] 02-03-PLAN.md — Envelope helpers + topology defaults + nestjs-cls module
-- [ ] 02-04-PLAN.md — OutboxRepository + OutboxListenerService + OutboxPublisher
-- [ ] 02-05-PLAN.md — InboxRepository + @IdempotentSubscribe + DeadLetterConsumer base
+- [x] 02-01-PLAN.md — Workspace package scaffold + dependency installs
+- [x] 02-02-PLAN.md — Outbox/Inbox/DeadLetter entities + canonical SQL fragments
+- [x] 02-03-PLAN.md — Envelope helpers + topology defaults + nestjs-cls module
+- [x] 02-04-PLAN.md — OutboxRepository + OutboxListenerService + OutboxPublisher
+- [x] 02-05-PLAN.md — InboxRepository + @IdempotentSubscribe + DeadLetterConsumer base
 - [x] 02-06-PLAN.md — TopologyBootstrap + MessagingSpineModule composition
-- [ ] 02-07-PLAN.md — Service wiring (env, migrations, AppModule, per-service DLQ consumers)
-- [ ] 02-08-PLAN.md — Unit tests (envelope, topology, inbox SQL, dead-letter, CLS)
-- [ ] 02-09-PLAN.md — Integration tests (6 scenarios via testcontainers + MessagingProbe)
-- [ ] 02-10-PLAN.md — ADRs 007-010 + ROADMAP/STATE closeout
+- [x] 02-07-PLAN.md — Service wiring (env, migrations, AppModule, per-service DLQ consumers)
+- [x] 02-08-PLAN.md — Unit tests (envelope, topology, inbox SQL, dead-letter, CLS)
+- [x] 02-09-PLAN.md — Integration tests (6 scenarios via testcontainers + MessagingProbe)
+- [x] 02-10-PLAN.md — ADRs 007-010 + ROADMAP/STATE closeout
 
 ### Phase 3: Wallet Service
 **Goal**: A player has a provisioned wallet on first login and can be debited or credited exclusively via RabbitMQ commands with non-negative-balance and exact-precision guarantees.
@@ -253,8 +253,8 @@ These are not numbered phases. Pull from this list during Phase 10 if time permi
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Infra | 9/10 | In progress | - |
-| 2. Outbox/Inbox Messaging Spine | 0/0 | Not started | - |
+| 1. Foundation & Infra | 10/10 | Complete | 2026-05-24 |
+| 2. Outbox/Inbox Messaging Spine | 10/10 | Complete | 2026-05-24 |
 | 3. Wallet Service | 0/0 | Not started | - |
 | 4. Game Core (domain only) | 0/0 | Not started | - |
 | 5. Saga Integration | 0/0 | Not started | - |

@@ -15,6 +15,15 @@ Each ADR records the constraints that drove the decision, the alternatives that 
 | [ADR-005](./ADR-005-wallet-seed-strategy.md) | Wallet seed strategy — first-login provisioning | 1 | Accepted | Option C (first-login `POST /wallets` via REQ-WALL-01 idempotency) over one-shot SQL seed (Option A) or boot seeder (Option B); recruiter sees the wallet after one login click. |
 | [ADR-006](./ADR-006-eslint-plugin-location.md) | ESLint money-guard plugin location and authoring approach | 1 | Accepted | Workspace package `packages/eslint-plugin` consumed from root flat config; rules authored with `@typescript-eslint/utils` `ESLintUtils.RuleCreator` and fixture-driven tests. |
 
+## Phase 2 — Outbox/Inbox Messaging Spine
+
+| ADR | Title | Phase | Status | Summary |
+|-----|-------|-------|--------|---------|
+| [ADR-007](./ADR-007-hand-rolled-outbox-inbox-package.md) | Hand-rolled `@crash/messaging-spine` workspace package | 2 | Accepted | Hand-roll the outbox / inbox / DLQ persister / topology helpers in `packages/messaging-spine/` over `nestjs-outbox` or `pg-transactional-outbox`; auditable in arguição and matches the 25% architecture scoring band. |
+| [ADR-008](./ADR-008-amqplib-publisher-golevelup-consumer-split.md) | `amqplib` raw publisher + `@golevelup/nestjs-rabbitmq` consumer split | 2 | Accepted | Raw `amqplib` confirm channel inside `OutboxPublisher` for full `confirmSelect` + `waitForConfirms` lifecycle ownership; `@golevelup/nestjs-rabbitmq` `@RabbitSubscribe` for consumer ergonomics with `@IdempotentSubscribe` stacked on top. |
+| [ADR-009](./ADR-009-dlx-with-delivery-limit-on-dlq.md) | DLX with `x-delivery-limit` on the DLQ itself (quorum queues) | 2 | Accepted | Every main queue is quorum with `x-delivery-limit=RMQ_DELIVERY_LIMIT_MAIN` (5) + `x-dead-letter-exchange=<dlx>`; every DLQ is quorum with `x-delivery-limit=RMQ_DELIVERY_LIMIT_DLQ` (3) — bounded poison absorption, no cluster-degradation loops. |
+| [ADR-010](./ADR-010-listen-notify-dedicated-pg-client.md) | Dedicated `pg.Client` for LISTEN/NOTIFY outside MikroORM pool | 2 | Accepted | `OutboxListenerService` owns a `new pg.Client(...)` separate from MikroORM's pool with reconnect + 30s `SELECT 1` watchdog; avoids pool starvation that LISTEN's connection-pinning would cause. |
+
 ## Conventions
 
 - **Filename**: `ADR-NNN-<kebab-slug>.md` where NNN is a zero-padded three-digit sequence number. ADRs are numbered globally across the project (not per phase).
@@ -25,9 +34,8 @@ Each ADR records the constraints that drove the decision, the alternatives that 
 
 ## Future ADRs
 
-Subsequent phases append ADR-007+ as decisions land. The anticipated catalogue is enumerated in `.planning/ROADMAP.md` under each phase's "Key decisions to make" list. Examples:
+Subsequent phases append ADR-011+ as decisions land. The anticipated catalogue is enumerated in `.planning/ROADMAP.md` under each phase's "Key decisions to make" list. Examples:
 
-- Phase 2: outbox/inbox table schema and polling-vs-LISTEN/NOTIFY trade-off.
 - Phase 3: wallet aggregate persistence shape; transaction-row representation for credits and debits.
 - Phase 4: round FSM transition policy; provably-fair hash chain length; `multiply` rounding mode for cashout payouts (ADR-011).
 - Phase 5: saga state-machine persistence; compensation policy for insufficient-funds and timeout cases.

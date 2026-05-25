@@ -40,8 +40,8 @@
 - [ ] **REQ-WALL-02**: Wallet service exposes `GET /wallets/me` returning the authenticated player's wallet balance and metadata.
 - [ ] **REQ-WALL-03**: Wallet service provisions a new wallet with `INITIAL_BALANCE_CENTS=100000` (1000.00 CRD), env-configurable.
 - [ ] **REQ-WALL-04**: Wallet service consumes debit/credit commands from RabbitMQ exclusively (no REST exposure for mutations).
-- [ ] **REQ-WALL-05**: Wallet service uses an inbox table for exactly-once command processing (dedup on `messageId`, same TX as state mutation).
-- [ ] **REQ-WALL-06**: Wallet service writes domain events to its outbox in the same TX as the state change; a polling publisher with `confirmSelect` + `waitForConfirms` ships them to RabbitMQ at-least-once.
+- [x] **REQ-WALL-05**: Wallet service uses an inbox table for exactly-once command processing (dedup on `messageId`, same TX as state mutation).
+- [x] **REQ-WALL-06**: Wallet service writes domain events to its outbox in the same TX as the state change; a polling publisher with `confirmSelect` + `waitForConfirms` ships them to RabbitMQ at-least-once.
 - [ ] **REQ-WALL-07**: Wallet service stores immutable Transaction records (ledger model) — every debit/credit produces a Transaction row referencing the source command.
 
 ### Game Service — REST (GAME)
@@ -62,8 +62,8 @@
 - [ ] **REQ-SAGA-02**: System persists saga state in a `bet_saga_state` row so a service restart can recover and resume in-flight sagas.
 - [ ] **REQ-SAGA-03**: System has a saga timeout (`SAGA_TIMEOUT_MS=5000`) after which a pending bet is auto-refunded if the Wallet has not responded.
 - [ ] **REQ-SAGA-04**: System coordinates cashout via a 1-step saga: Game atomically transitions `Bet → CASHED_OUT` + writes payout outbox row → Wallet credits (downstream bookkeeping, never blocks the player's HTTP response).
-- [ ] **REQ-SAGA-05**: System uses quorum queues + DLX with `x-delivery-limit` on both main and DLQ; poison messages land in a dead-letter table for inspection.
-- [ ] **REQ-SAGA-06**: System carries `correlationId` + `causationId` headers through every message for end-to-end traceability.
+- [x] **REQ-SAGA-05**: System uses quorum queues + DLX with `x-delivery-limit` on both main and DLQ; poison messages land in a dead-letter table for inspection.
+- [x] **REQ-SAGA-06**: System carries `correlationId` + `causationId` headers through every message for end-to-end traceability.
 
 ### Provably Fair (FAIR)
 
@@ -238,10 +238,10 @@ Each v1 REQ-ID maps to exactly one phase in `ROADMAP.md`. v2 (REQ-STRETCH-*) liv
 #### Phase 2 — Outbox/Inbox Messaging Spine (4 reqs)
 | REQ-ID | Title | Status |
 |--------|-------|--------|
-| REQ-WALL-05 | Inbox dedup for exactly-once command processing | Pending |
-| REQ-WALL-06 | Outbox + polling publisher + `confirmSelect` | Pending |
-| REQ-SAGA-05 | Quorum queues + DLX + `x-delivery-limit` on DLQ itself | Pending |
-| REQ-SAGA-06 | `correlationId` + `causationId` envelope headers | Pending |
+| REQ-WALL-05 | Inbox dedup for exactly-once command processing | Done (Phase 2) |
+| REQ-WALL-06 | Outbox + polling publisher + `confirmSelect` | Done (Phase 2) |
+| REQ-SAGA-05 | Quorum queues + DLX + `x-delivery-limit` on DLQ itself | Done (Phase 2) |
+| REQ-SAGA-06 | `correlationId` + `causationId` envelope headers | Done (Phase 2) |
 
 #### Phase 3 — Wallet Service (7 reqs)
 | REQ-ID | Title | Status |

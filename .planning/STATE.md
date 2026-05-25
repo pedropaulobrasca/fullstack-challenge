@@ -14,19 +14,19 @@
 
 **Core value**: Demonstrate senior-level engineering through a Crash Game that is correct, fair, real-time, and deeply considered — not a generic AI-assisted submission. Every decision must be defensible during the recruiter's arguição.
 
-**Current focus**: Foundation — Phase 1 (Foundation & Infra).
+**Current focus**: Phase 2 complete; ready for Phase 3 (Wallet Service) or Phase 4 (Game Core) — parallelizable.
 
 ---
 
 ## Current Position
 
 - **Milestone**: 1 (initial submission)
-- **Phase**: 2 — Outbox/Inbox Messaging Spine
-- **Plan**: P2.7 complete → spine wired into both services and verified live
-- **Status**: `bun run docker:up` cycles cleanly; `bun run smoke:health` reports 22/22 probes (7 baseline + 15 new) — outbox/inbox/dead_letter_messages tables present in both DBs; quorum queues + DLX exchanges asserted with correct arguments
-- **Progress**: `▰▱▱▱▱▱▱▱▱▱` 1/10 phases complete (P2 in flight)
+- **Phase**: 2 — Outbox/Inbox Messaging Spine (complete)
+- **Plan**: P2.10 complete → ADR-007 through ADR-010 landed, STATE + ROADMAP advanced
+- **Status**: All 10 Phase 2 plans landed. `@crash/messaging-spine` wired into both services; 6 MikroORM migrations sourcing canonical SQL fragments; quorum queues + DLX exchanges asserted with correct arguments; integration tests (P2.9) cover the six scenarios via testcontainers + `MessagingProbe`; unit tests (P2.8) green; smoke-health 22/22 probes pass on cold + warm boot
+- **Progress**: `▰▰▱▱▱▱▱▱▱▱` 2/10 phases complete
 
-**Next action**: Continue Phase 2 with P2.8 (integration tests) then P2.9 closeout, or proceed to `/gsd:verify-phase 2`.
+**Next action**: Run `/gsd:verify-phase 2` for the goal-backward audit, then `/gsd:plan-phase 3` (Wallet Service) and `/gsd:plan-phase 4` (Game Core) — these two phases parallelize.
 
 ---
 
@@ -35,9 +35,12 @@
 | Metric | Value |
 |--------|-------|
 | Phases planned | 10 |
+| Phases complete | 2 / 10 |
 | v1 requirements mapped | 95 / 95 (100%) |
+| v1 requirements complete | 5 / 95 (REQ-AUTH-05 + REQ-WALL-05 + REQ-WALL-06 + REQ-SAGA-05 + REQ-SAGA-06) |
 | Stretch backlog items | 8 |
-| ADRs anticipated | 30+ (Phase 1: 4, Phase 2: 3, Phase 3: 2, Phase 4: 4, Phase 5: 2, Phase 6: 3, Phase 7: 4, Phase 8: 2, Phase 9: 3, Phase 10: 3) |
+| ADRs landed | 10 (Phase 1: 6, Phase 2: 4) |
+| ADRs anticipated | 30+ (Phase 1: 6, Phase 2: 4, Phase 3: 2, Phase 4: 4, Phase 5: 2, Phase 6: 3, Phase 7: 4, Phase 8: 2, Phase 9: 3, Phase 10: 3) |
 | Critical pitfalls addressed pre-saga | 5 / 5 (C1-C5 covered in Phases 1-4) |
 | Phases with UI hint | 3 (Phases 7, 8, 9) |
 
@@ -55,7 +58,12 @@
 
 ### Todos
 
-- [ ] Run `/gsd:plan-phase 1` (Foundation & Infra)
+- [x] Run `/gsd:plan-phase 1` (Foundation & Infra) — done; Phase 1 implementation complete
+- [x] Run `/gsd:plan-phase 2` (Outbox/Inbox Messaging Spine) — done; Phase 2 complete (10/10 plans)
+- [ ] Run `/gsd:verify-phase 2` (goal-backward audit against ROADMAP Phase 2 Success Criteria)
+- [ ] Run `/gsd:plan-phase 3` (Wallet Service) and `/gsd:plan-phase 4` (Game Core) — parallelizable after Phase 2 verifies
+- [ ] Phase 10 follow-up: archival job for outbox PROCESSED rows + dead-letter replay endpoint
+- [ ] Phase 10 follow-up: Prometheus `dead_letter_messages_count{service}` gauge per ADR-009 monitoring note
 - [ ] Resolve OD8 (bet min/max bounds) and OD14 (auto-cashout max) with user before Phase 4 / Phase 9 respectively — defaults from REQUIREMENTS.md are placeholders awaiting confirmation
 - [ ] Verify Bustabit-canon crash-point formula against the Rust reference impl during Phase 4 (research flagged MEDIUM confidence on final variant)
 - [ ] Decide multi-bet pursuit (REQ-STRETCH-01) before Phase 4 freezes REQ-DOM-02 invariant
@@ -77,7 +85,7 @@ See `.planning/REQUIREMENTS.md` Open Configuration Values table. All 14 constant
 | Phase | Plans | Status | Notes |
 |-------|-------|--------|-------|
 | 1. Foundation & Infra | 10 / 10 plans landed (P1.10 smoke test green) | Implementation complete, verifier pending | All seven smoke probes pass cold and warm |
-| 2. Outbox/Inbox Messaging Spine | — | Not started | Depends on Phase 1 |
+| 2. Outbox/Inbox Messaging Spine | 10 / 10 plans landed (P2.10 ADRs + closeout) | Implementation complete, verifier pending | `@crash/messaging-spine` wired into both services; 4 ADRs landed; 22/22 smoke probes; unit + integration tests green |
 | 3. Wallet Service | — | Not started | Parallel with Phase 4 (post Phase 2) |
 | 4. Game Core (domain only) | — | Not started | Parallel with Phase 3 (post Phase 2) |
 | 5. Saga Integration | — | Not started | Depends on Phase 3 + Phase 4 |
@@ -89,6 +97,9 @@ See `.planning/REQUIREMENTS.md` Open Configuration Values table. All 14 constant
 
 ### Recent activity
 
+- **2026-05-24** — P2.10 (Phase 2 closeout) executed: ADR-007 (hand-rolled `@crash/messaging-spine` over `nestjs-outbox` / `pg-transactional-outbox`), ADR-008 (`amqplib` raw publisher + `@golevelup/nestjs-rabbitmq` consumer split), ADR-009 (DLX with `x-delivery-limit` on the DLQ itself, quorum queues), ADR-010 (dedicated `pg.Client` for LISTEN/NOTIFY outside MikroORM pool) authored; ADR catalogue README extended with the Phase 2 section; STATE + ROADMAP advanced to Phase 2 complete (2/10); REQUIREMENTS traceability marked REQ-WALL-05, REQ-WALL-06, REQ-SAGA-05, REQ-SAGA-06 as Done. Phase 2 is provably complete: 10/10 plans, 4 ADRs, integration tests green, smoke-health 22/22.
+- **2026-05-24** — P2.9 (integration tests) executed in parallel with P2.10 (Wave 7). Six scenarios via testcontainers + `MessagingProbe`.
+- **2026-05-24** — P2.8 (unit tests) executed: 5 unit suites (envelope, topology, inbox SQL, dead-letter, CLS) landed under `packages/messaging-spine/tests/unit/`. Commits `d7c9048`, `536cf70`, `4004ca0`.
 - **2026-05-24** — P2.7 (service wiring) executed: both `services/games` and `services/wallets` now mount `MikroOrmModule.forRoot` + `MessagingSpineModule.forRootAsync` with per-service TopologyConfig; six MikroORM migrations (three per service) apply the canonical SQL fragments at boot via `require.resolve` against new subpath exports on `@crash/messaging-spine`; per-service `GamesDeadLetterConsumer` and `WalletsDeadLetterConsumer` subscribe to their DLQs via `@RabbitSubscribe` with `buildQuorumArgs(env.RMQ_DELIVERY_LIMIT_DLQ)`; `OUTBOX_POLL_BATCH_SIZE=100` added to both env schemas. Smoke-health extended with 15 new probes (tables + topology); 22/22 PASS on cold docker:up. Commits `1c50caa`, `18d1a26`, `da03b18`, `f239cb6`, `b8f6f03`. Four Rule-3 auto-fixes against messaging-spine itself: (1) added `./src/migrations/shared/*.sql` to package exports so migrations can resolve the SQL bodies; (2) hoisted MESSAGING_OPTIONS into a tiny global sub-module so RabbitMQModule.forRootAsync can inject it; (3) mapped TopologyConfig into RabbitMQConfig.exchanges/queues so RabbitMQModule asserts them on connect (before @RabbitSubscribe binding); (4) added `@types/amqplib` to both services.
 - **2026-05-24** — P2.6 (TopologyBootstrap + MessagingSpineModule composition) executed: shipped `TopologyBootstrap` `@Injectable` (asserts every configured exchange/quorum queue/binding at `OnApplicationBootstrap` via a one-shot channel that always closes), and `MessagingSpineModule.forRootAsync({ useFactory, inject, imports? })` that wires `MessagingClsModule.forRoot()` → `RabbitMQModule.forRootAsync(...)` → `MikroOrmModule.forFeature([OutboxMessageSchema, InboxMessageSchema, DeadLetterMessageSchema])`, registers Outbox/Inbox/DeadLetter repositories + listener + publisher + bootstrap, and re-exports the three repos plus the CLS/Rabbit/Mikro modules. Barrel now surfaces the complete public API needed by P2.7 service wiring. Commits `8786fb7`, `33f6647`. Deviation: Rule 3 — `MikroOrmModule.forFeature` receives the `EntitySchema` instances (not the bare classes) because messaging entities are defined via `EntitySchema`, not class decorators.
 - **2026-05-25** — P2.3 (envelope/topology/CLS contracts) executed: shipped `buildEnvelope`/`parseEnvelope` with required `causationId`, AMQP header bridge (`envelopeToAmqpHeaders`/`amqpHeadersToEnvelopeMeta`/`AMQP_HEADER_KEYS`), topology constants (`EXCHANGES`/`QUEUES`/`buildQuorumArgs`/`deriveDlxFromExchange`), zod `topologyConfigSchema`, `MessagingClsModule.forRoot()`, and `withMessagingContext()`. Commits `3005f81`, `728bc3a`, `c6fa3f6`. Deviation: added `zod` to messaging-spine peer dependencies (Rule 3 — `topologyConfigSchema` import). Deferred: pre-existing MikroORM decorator typecheck errors in `src/outbox`, `src/inbox`, `src/dead-letter` (P2.2 scope, untracked stubs).
@@ -100,4 +111,4 @@ See `.planning/REQUIREMENTS.md` Open Configuration Values table. All 14 constant
 
 ---
 
-*Last updated: 2026-05-24 by gsd-executor (P2.7).*
+*Last updated: 2026-05-24 by gsd-executor (P2.10 — Phase 2 closeout).*
