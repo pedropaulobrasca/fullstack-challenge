@@ -206,11 +206,8 @@ describe("@IdempotentSubscribe — OI-3 txEm propagation", () => {
 describe("@IdempotentSubscribe — signature stability for 2-arg handlers", () => {
   test("existing handler signatures that ignore the third arg still work without regression", async () => {
     let observedPayload: unknown = null;
-    const handler = async function (
-      this: unknown,
-      envelope: { payload: unknown },
-      _msg: unknown,
-    ) {
+    const handler = async function (this: unknown, ...args: unknown[]) {
+      const envelope = args[0] as { payload: unknown };
       observedPayload = envelope.payload;
     };
     const { descriptor } = decorateHandler(

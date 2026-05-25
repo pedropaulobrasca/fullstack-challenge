@@ -15,10 +15,22 @@ export interface OutboxRoute {
 export class OutboxRepository {
   constructor(private readonly em: EntityManager) {}
 
-  /** MUST be called inside an active em.transactional scope. The caller's transactional wrapper flushes + commits, the trigger fires pg_notify on commit, the publisher wakes. Calling outside transactional is a contract violation that breaks the same-TX guarantee of the outbox pattern. */
+  /**
+   * MUST be called inside an active em.transactional scope. The caller's
+   * transactional wrapper flushes + commits, the trigger fires pg_notify on
+   * commit, the publisher wakes. Calling outside transactional is a contract
+   * violation that breaks the same-TX guarantee of the outbox pattern.
+   *
+   * Caller MAY pass `em` to bind to a specific transactional fork — required
+   * when called from an `@IdempotentSubscribe` handler so the outbox row
+   * lands in the same TX as the inbox dedupe + side-effect. When omitted, the
+   * repository's injected root EM is used (legacy callers that opened their
+   * own `em.transactional` directly).
+   */
   async add<TPayload>(
     env: DomainEventEnvelope<TPayload>,
     route: OutboxRoute,
+    em?: EntityManager,
   ): Promise<OutboxMessage> {
     const row = new OutboxMessage();
     row.messageId = env.messageId;
@@ -32,7 +44,7 @@ export class OutboxRepository {
     row.headers = envelopeToAmqpHeaders(env) as Record<string, unknown>;
     row.status = "PENDING";
     row.attempts = 0;
-    this.em.persist(row);
+    (em ?? this.em).persist(row);
     return row;
   }
 }

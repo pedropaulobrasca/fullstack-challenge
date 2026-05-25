@@ -68,6 +68,17 @@ function assertHostShape(
  * Field names are matched by literal property lookup; renaming any of the
  * three required fields breaks the decorator at runtime.
  *
+ * Handler signature delivered to the wrapped method:
+ *   `(envelope, msg, txEm) => undefined | Nack`
+ *
+ *   - `envelope.payload` is the original publisher payload (one hop). The
+ *     decorator unwraps the wire-level envelope so handlers never have to
+ *     walk `envelope.payload.payload.x` — this resolves OI-1 from Phase 2.
+ *   - `txEm` is the MikroORM `EntityManager` bound to the open transaction
+ *     opened around inbox dedupe. Use it for entity persistence inside the
+ *     handler; do not use `host.em` which is the root EM and will not flush
+ *     deterministically inside this TX. This resolves OI-3 from Phase 2.
+ *
  * Per @golevelup/nestjs-rabbitmq, ack/nack is controlled by the handler's
  * return value — return `undefined` to ack, return `new Nack(false)` to drop
  * to the DLX. We never call `channel.ack`/`channel.nack` directly.
@@ -110,13 +121,20 @@ export function IdempotentSubscribe(
         host.cls.set(CAUSATION_ID_KEY, meta.causationId);
 
         try {
-          await host.em.transactional(async () => {
+          await host.em.transactional(async (txEm) => {
             const claimed = await host.inbox.tryClaim(
               opts.consumerName,
               meta.messageId,
               meta.type,
             );
             if (!claimed) return;
+
+            const wirePayload =
+              rawPayload &&
+              typeof rawPayload === "object" &&
+              "payload" in (rawPayload as object)
+                ? (rawPayload as { payload: unknown }).payload
+                : rawPayload;
 
             const envelope = {
               messageId: meta.messageId,
@@ -125,10 +143,10 @@ export function IdempotentSubscribe(
               type: meta.type,
               version: meta.version,
               occurredAt: meta.occurredAt,
-              payload: rawPayload,
+              payload: wirePayload,
             };
 
-            await original.call(host, envelope, msg);
+            await original.call(host, envelope, msg, txEm);
             await host.inbox.markProcessed(opts.consumerName, meta.messageId);
           });
           return undefined;
