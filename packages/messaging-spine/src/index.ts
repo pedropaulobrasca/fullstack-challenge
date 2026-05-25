@@ -66,3 +66,8 @@ export {
   MESSAGING_OPTIONS,
   type MessagingOptions,
 } from "./outbox/messaging-options";
+export { TopologyBootstrap } from "./topology/topology-bootstrap.service";
+export {
+  MessagingSpineModule,
+  type MessagingSpineModuleAsyncOptions,
+} from "./module";
