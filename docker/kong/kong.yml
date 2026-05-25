@@ -14,13 +14,13 @@ services:
     routes:
       - name: wallets-provision
         paths:
-          - /wallets
+          - ~/wallets$
         methods:
           - POST
         strip_path: true
       - name: wallets-me
         paths:
-          - /wallets/me
+          - ~/wallets/me$
         methods:
           - GET
         strip_path: true
