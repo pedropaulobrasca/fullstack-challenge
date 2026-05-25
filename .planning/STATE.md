@@ -21,12 +21,12 @@
 ## Current Position
 
 - **Milestone**: 1 (initial submission)
-- **Phase**: 1 — Foundation & Infra
-- **Plan**: P1.10 complete → Phase 1 closeout (verify + review)
-- **Status**: Phase 1 implementation complete — `bun run docker:up` brings every container healthy; `bun run smoke:health` reports 7/7 probes passing
-- **Progress**: `▰▱▱▱▱▱▱▱▱▱` 1/10 phases complete (pending verifier sign-off)
+- **Phase**: 2 — Outbox/Inbox Messaging Spine
+- **Plan**: P2.7 complete → spine wired into both services and verified live
+- **Status**: `bun run docker:up` cycles cleanly; `bun run smoke:health` reports 22/22 probes (7 baseline + 15 new) — outbox/inbox/dead_letter_messages tables present in both DBs; quorum queues + DLX exchanges asserted with correct arguments
+- **Progress**: `▰▱▱▱▱▱▱▱▱▱` 1/10 phases complete (P2 in flight)
 
-**Next action**: Run `/gsd:verify-phase 1` for goal-backward verification, then `/gsd:code-review` over the Phase 1 changeset.
+**Next action**: Continue Phase 2 with P2.8 (integration tests) then P2.9 closeout, or proceed to `/gsd:verify-phase 2`.
 
 ---
 
@@ -89,6 +89,7 @@ See `.planning/REQUIREMENTS.md` Open Configuration Values table. All 14 constant
 
 ### Recent activity
 
+- **2026-05-24** — P2.7 (service wiring) executed: both `services/games` and `services/wallets` now mount `MikroOrmModule.forRoot` + `MessagingSpineModule.forRootAsync` with per-service TopologyConfig; six MikroORM migrations (three per service) apply the canonical SQL fragments at boot via `require.resolve` against new subpath exports on `@crash/messaging-spine`; per-service `GamesDeadLetterConsumer` and `WalletsDeadLetterConsumer` subscribe to their DLQs via `@RabbitSubscribe` with `buildQuorumArgs(env.RMQ_DELIVERY_LIMIT_DLQ)`; `OUTBOX_POLL_BATCH_SIZE=100` added to both env schemas. Smoke-health extended with 15 new probes (tables + topology); 22/22 PASS on cold docker:up. Commits `1c50caa`, `18d1a26`, `da03b18`, `f239cb6`, `b8f6f03`. Four Rule-3 auto-fixes against messaging-spine itself: (1) added `./src/migrations/shared/*.sql` to package exports so migrations can resolve the SQL bodies; (2) hoisted MESSAGING_OPTIONS into a tiny global sub-module so RabbitMQModule.forRootAsync can inject it; (3) mapped TopologyConfig into RabbitMQConfig.exchanges/queues so RabbitMQModule asserts them on connect (before @RabbitSubscribe binding); (4) added `@types/amqplib` to both services.
 - **2026-05-24** — P2.6 (TopologyBootstrap + MessagingSpineModule composition) executed: shipped `TopologyBootstrap` `@Injectable` (asserts every configured exchange/quorum queue/binding at `OnApplicationBootstrap` via a one-shot channel that always closes), and `MessagingSpineModule.forRootAsync({ useFactory, inject, imports? })` that wires `MessagingClsModule.forRoot()` → `RabbitMQModule.forRootAsync(...)` → `MikroOrmModule.forFeature([OutboxMessageSchema, InboxMessageSchema, DeadLetterMessageSchema])`, registers Outbox/Inbox/DeadLetter repositories + listener + publisher + bootstrap, and re-exports the three repos plus the CLS/Rabbit/Mikro modules. Barrel now surfaces the complete public API needed by P2.7 service wiring. Commits `8786fb7`, `33f6647`. Deviation: Rule 3 — `MikroOrmModule.forFeature` receives the `EntitySchema` instances (not the bare classes) because messaging entities are defined via `EntitySchema`, not class decorators.
 - **2026-05-25** — P2.3 (envelope/topology/CLS contracts) executed: shipped `buildEnvelope`/`parseEnvelope` with required `causationId`, AMQP header bridge (`envelopeToAmqpHeaders`/`amqpHeadersToEnvelopeMeta`/`AMQP_HEADER_KEYS`), topology constants (`EXCHANGES`/`QUEUES`/`buildQuorumArgs`/`deriveDlxFromExchange`), zod `topologyConfigSchema`, `MessagingClsModule.forRoot()`, and `withMessagingContext()`. Commits `3005f81`, `728bc3a`, `c6fa3f6`. Deviation: added `zod` to messaging-spine peer dependencies (Rule 3 — `topologyConfigSchema` import). Deferred: pre-existing MikroORM decorator typecheck errors in `src/outbox`, `src/inbox`, `src/dead-letter` (P2.2 scope, untracked stubs).
 - **2026-05-24** — P1.10 (healthcheck smoke test) executed: HealthController per service, env-driven NestJS bootstrap, `scripts/smoke-health.sh` covers 7 probes (postgres, rabbitmq, keycloak health + token, kong, games, wallets), all green on cold + warm bootstrap. Commits `3c0bad2`, `b5d37ec`, `438c7df`. Deviations: postgres 18 mount layout, mikro-orm warnWhenNoEntities=false, healthcheck pinned to 127.0.0.1 for Alpine IPv6.
@@ -99,4 +100,4 @@ See `.planning/REQUIREMENTS.md` Open Configuration Values table. All 14 constant
 
 ---
 
-*Last updated: 2026-05-24 by gsd-executor (P2.6).*
+*Last updated: 2026-05-24 by gsd-executor (P2.7).*
