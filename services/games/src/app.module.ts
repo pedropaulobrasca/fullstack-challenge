@@ -1,5 +1,7 @@
 import { Module } from "@nestjs/common";
+import { APP_PIPE } from "@nestjs/core";
 import { MikroOrmModule } from "@mikro-orm/nestjs";
+import { ZodValidationPipe } from "nestjs-zod";
 import {
   MessagingSpineModule,
   EXCHANGES,
@@ -9,7 +11,10 @@ import mikroOrmConfig from "../mikro-orm.config";
 import { env } from "./config/defaults";
 import { GamesController } from "./presentation/controllers/games.controller";
 import { HealthController } from "./presentation/controllers/health.controller";
+import { RoundsController } from "./presentation/controllers/rounds.controller";
+import { BetsController } from "./presentation/controllers/bets.controller";
 import { GamesDeadLetterConsumer } from "./infrastructure/messaging/games-dead-letter.consumer";
+import { JwtGuard } from "./presentation/guards/jwt.guard";
 import { GameCoreModule } from "./application/game-core.module";
 
 @Module({
@@ -58,7 +63,11 @@ import { GameCoreModule } from "./application/game-core.module";
     }),
     GameCoreModule,
   ],
-  controllers: [GamesController, HealthController],
-  providers: [GamesDeadLetterConsumer],
+  controllers: [GamesController, HealthController, RoundsController, BetsController],
+  providers: [
+    GamesDeadLetterConsumer,
+    JwtGuard,
+    { provide: APP_PIPE, useClass: ZodValidationPipe },
+  ],
 })
 export class AppModule {}
