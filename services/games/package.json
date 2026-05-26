@@ -26,6 +26,7 @@
     "@mikro-orm/cli": "^7.1.0",
     "amqplib": "^0.10.9",
     "@golevelup/nestjs-rabbitmq": "^9.0.2",
+    "jose": "6.2.3",
     "nestjs-cls": "^6.2.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
@@ -35,6 +36,7 @@
     "@crash/eslint-plugin": "workspace:*",
     "@types/amqplib": "^0.10.8",
     "bun-types": "latest",
+    "fast-check": "^3.23.0",
     "typescript": "^5.8.3"
   },
   "mikro-orm": {

@@ -27,6 +27,9 @@ const gamesEnvSchema = sharedEnvSchema.extend({
   AUTO_CASHOUT_MAX_X: z.coerce.number().positive().default(100),
   LEADERBOARD_WINDOW_HOURS: z.coerce.number().int().positive().default(24),
   LEADERBOARD_TOP_N: z.coerce.number().int().positive().default(10),
+  KEYCLOAK_ISSUER: z.string().url(),
+  KEYCLOAK_JWKS_URI: z.string().url(),
+  KEYCLOAK_AUDIENCE: z.string().min(1).default("account"),
 });
 
 export const env = Object.freeze(gamesEnvSchema.parse(process.env));
