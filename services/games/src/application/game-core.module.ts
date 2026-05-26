@@ -20,6 +20,7 @@ import { StartNewRoundUseCase } from "./use-cases/start-new-round.use-case";
 import { TransitionToRunningUseCase } from "./use-cases/transition-to-running.use-case";
 import { CrashRoundUseCase } from "./use-cases/crash-round.use-case";
 import { SettleRoundUseCase } from "./use-cases/settle-round.use-case";
+import { RoundLoopService } from "./round-loop.service";
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { SettleRoundUseCase } from "./use-cases/settle-round.use-case";
     TransitionToRunningUseCase,
     CrashRoundUseCase,
     SettleRoundUseCase,
+    RoundLoopService,
   ],
   exports: [
     SEED_CHAIN_REPOSITORY,
