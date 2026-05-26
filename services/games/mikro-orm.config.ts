@@ -5,14 +5,27 @@ import {
   InboxMessageSchema,
   DeadLetterMessageSchema,
 } from "@crash/messaging-spine";
+import { SeedChainEntitySchema } from "./src/infrastructure/persistence/seed-chain.entity";
+import { RoundEntitySchema } from "./src/infrastructure/persistence/round.entity";
+import { BetEntitySchema } from "./src/infrastructure/persistence/bet.entity";
 
 export default defineConfig({
   clientUrl: process.env.DATABASE_URL ?? "",
-  entities: [OutboxMessageSchema, InboxMessageSchema, DeadLetterMessageSchema],
+  entities: [
+    OutboxMessageSchema,
+    InboxMessageSchema,
+    DeadLetterMessageSchema,
+    SeedChainEntitySchema,
+    RoundEntitySchema,
+    BetEntitySchema,
+  ],
   entitiesTs: [
     OutboxMessageSchema,
     InboxMessageSchema,
     DeadLetterMessageSchema,
+    SeedChainEntitySchema,
+    RoundEntitySchema,
+    BetEntitySchema,
   ],
   migrations: {
     path: "./src/infrastructure/mikro-orm/migrations",
