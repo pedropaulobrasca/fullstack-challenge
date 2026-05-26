@@ -157,19 +157,99 @@ probe_rabbitmq_topology() {
   probe_rabbitmq_object "exchanges" "${vhost}" "wallet.dlx"
   probe_rabbitmq_object "exchanges" "${vhost}" "game.events"
   probe_rabbitmq_object "exchanges" "${vhost}" "game.dlx"
-  probe_rabbitmq_object "queues" "${vhost}" "wallet.commands.q"
+  probe_rabbitmq_object "queues" "${vhost}" "wallet.debit.q"
+  probe_rabbitmq_object "queues" "${vhost}" "wallet.credit.q"
   probe_rabbitmq_object "queues" "${vhost}" "wallet.dlq"
   probe_rabbitmq_object "queues" "${vhost}" "games.wallet-events.q"
   probe_rabbitmq_object "queues" "${vhost}" "games.dlq"
 }
 
-echo "Running Phase 1+2 smoke probes against local stack..."
+WALLETS_TOKEN=""
+
+probe_wallets_keycloak_token() {
+  local name="wallets keycloak password grant (player/player123)"
+  local body
+  body=$(curl -s -X POST \
+    -H 'Content-Type: application/x-www-form-urlencoded' \
+    -d 'grant_type=password&client_id=crash-game-client&username=player&password=player123' \
+    http://localhost:8080/realms/crash-game/protocol/openid-connect/token || echo "")
+  if command -v jq >/dev/null 2>&1; then
+    WALLETS_TOKEN=$(echo "${body}" | jq -r '.access_token // empty')
+  else
+    WALLETS_TOKEN=$(echo "${body}" | sed -nE 's/.*"access_token":"([^"]+)".*/\1/p')
+  fi
+  if [[ -n "${WALLETS_TOKEN}" && "${WALLETS_TOKEN}" != "null" ]]; then
+    record_pass "${name}"
+  else
+    record_fail "${name}" "no access_token in response body"
+  fi
+}
+
+probe_wallets_provision() {
+  local name="wallets POST /wallets idempotent via Kong (port 8000)"
+  if [[ -z "${WALLETS_TOKEN}" ]]; then
+    record_fail "${name}" "no WALLETS_TOKEN (token grant must run first)"
+    return
+  fi
+  local first_code
+  first_code=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+    -H "Authorization: Bearer ${WALLETS_TOKEN}" \
+    http://localhost:8000/wallets || echo "000")
+  local second_code
+  second_code=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+    -H "Authorization: Bearer ${WALLETS_TOKEN}" \
+    http://localhost:8000/wallets || echo "000")
+  if [[ ( "${first_code}" == "201" || "${first_code}" == "200" ) && "${second_code}" == "200" ]]; then
+    record_pass "${name}"
+  else
+    record_fail "${name}" "expected first 201|200 and second 200, got first=${first_code} second=${second_code}"
+  fi
+}
+
+probe_wallets_balance() {
+  local name="wallets GET /wallets/me balance=INITIAL_BALANCE_CENTS via Kong"
+  if [[ -z "${WALLETS_TOKEN}" ]]; then
+    record_fail "${name}" "no WALLETS_TOKEN"
+    return
+  fi
+  local body
+  body=$(curl -s -H "Authorization: Bearer ${WALLETS_TOKEN}" http://localhost:8000/wallets/me || echo "")
+  local amount=""
+  if command -v jq >/dev/null 2>&1; then
+    amount=$(echo "${body}" | jq -r '.balance.amount // empty')
+  else
+    amount=$(echo "${body}" | sed -nE 's/.*"amount":"([0-9]+)".*/\1/p' | head -n1)
+  fi
+  if [[ "${amount}" == "100000" ]]; then
+    record_pass "${name}"
+  else
+    record_fail "${name}" "expected balance.amount=100000, got '${amount}'"
+  fi
+}
+
+probe_wallets_kong_mutation_block() {
+  local name="wallets POST /wallets/me/debit blocked at Kong (404)"
+  if [[ -z "${WALLETS_TOKEN}" ]]; then
+    record_fail "${name}" "no WALLETS_TOKEN"
+    return
+  fi
+  local code
+  code=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+    -H "Authorization: Bearer ${WALLETS_TOKEN}" \
+    http://localhost:8000/wallets/me/debit || echo "000")
+  if [[ "${code}" == "404" ]]; then
+    record_pass "${name}"
+  else
+    record_fail "${name}" "expected 404, got ${code}"
+  fi
+}
+
+echo "Running Phase 1+2+3 smoke probes against local stack..."
 echo
 
 probe_postgres
 probe_rabbitmq
 probe_keycloak_health
-probe_keycloak_token
 probe_kong
 probe_games_health
 probe_wallets_health
@@ -177,6 +257,10 @@ probe_outbox_tables
 probe_inbox_tables
 probe_dead_letter_tables
 probe_rabbitmq_topology
+probe_wallets_keycloak_token
+probe_wallets_provision
+probe_wallets_balance
+probe_wallets_kong_mutation_block
 
 TOTAL=$((PASS + FAIL))
 echo
