@@ -67,7 +67,7 @@
 
 ### Provably Fair (FAIR)
 
-- [ ] **REQ-FAIR-01**: System pre-generates a hash chain (`HASH_CHAIN_LENGTH=1000000`) at first boot using `crypto.randomBytes` for the final seed, then `SHA-256(prev)` N times; consumes seeds in reverse so each revealed seed hashes to the previous round's hash.
+- [x] **REQ-FAIR-01**: System pre-generates a hash chain (`HASH_CHAIN_LENGTH=1000000`) at first boot using `crypto.randomBytes` for the final seed, then `SHA-256(prev)` N times; consumes seeds in reverse so each revealed seed hashes to the previous round's hash.
 - [ ] **REQ-FAIR-02**: System reveals the seed for round N only after round N has settled (never before).
 - [ ] **REQ-FAIR-03**: System derives the crash point per round via `HMAC-SHA-256(serverSeed, clientSeed:nonce)`, taking 52 bits via Bustabit canon formula `floor((100 * 2^52 - H) / (2^52 - H)) / 100`, with a 1-in-101 instant-crash (`1.00x`) bucket for ~99% RTP — both formula and constant env-overridable.
 - [ ] **REQ-FAIR-04**: System exposes the provably-fair algorithm as a pure-function module in `packages/contracts` so the exact same code runs on the frontend verifier and the backend round loop.
@@ -270,7 +270,7 @@ Each v1 REQ-ID maps to exactly one phase in `ROADMAP.md`. v2 (REQ-STRETCH-*) liv
 | REQ-GAME-05 | `GET /games/bets/me` (paginated) | Pending |
 | REQ-GAME-08 | Reject bets outside BETTING with 409 + discriminated code | Pending |
 | REQ-GAME-09 | `kill -9` survives — round loop reconstructs from DB | Pending |
-| REQ-FAIR-01 | Pre-generated 1M-link hash chain (reverse-consumed) | Pending |
+| REQ-FAIR-01 | Pre-generated 1M-link hash chain (reverse-consumed) | Done (P4.05 — SeedChainBootstrap idempotent OnApplicationBootstrap) |
 | REQ-FAIR-02 | Reveal seed for round N only after N settles | Pending |
 | REQ-FAIR-03 | Bustabit-canon HMAC-SHA-256 52-bit crash-point formula | Pending |
 | REQ-FAIR-04 | Pure-function provably-fair module in `packages/contracts` | Pending |
