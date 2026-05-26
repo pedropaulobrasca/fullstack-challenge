@@ -53,6 +53,10 @@ export class MikroBetRepository implements BetRepository {
     return rows.map((row) => this.mapRowToAggregate(row));
   }
 
+  async countByRoundId(roundId: RoundId): Promise<number> {
+    return this.em.count(BetEntitySchema, { roundId });
+  }
+
   async listByPlayer(
     playerId: PlayerId,
     limit: number,
