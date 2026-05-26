@@ -4,11 +4,14 @@ import {
   subtract,
   multiply,
   toSnapshot,
+  transformScale,
   isNegative,
   isZero,
   equal,
   lessThan,
   greaterThan,
+  halfEven,
+  halfUp,
 } from "dinero.js/bigint";
 import type { Dinero } from "dinero.js/bigint";
 import { CRD } from "./currency";
@@ -22,6 +25,8 @@ export type MoneySnapshot = {
 };
 
 export type MoneyMultiplier = number | { numerator: bigint; denominator: bigint };
+
+export type MoneyRoundingMode = "bankers" | "half-up";
 
 export class Money {
   private constructor(private readonly inner: Dinero<bigint>) {}
@@ -60,6 +65,18 @@ export class Money {
         ? { amount: BigInt(Math.round(factor * 10_000)), scale: 4n }
         : { amount: factor.numerator, scale: bigintLog10(factor.denominator) };
     return new Money(multiply(this.inner, scaled));
+  }
+
+  multiplyRounded(factor: MoneyMultiplier, mode: MoneyRoundingMode = "bankers"): Money {
+    const scaled =
+      typeof factor === "number"
+        ? { amount: BigInt(Math.round(factor * 10_000)), scale: 4n }
+        : { amount: factor.numerator, scale: bigintLog10(factor.denominator) };
+    const product = multiply(this.inner, scaled);
+    const currencyExponent = toSnapshot(this.inner).currency.exponent;
+    const divider = mode === "half-up" ? halfUp : halfEven;
+    const reduced = transformScale(product, currencyExponent, divider);
+    return new Money(reduced);
   }
 
   toCents(): bigint {
