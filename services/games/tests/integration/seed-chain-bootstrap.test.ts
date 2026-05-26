@@ -42,22 +42,31 @@ describe("seed-chain-bootstrap integration", () => {
   );
 
   test(
-    "hash chain integrity: sha256(seed[i]) === hash[i-1] for every link",
+    "hash chain integrity: sha256(seed[i+1]) === seed[i] and hash[i] === sha256(seed[i]) for every row",
     async () => {
       const rows = await first.em
         .getConnection()
         .execute(
-          "SELECT nonce::text AS nonce, hash, seed FROM seed_chain ORDER BY nonce ASC",
+          "SELECT nonce, hash, seed FROM seed_chain ORDER BY nonce ASC",
         );
       expect(rows.length).toBe(EXPECTED_DEPTH);
 
-      for (let i = 1; i < rows.length; i++) {
-        const prevSeed = rows[i].seed as string;
-        const prevHash = rows[i - 1].hash as string;
-        const recomputed = createHash("sha256")
-          .update(prevSeed, "hex")
+      for (let i = 0; i < rows.length; i++) {
+        const seed = rows[i].seed as string;
+        const hash = rows[i].hash as string;
+        const recomputedHash = createHash("sha256")
+          .update(seed, "hex")
           .digest("hex");
-        expect(recomputed).toBe(prevHash);
+        expect(recomputedHash).toBe(hash);
+      }
+
+      for (let i = 0; i < rows.length - 1; i++) {
+        const nextSeed = rows[i + 1].seed as string;
+        const currentSeed = rows[i].seed as string;
+        const linkedSeed = createHash("sha256")
+          .update(nextSeed, "hex")
+          .digest("hex");
+        expect(linkedSeed).toBe(currentSeed);
       }
     },
     30_000,
