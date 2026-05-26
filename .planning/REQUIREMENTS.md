@@ -47,10 +47,10 @@
 ### Game Service — REST (GAME)
 
 - [ ] **REQ-GAME-01**: System runs an autonomous round loop (`BETTING → RUNNING → CRASHED → SETTLED → cooldown → repeat`) inside `games-service` without external triggers, starting at `OnModuleInit`.
-- [ ] **REQ-GAME-02**: System exposes `GET /games/rounds/current` returning the live round state with all bets (player-id-masked for other users).
-- [ ] **REQ-GAME-03**: System exposes `GET /games/rounds/history?limit=20` returning paginated past rounds with crash points and aggregate stats.
-- [ ] **REQ-GAME-04**: System exposes `GET /games/rounds/:roundId/verify` returning provably-fair data (server seed, client seed, nonce, hash, algorithm reference).
-- [ ] **REQ-GAME-05**: System exposes `GET /games/bets/me` (paginated) returning the authenticated player's bet history.
+- [x] **REQ-GAME-02**: System exposes `GET /games/rounds/current` returning the live round state with all bets (player-id-masked for other users).
+- [x] **REQ-GAME-03**: System exposes `GET /games/rounds/history?limit=20` returning paginated past rounds with crash points and aggregate stats.
+- [x] **REQ-GAME-04**: System exposes `GET /games/rounds/:roundId/verify` returning provably-fair data (server seed, client seed, nonce, hash, algorithm reference).
+- [x] **REQ-GAME-05**: System exposes `GET /games/bets/me` (paginated) returning the authenticated player's bet history.
 - [ ] **REQ-GAME-06**: System exposes `POST /games/bet` accepting bet placement during the BETTING phase; returns `202 Accepted` with a pending bet handle and confirms via WebSocket.
 - [ ] **REQ-GAME-07**: System exposes `POST /games/bet/cashout` accepting cashout during the RUNNING phase; returns `200 OK` with payout amount when accepted, `409 Conflict` when too late.
 - [ ] **REQ-GAME-08**: System rejects bets outside the BETTING window with `409 Conflict` and a discriminated error code.
@@ -68,10 +68,10 @@
 ### Provably Fair (FAIR)
 
 - [x] **REQ-FAIR-01**: System pre-generates a hash chain (`HASH_CHAIN_LENGTH=1000000`) at first boot using `crypto.randomBytes` for the final seed, then `SHA-256(prev)` N times; consumes seeds in reverse so each revealed seed hashes to the previous round's hash.
-- [ ] **REQ-FAIR-02**: System reveals the seed for round N only after round N has settled (never before).
+- [x] **REQ-FAIR-02**: System reveals the seed for round N only after round N has settled (never before).
 - [ ] **REQ-FAIR-03**: System derives the crash point per round via `HMAC-SHA-256(serverSeed, clientSeed:nonce)`, taking 52 bits via Bustabit canon formula `floor((100 * 2^52 - H) / (2^52 - H)) / 100`, with a 1-in-101 instant-crash (`1.00x`) bucket for ~99% RTP — both formula and constant env-overridable.
 - [ ] **REQ-FAIR-04**: System exposes the provably-fair algorithm as a pure-function module in `packages/contracts` so the exact same code runs on the frontend verifier and the backend round loop.
-- [ ] **REQ-FAIR-05**: System displays the pre-round hash commitment before every round (BETTING phase) so the player has the commitment before placing a bet.
+- [x] **REQ-FAIR-05**: System displays the pre-round hash commitment before every round (BETTING phase) so the player has the commitment before placing a bet.
 
 ### WebSocket Gateway (WS)
 
@@ -264,17 +264,17 @@ Each v1 REQ-ID maps to exactly one phase in `ROADMAP.md`. v2 (REQ-STRETCH-*) liv
 | REQ-DOM-07 | Cashout `bet × multiplier` with banker's rounding | Pending |
 | REQ-DOM-08 | Rich Round/Bet/Wallet aggregates (no anemic rows) | Pending |
 | REQ-GAME-01 | Autonomous round loop without external triggers | Pending |
-| REQ-GAME-02 | `GET /games/rounds/current` with masked bets | Pending |
-| REQ-GAME-03 | `GET /games/rounds/history?limit=20` | Pending |
-| REQ-GAME-04 | `GET /games/rounds/:roundId/verify` provably-fair data | Pending |
-| REQ-GAME-05 | `GET /games/bets/me` (paginated) | Pending |
+| REQ-GAME-02 | `GET /games/rounds/current` with masked bets | Done (P4.08 — RoundsController + GetCurrentRoundUseCase) |
+| REQ-GAME-03 | `GET /games/rounds/history?limit=20` | Done (P4.08 — RoundsController + GetRoundHistoryUseCase) |
+| REQ-GAME-04 | `GET /games/rounds/:roundId/verify` provably-fair data | Done (P4.08 — RoundsController + VerifyRoundUseCase) |
+| REQ-GAME-05 | `GET /games/bets/me` (paginated) | Done (P4.08 — BetsController + GetPlayerBetsUseCase + JwtGuard) |
 | REQ-GAME-08 | Reject bets outside BETTING with 409 + discriminated code | Pending |
 | REQ-GAME-09 | `kill -9` survives — round loop reconstructs from DB | Pending |
 | REQ-FAIR-01 | Pre-generated 1M-link hash chain (reverse-consumed) | Done (P4.05 — SeedChainBootstrap idempotent OnApplicationBootstrap) |
-| REQ-FAIR-02 | Reveal seed for round N only after N settles | Pending |
+| REQ-FAIR-02 | Reveal seed for round N only after N settles | Done (P4.08 — VerifyRoundUseCase 400 gate + GetCurrentRoundUseCase serverSeed nullification) |
 | REQ-FAIR-03 | Bustabit-canon HMAC-SHA-256 52-bit crash-point formula | Pending |
 | REQ-FAIR-04 | Pure-function provably-fair module in `packages/contracts` | Pending |
-| REQ-FAIR-05 | Pre-round hash commitment displayed during BETTING | Pending |
+| REQ-FAIR-05 | Pre-round hash commitment displayed during BETTING | Done (P4.08 — CurrentRoundDto.seedHash always exposed during BETTING) |
 | REQ-TEST-01 | Domain unit tests (Round FSM, Bet, Wallet, provably-fair) | Pending |
 | REQ-TEST-02 | Property tests for monetary + FSM invariants | Pending |
 
