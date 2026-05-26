@@ -16,6 +16,10 @@ import { GetCurrentRoundUseCase } from "./use-cases/get-current-round.use-case";
 import { GetPlayerBetsUseCase } from "./use-cases/get-player-bets.use-case";
 import { GetRoundHistoryUseCase } from "./use-cases/get-round-history.use-case";
 import { VerifyRoundUseCase } from "./use-cases/verify-round.use-case";
+import { StartNewRoundUseCase } from "./use-cases/start-new-round.use-case";
+import { TransitionToRunningUseCase } from "./use-cases/transition-to-running.use-case";
+import { CrashRoundUseCase } from "./use-cases/crash-round.use-case";
+import { SettleRoundUseCase } from "./use-cases/settle-round.use-case";
 
 @Module({
   imports: [
@@ -34,6 +38,10 @@ import { VerifyRoundUseCase } from "./use-cases/verify-round.use-case";
     GetRoundHistoryUseCase,
     VerifyRoundUseCase,
     GetPlayerBetsUseCase,
+    StartNewRoundUseCase,
+    TransitionToRunningUseCase,
+    CrashRoundUseCase,
+    SettleRoundUseCase,
   ],
   exports: [
     SEED_CHAIN_REPOSITORY,
