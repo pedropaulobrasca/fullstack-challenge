@@ -17,7 +17,7 @@
 
 ### Domain Invariants (DOM)
 
-- [ ] **REQ-DOM-01**: System enforces Round lifecycle `BETTING → RUNNING → CRASHED → SETTLED`; no illegal transitions are possible from any code path (enforced at aggregate boundary, not service layer).
+- [x] **REQ-DOM-01**: System enforces Round lifecycle `BETTING → RUNNING → CRASHED → SETTLED`; no illegal transitions are possible from any code path (enforced at aggregate boundary, not service layer).
 - [ ] **REQ-DOM-02**: System enforces single bet per player per round (DB partial unique index + aggregate guard).
 - [x] **REQ-DOM-03**: System enforces Bet lifecycle `PENDING → ACTIVE → CASHED_OUT | LOST`; cashout is rejected if Bet is not in `ACTIVE` state.
 - [ ] **REQ-DOM-04**: System enforces bet bounds: min `1.00`, max `1000.00` (spec values, env-overridable for non-prod).
@@ -46,7 +46,7 @@
 
 ### Game Service — REST (GAME)
 
-- [ ] **REQ-GAME-01**: System runs an autonomous round loop (`BETTING → RUNNING → CRASHED → SETTLED → cooldown → repeat`) inside `games-service` without external triggers, starting at `OnModuleInit`.
+- [x] **REQ-GAME-01**: System runs an autonomous round loop (`BETTING → RUNNING → CRASHED → SETTLED → cooldown → repeat`) inside `games-service` without external triggers, starting at `OnApplicationBootstrap` (per research Pitfall 1 — the hook fires after every module's initialization completes, whereas `OnModuleInit` can fire before MikroORM is connected).
 - [x] **REQ-GAME-02**: System exposes `GET /games/rounds/current` returning the live round state with all bets (player-id-masked for other users).
 - [x] **REQ-GAME-03**: System exposes `GET /games/rounds/history?limit=20` returning paginated past rounds with crash points and aggregate stats.
 - [x] **REQ-GAME-04**: System exposes `GET /games/rounds/:roundId/verify` returning provably-fair data (server seed, client seed, nonce, hash, algorithm reference).
@@ -54,7 +54,7 @@
 - [ ] **REQ-GAME-06**: System exposes `POST /games/bet` accepting bet placement during the BETTING phase; returns `202 Accepted` with a pending bet handle and confirms via WebSocket.
 - [ ] **REQ-GAME-07**: System exposes `POST /games/bet/cashout` accepting cashout during the RUNNING phase; returns `200 OK` with payout amount when accepted, `409 Conflict` when too late.
 - [ ] **REQ-GAME-08**: System rejects bets outside the BETTING window with `409 Conflict` and a discriminated error code.
-- [ ] **REQ-GAME-09**: System persists round and bet state survives `kill -9` of the service mid-round; on restart, the round loop reconstructs state from DB and resumes from the last persisted transition.
+- [x] **REQ-GAME-09**: System persists round and bet state survives `kill -9` of the service mid-round; on restart, the round loop reconstructs state from DB and resumes from the last persisted transition.
 
 ### Saga Coordination (SAGA)
 
@@ -258,18 +258,18 @@ Each v1 REQ-ID maps to exactly one phase in `ROADMAP.md`. v2 (REQ-STRETCH-*) liv
 #### Phase 4 — Game Core (domain only) (19 reqs)
 | REQ-ID | Title | Status |
 |--------|-------|--------|
-| REQ-DOM-01 | Round lifecycle FSM enforced at aggregate boundary | Pending |
+| REQ-DOM-01 | Round lifecycle FSM enforced at aggregate boundary | Done (P4.02 aggregate + P4.04 rounds_fsm_check CHECK + P4.06 use cases orchestrate via transitionFromXToY) |
 | REQ-DOM-02 | Single bet per player per round (partial unique index + guard) | Pending |
 | REQ-DOM-04 | Bet bounds: min 1.00, max 1000.00 (env-overridable) | Pending |
 | REQ-DOM-07 | Cashout `bet × multiplier` with banker's rounding | Pending |
 | REQ-DOM-08 | Rich Round/Bet/Wallet aggregates (no anemic rows) | Pending |
-| REQ-GAME-01 | Autonomous round loop without external triggers | Pending |
+| REQ-GAME-01 | Autonomous round loop without external triggers | Done (P4.06 — RoundLoopService OnApplicationBootstrap + recursive setTimeout + four lifecycle use cases) |
 | REQ-GAME-02 | `GET /games/rounds/current` with masked bets | Done (P4.08 — RoundsController + GetCurrentRoundUseCase) |
 | REQ-GAME-03 | `GET /games/rounds/history?limit=20` | Done (P4.08 — RoundsController + GetRoundHistoryUseCase) |
 | REQ-GAME-04 | `GET /games/rounds/:roundId/verify` provably-fair data | Done (P4.08 — RoundsController + VerifyRoundUseCase) |
 | REQ-GAME-05 | `GET /games/bets/me` (paginated) | Done (P4.08 — BetsController + GetPlayerBetsUseCase + JwtGuard) |
 | REQ-GAME-08 | Reject bets outside BETTING with 409 + discriminated code | Pending |
-| REQ-GAME-09 | `kill -9` survives — round loop reconstructs from DB | Pending |
+| REQ-GAME-09 | `kill -9` survives — round loop reconstructs from DB | Done (P4.06 — five-branch recoverInFlightRound: no-open, BETTING, RUNNING, CRASHED with idempotent bet sweep, SETTLED) |
 | REQ-FAIR-01 | Pre-generated 1M-link hash chain (reverse-consumed) | Done (P4.05 — SeedChainBootstrap idempotent OnApplicationBootstrap) |
 | REQ-FAIR-02 | Reveal seed for round N only after N settles | Done (P4.08 — VerifyRoundUseCase 400 gate + GetCurrentRoundUseCase serverSeed nullification) |
 | REQ-FAIR-03 | Bustabit-canon HMAC-SHA-256 52-bit crash-point formula | Pending |
