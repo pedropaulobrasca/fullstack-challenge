@@ -15,7 +15,7 @@ export class Migration20260526003 extends Migration {
         payout_cents BIGINT NULL CHECK (payout_cents IS NULL OR payout_cents >= 0),
         refund_reason TEXT NULL,
         created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-        CONSTRAINT bets_status_check CHECK (
+        CONSTRAINT bets_status_state_consistency_check CHECK (
           (status IN ('PENDING','ACTIVE','REFUNDED','LOST')
             AND cashed_out_at IS NULL
             AND cashed_out_multiplier_centi_x IS NULL

@@ -35,5 +35,6 @@ export default defineConfig({
     emit: "ts",
     snapshot: false,
   },
+  allowGlobalContext: true,
   extensions: [Migrator],
 });
