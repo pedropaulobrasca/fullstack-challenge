@@ -244,7 +244,127 @@ probe_wallets_kong_mutation_block() {
   fi
 }
 
-echo "Running Phase 1+2+3 smoke probes against local stack..."
+probe_games_rounds_current() {
+  local name="27: GET /games/rounds/current returns 200 with seedHash"
+  local response
+  response=$(curl -s -w "\n%{http_code}" http://localhost:8000/games/rounds/current || echo $'\n000')
+  local code="${response##*$'\n'}"
+  local body="${response%$'\n'*}"
+  if [[ "${code}" != "200" ]]; then
+    record_fail "${name}" "expected 200, got ${code}"
+    return
+  fi
+  if ! command -v jq >/dev/null 2>&1; then
+    record_fail "${name}" "jq not available"
+    return
+  fi
+  local status
+  status=$(echo "${body}" | jq -r '.status // empty')
+  if [[ "${status}" != "BETTING" && "${status}" != "RUNNING" && "${status}" != "CRASHED" && "${status}" != "SETTLED" ]]; then
+    record_fail "${name}" "unexpected status '${status}'"
+    return
+  fi
+  local seed_hash_length
+  seed_hash_length=$(echo "${body}" | jq -r '.seedHash | length')
+  if [[ "${seed_hash_length}" != "64" ]]; then
+    record_fail "${name}" "expected seedHash length 64, got ${seed_hash_length}"
+    return
+  fi
+  record_pass "${name} (status=${status})"
+}
+
+probe_games_rounds_history() {
+  local name="28: GET /games/rounds/history?limit=5 returns 200 with rounds array"
+  local response
+  response=$(curl -s -w "\n%{http_code}" "http://localhost:8000/games/rounds/history?limit=5" || echo $'\n000')
+  local code="${response##*$'\n'}"
+  local body="${response%$'\n'*}"
+  if [[ "${code}" != "200" ]]; then
+    record_fail "${name}" "expected 200, got ${code}"
+    return
+  fi
+  if ! command -v jq >/dev/null 2>&1; then
+    record_fail "${name}" "jq not available"
+    return
+  fi
+  if echo "${body}" | jq -e 'has("rounds") and (.rounds | type == "array")' >/dev/null 2>&1; then
+    local count
+    count=$(echo "${body}" | jq -r '.rounds | length')
+    record_pass "${name} (rounds=${count})"
+  else
+    record_fail "${name}" "missing rounds array in body"
+  fi
+}
+
+probe_games_bets_me_unauth() {
+  local name="29: GET /games/bets/me without bearer returns 401 (JwtGuard)"
+  local code
+  code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/games/bets/me || echo "000")
+  if [[ "${code}" == "401" ]]; then
+    record_pass "${name}"
+  else
+    record_fail "${name}" "expected 401, got ${code}"
+  fi
+}
+
+probe_games_bets_me_auth() {
+  local name="30: GET /games/bets/me with valid bearer returns 200 with bets array"
+  if [[ -z "${WALLETS_TOKEN}" ]]; then
+    record_fail "${name}" "no WALLETS_TOKEN (token grant must run first)"
+    return
+  fi
+  local response
+  response=$(curl -s -w "\n%{http_code}" \
+    -H "Authorization: Bearer ${WALLETS_TOKEN}" \
+    http://localhost:8000/games/bets/me || echo $'\n000')
+  local code="${response##*$'\n'}"
+  local body="${response%$'\n'*}"
+  if [[ "${code}" != "200" ]]; then
+    record_fail "${name}" "expected 200, got ${code}"
+    return
+  fi
+  if ! command -v jq >/dev/null 2>&1; then
+    record_fail "${name}" "jq not available"
+    return
+  fi
+  if echo "${body}" | jq -e 'has("bets") and (.bets | type == "array")' >/dev/null 2>&1; then
+    local count
+    count=$(echo "${body}" | jq -r '.bets | length')
+    record_pass "${name} (bets=${count})"
+  else
+    record_fail "${name}" "missing bets array in body"
+  fi
+}
+
+probe_games_seed_chain_initialized() {
+  local name="31: postgres games.seed_chain populated after bootstrap"
+  local count
+  count=$(docker compose exec -T postgres psql -U admin -d games -tAc "SELECT COUNT(*) FROM seed_chain" 2>/dev/null | tr -d '[:space:]' || echo "ERR")
+  if [[ "${count}" =~ ^[0-9]+$ ]] && [[ "${count}" -gt 0 ]]; then
+    record_pass "${name} (rows=${count})"
+  else
+    record_fail "${name}" "expected COUNT > 0, got '${count}'"
+  fi
+}
+
+probe_games_kong_mutation_block() {
+  local name="32: POST /games/bet blocked at Kong (404 + no Route matched body)"
+  local response
+  response=$(curl -s -w "\n%{http_code}" -X POST http://localhost:8000/games/bet || echo $'\n000')
+  local code="${response##*$'\n'}"
+  local body="${response%$'\n'*}"
+  if [[ "${code}" != "404" ]]; then
+    record_fail "${name}" "expected 404, got ${code}"
+    return
+  fi
+  if echo "${body}" | grep -q "no Route matched"; then
+    record_pass "${name}"
+  else
+    record_fail "${name}" "404 status ok but body missing 'no Route matched': ${body}"
+  fi
+}
+
+echo "Running Phase 1+2+3+4 smoke probes against local stack..."
 echo
 
 probe_postgres
@@ -261,6 +381,12 @@ probe_wallets_keycloak_token
 probe_wallets_provision
 probe_wallets_balance
 probe_wallets_kong_mutation_block
+probe_games_rounds_current
+probe_games_rounds_history
+probe_games_bets_me_unauth
+probe_games_bets_me_auth
+probe_games_seed_chain_initialized
+probe_games_kong_mutation_block
 
 TOTAL=$((PASS + FAIL))
 echo
