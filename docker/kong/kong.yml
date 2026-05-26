@@ -4,9 +4,29 @@ services:
   - name: games-service
     url: http://games:4001
     routes:
-      - name: games-routes
+      - name: games-current
         paths:
-          - /games
+          - ~/games/rounds/current$
+        methods:
+          - GET
+        strip_path: false
+      - name: games-history
+        paths:
+          - ~/games/rounds/history$
+        methods:
+          - GET
+        strip_path: false
+      - name: games-verify
+        paths:
+          - ~/games/rounds/[^/]+/verify$
+        methods:
+          - GET
+        strip_path: false
+      - name: games-bets-me
+        paths:
+          - ~/games/bets/me$
+        methods:
+          - GET
         strip_path: false
 
   - name: wallets-service
