@@ -21,16 +21,17 @@ export class MikroSeedChainRepository implements SeedChainRepository {
     if (entries.length === 0) return;
     for (let offset = 0; offset < entries.length; offset += INSERT_BATCH_SIZE) {
       const slice = entries.slice(offset, offset + INSERT_BATCH_SIZE);
-      const placeholders = slice.map(() => "(?, ?)").join(", ");
+      const placeholders = slice.map(() => "(?, ?, ?)").join(", ");
       const params: Array<string> = [];
       for (const entry of slice) {
         params.push(entry.nonce.toString());
         params.push(entry.hash);
+        params.push(entry.seed);
       }
       await this.em
         .getConnection()
         .execute(
-          `INSERT INTO seed_chain (nonce, hash) VALUES ${placeholders}`,
+          `INSERT INTO seed_chain (nonce, hash, seed) VALUES ${placeholders}`,
           params,
           "run",
           this.em.getTransactionContext(),

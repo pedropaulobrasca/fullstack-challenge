@@ -1,4 +1,4 @@
-export function setupGamesTestEnv(): void {
+function applyDefaults(): void {
   process.env.DATABASE_URL ??= "postgres://test:test@localhost:5432/games_test";
   process.env.RABBITMQ_URL ??= "amqp://test:test@localhost:5672";
   process.env.NODE_ENV ??= "test";
@@ -22,4 +22,14 @@ export function setupGamesTestEnv(): void {
   process.env.AUTO_CASHOUT_MAX_X ??= "100";
   process.env.LEADERBOARD_WINDOW_HOURS ??= "24";
   process.env.LEADERBOARD_TOP_N ??= "10";
+  process.env.KEYCLOAK_ISSUER ??= "http://localhost:8080/realms/crash-game-test";
+  process.env.KEYCLOAK_JWKS_URI ??=
+    "http://localhost:8080/realms/crash-game-test/protocol/openid-connect/certs";
+  process.env.KEYCLOAK_AUDIENCE ??= "account";
+}
+
+applyDefaults();
+
+export function setupGamesTestEnv(): void {
+  applyDefaults();
 }

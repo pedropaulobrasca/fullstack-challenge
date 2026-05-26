@@ -10,6 +10,7 @@ import { env } from "./config/defaults";
 import { GamesController } from "./presentation/controllers/games.controller";
 import { HealthController } from "./presentation/controllers/health.controller";
 import { GamesDeadLetterConsumer } from "./infrastructure/messaging/games-dead-letter.consumer";
+import { GameCoreModule } from "./application/game-core.module";
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { GamesDeadLetterConsumer } from "./infrastructure/messaging/games-dead-l
         },
       }),
     }),
+    GameCoreModule,
   ],
   controllers: [GamesController, HealthController],
   providers: [GamesDeadLetterConsumer],

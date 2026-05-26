@@ -1,6 +1,7 @@
 export type SeedChainEntry = {
   nonce: bigint;
   hash: string;
+  seed: string;
 };
 
 export interface SeedChainRepository {
