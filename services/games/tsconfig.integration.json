@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig.json",
+  "include": ["src/**/*", "mikro-orm.config.ts", "tests/integration/**/*"],
+  "exclude": ["node_modules", "dist"]
+}
