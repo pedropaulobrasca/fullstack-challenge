@@ -25,6 +25,8 @@ import { CrashRoundUseCase } from "./use-cases/crash-round.use-case";
 import { SettleRoundUseCase } from "./use-cases/settle-round.use-case";
 import { PlaceBetUseCase } from "./use-cases/place-bet.use-case";
 import { RoundLoopService } from "./round-loop.service";
+import { WalletDebitedHandler } from "./handlers/wallet-debited.handler";
+import { WalletDebitRejectedHandler } from "./handlers/wallet-debit-rejected.handler";
 
 @Module({
   imports: [
@@ -51,6 +53,8 @@ import { RoundLoopService } from "./round-loop.service";
     SettleRoundUseCase,
     PlaceBetUseCase,
     RoundLoopService,
+    WalletDebitedHandler,
+    WalletDebitRejectedHandler,
   ],
   exports: [
     SEED_CHAIN_REPOSITORY,
