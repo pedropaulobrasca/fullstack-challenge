@@ -80,6 +80,10 @@ See `.planning/REQUIREMENTS.md` Open Configuration Values table. All 14 constant
 
 ## Session Continuity
 
+### Recent plan completions (Phase 5)
+
+- **05-04 (2026-05-27)** — PlaceBetUseCase + POST /games/bet command controller. 8 files changed, 6 tests added (47 expect), 144/144 unit suite green, tsc --noEmit clean. Commits 1fd7847 (RED) → e2d54ac (use case + error) → 8525e09 (controller + DTOs + wiring). REQ-GAME-06 + REQ-SAGA-01 step 1 closed at the application layer. Live HTTP verification deferred to 05-10.
+
 ### Phase history
 
 | Phase | Plans | Status | Notes |
