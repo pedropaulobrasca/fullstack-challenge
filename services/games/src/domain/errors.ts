@@ -1,5 +1,5 @@
 import { DomainError } from "@crash/shared-kernel";
-import type { RoundId } from "@crash/shared-kernel";
+import type { BetId, RoundId } from "@crash/shared-kernel";
 import type { RoundStatus } from "./value-objects/round-status";
 import type { BetStatus } from "./value-objects/bet-status";
 import type { BetSagaStatus } from "./bet-saga-state.aggregate";
@@ -111,5 +111,15 @@ export class SagaTimeoutError extends DomainError {
 
   constructor(message = "Saga deadline elapsed before terminal event arrived") {
     super(message);
+  }
+}
+
+export class BetAlreadyActiveError extends DomainError {
+  readonly code = "BET_ALREADY_ACTIVE";
+  readonly existingBetId: BetId;
+
+  constructor(existingBetId: BetId) {
+    super(`Player already has an active or pending bet (existingBetId=${existingBetId as unknown as string})`);
+    this.existingBetId = existingBetId;
   }
 }
