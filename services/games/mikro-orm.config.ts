@@ -8,6 +8,7 @@ import {
 import { SeedChainEntitySchema } from "./src/infrastructure/persistence/seed-chain.entity";
 import { RoundEntitySchema } from "./src/infrastructure/persistence/round.entity";
 import { BetEntitySchema } from "./src/infrastructure/persistence/bet.entity";
+import { BetSagaStateEntitySchema } from "./src/infrastructure/persistence/bet-saga-state.entity";
 
 export default defineConfig({
   clientUrl: process.env.DATABASE_URL ?? "",
@@ -18,6 +19,7 @@ export default defineConfig({
     SeedChainEntitySchema,
     RoundEntitySchema,
     BetEntitySchema,
+    BetSagaStateEntitySchema,
   ],
   entitiesTs: [
     OutboxMessageSchema,
@@ -26,6 +28,7 @@ export default defineConfig({
     SeedChainEntitySchema,
     RoundEntitySchema,
     BetEntitySchema,
+    BetSagaStateEntitySchema,
   ],
   migrations: {
     path: "./src/infrastructure/mikro-orm/migrations",

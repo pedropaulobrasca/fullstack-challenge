@@ -3,11 +3,14 @@ import { MikroOrmModule } from "@mikro-orm/nestjs";
 import { SeedChainEntitySchema } from "../infrastructure/persistence/seed-chain.entity";
 import { RoundEntitySchema } from "../infrastructure/persistence/round.entity";
 import { BetEntitySchema } from "../infrastructure/persistence/bet.entity";
+import { BetSagaStateEntitySchema } from "../infrastructure/persistence/bet-saga-state.entity";
 import { MikroSeedChainRepository } from "../infrastructure/repositories/mikro-seed-chain.repository";
 import { MikroRoundRepository } from "../infrastructure/repositories/mikro-round.repository";
 import { MikroBetRepository } from "../infrastructure/repositories/mikro-bet.repository";
+import { MikroBetSagaStateRepository } from "../infrastructure/repositories/mikro-bet-saga-state.repository";
 import {
   BET_REPOSITORY,
+  BET_SAGA_REPOSITORY,
   ROUND_REPOSITORY,
   SEED_CHAIN_REPOSITORY,
 } from "./tokens";
@@ -28,12 +31,14 @@ import { RoundLoopService } from "./round-loop.service";
       SeedChainEntitySchema,
       RoundEntitySchema,
       BetEntitySchema,
+      BetSagaStateEntitySchema,
     ]),
   ],
   providers: [
     { provide: SEED_CHAIN_REPOSITORY, useClass: MikroSeedChainRepository },
     { provide: ROUND_REPOSITORY, useClass: MikroRoundRepository },
     { provide: BET_REPOSITORY, useClass: MikroBetRepository },
+    { provide: BET_SAGA_REPOSITORY, useClass: MikroBetSagaStateRepository },
     SeedChainBootstrap,
     GetCurrentRoundUseCase,
     GetRoundHistoryUseCase,
@@ -49,6 +54,7 @@ import { RoundLoopService } from "./round-loop.service";
     SEED_CHAIN_REPOSITORY,
     ROUND_REPOSITORY,
     BET_REPOSITORY,
+    BET_SAGA_REPOSITORY,
     GetCurrentRoundUseCase,
     GetRoundHistoryUseCase,
     VerifyRoundUseCase,
