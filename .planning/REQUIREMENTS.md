@@ -20,11 +20,11 @@
 - [x] **REQ-DOM-01**: System enforces Round lifecycle `BETTING → RUNNING → CRASHED → SETTLED`; no illegal transitions are possible from any code path (enforced at aggregate boundary, not service layer).
 - [x] **REQ-DOM-02**: System enforces single bet per player per round (DB partial unique index + aggregate guard).
 - [x] **REQ-DOM-03**: System enforces Bet lifecycle `PENDING → ACTIVE → CASHED_OUT | LOST`; cashout is rejected if Bet is not in `ACTIVE` state.
-- [ ] **REQ-DOM-04**: System enforces bet bounds: min `1.00`, max `1000.00` (spec values, env-overridable for non-prod).
+- [x] **REQ-DOM-04**: System enforces bet bounds: min `1.00`, max `1000.00` (spec values, env-overridable for non-prod).
 - [ ] **REQ-DOM-05**: System guarantees wallet balance never goes negative (Postgres CHECK constraint + domain invariant).
 - [ ] **REQ-DOM-06**: System represents all monetary amounts using a `Money` value object wrapping bigint-of-cents (no `number` for any amount-like field, anywhere — backend, frontend, wire format).
-- [ ] **REQ-DOM-07**: System computes cashout as `bet × multiplier` with documented rounding policy (banker's rounding to 2 decimals) and asserts loss-free round-trips via property tests.
-- [ ] **REQ-DOM-08**: System represents Round, Bet, and Wallet as rich aggregates with behavior methods (no anemic ORM rows).
+- [x] **REQ-DOM-07**: System computes cashout as `bet × multiplier` with documented rounding policy (banker's rounding to 2 decimals) and asserts loss-free round-trips via property tests.
+- [x] **REQ-DOM-08**: System represents Round, Bet, and Wallet as rich aggregates with behavior methods (no anemic ORM rows).
 
 ### Authentication (AUTH)
 
@@ -53,7 +53,7 @@
 - [x] **REQ-GAME-05**: System exposes `GET /games/bets/me` (paginated) returning the authenticated player's bet history.
 - [ ] **REQ-GAME-06**: System exposes `POST /games/bet` accepting bet placement during the BETTING phase; returns `202 Accepted` with a pending bet handle and confirms via WebSocket.
 - [ ] **REQ-GAME-07**: System exposes `POST /games/bet/cashout` accepting cashout during the RUNNING phase; returns `200 OK` with payout amount when accepted, `409 Conflict` when too late.
-- [ ] **REQ-GAME-08**: System rejects bets outside the BETTING window with `409 Conflict` and a discriminated error code.
+- [x] **REQ-GAME-08**: System rejects bets outside the BETTING window with `409 Conflict` and a discriminated error code.
 - [x] **REQ-GAME-09**: System persists round and bet state survives `kill -9` of the service mid-round; on restart, the round loop reconstructs state from DB and resumes from the last persisted transition.
 
 ### Saga Coordination (SAGA)
@@ -69,7 +69,7 @@
 
 - [x] **REQ-FAIR-01**: System pre-generates a hash chain (`HASH_CHAIN_LENGTH=1000000`) at first boot using `crypto.randomBytes` for the final seed, then `SHA-256(prev)` N times; consumes seeds in reverse so each revealed seed hashes to the previous round's hash.
 - [x] **REQ-FAIR-02**: System reveals the seed for round N only after round N has settled (never before).
-- [ ] **REQ-FAIR-03**: System derives the crash point per round via `HMAC-SHA-256(serverSeed, clientSeed:nonce)`, taking 52 bits via Bustabit canon formula `floor((100 * 2^52 - H) / (2^52 - H)) / 100`, with a 1-in-101 instant-crash (`1.00x`) bucket for ~99% RTP — both formula and constant env-overridable.
+- [x] **REQ-FAIR-03**: System derives the crash point per round via `HMAC-SHA-256(serverSeed, clientSeed:nonce)`, taking 52 bits via Bustabit canon formula `floor((100 * 2^52 - H) / (2^52 - H)) / 100`, with a 1-in-101 instant-crash (`1.00x`) bucket for ~99% RTP — both formula and constant env-overridable.
 - [x] **REQ-FAIR-04**: System exposes the provably-fair algorithm as a pure-function module in `packages/contracts` so the exact same code runs on the frontend verifier and the backend round loop.
 - [x] **REQ-FAIR-05**: System displays the pre-round hash commitment before every round (BETTING phase) so the player has the commitment before placing a bet.
 
@@ -131,7 +131,7 @@
 ### Tests (TEST)
 
 - [x] **REQ-TEST-01**: Domain unit tests cover Round FSM (legal transitions, invariant violations rejected), Bet logic (cashout math, status transitions, bound validation), Wallet (credit/debit/insufficient balance/precision), and provably-fair (deterministic crash-point computation, hash chain verification, formula correctness).
-- [ ] **REQ-TEST-02**: Property-based tests via `fast-check` cover: any zero-net credit/debit sequence returns to original balance; no illegal Round FSM transition is reachable; Money rounding is loss-free across arbitrary multiplier × bet inputs.
+- [x] **REQ-TEST-02**: Property-based tests via `fast-check` cover: any zero-net credit/debit sequence returns to original balance; no illegal Round FSM transition is reachable; Money rounding is loss-free across arbitrary multiplier × bet inputs.
 - [ ] **REQ-TEST-03**: E2E API tests cover happy paths (bet → multiplier → cashout → balance updated; bet → crash → bet lost) and error scenarios (insufficient balance, double bet, bet during RUNNING phase, cashout without bet, cashout after crash).
 - [ ] **REQ-TEST-04**: E2E saga recovery test: spawn the wallet service, place a bet, `kill -9` mid-saga, restart, assert the balance is consistent.
 - [ ] **REQ-TEST-05**: Playwright E2E covers the full player flow: login → wait for BETTING → place bet → wait for RUNNING → cashout → verify balance updated; second test covers login → bet → crash → verify bet lost.
@@ -216,7 +216,7 @@ Each v1 REQ-ID maps to exactly one phase in `ROADMAP.md`. v2 (REQ-STRETCH-*) liv
 ### Coverage summary
 
 - **v1 mapped**: 95 / 95 (100%)
-- **v1 complete**: 12 / 95 (Phase 1: REQ-AUTH-05 + REQ-DOC-03; Phase 2: REQ-WALL-05 + REQ-WALL-06 + REQ-SAGA-05 + REQ-SAGA-06; Phase 3: REQ-DOM-03 + REQ-AUTH-04 + REQ-WALL-01 + REQ-WALL-02 + REQ-WALL-03 + REQ-WALL-04 + REQ-WALL-07)
+- **v1 complete**: 31 / 95 (Phase 1: REQ-AUTH-05 + REQ-DOC-03; Phase 2: REQ-WALL-05 + REQ-WALL-06 + REQ-SAGA-05 + REQ-SAGA-06; Phase 3: REQ-DOM-03 + REQ-AUTH-04 + REQ-WALL-01 + REQ-WALL-02 + REQ-WALL-03 + REQ-WALL-04 + REQ-WALL-07; Phase 4: REQ-DOM-01 + REQ-DOM-02 + REQ-DOM-04 + REQ-DOM-07 + REQ-DOM-08 + REQ-GAME-01 + REQ-GAME-02 + REQ-GAME-03 + REQ-GAME-04 + REQ-GAME-05 + REQ-GAME-08 + REQ-GAME-09 + REQ-FAIR-01 + REQ-FAIR-02 + REQ-FAIR-03 + REQ-FAIR-04 + REQ-FAIR-05 + REQ-TEST-01 + REQ-TEST-02)
 - **Orphans**: 0
 - **Duplicates**: 0
 - **Stretch (v2) deferred**: 8
@@ -260,23 +260,23 @@ Each v1 REQ-ID maps to exactly one phase in `ROADMAP.md`. v2 (REQ-STRETCH-*) liv
 |--------|-------|--------|
 | REQ-DOM-01 | Round lifecycle FSM enforced at aggregate boundary | Done (P4.02 aggregate + P4.04 rounds_fsm_check CHECK + P4.06 use cases orchestrate via transitionFromXToY) |
 | REQ-DOM-02 | Single bet per player per round (partial unique index + guard) | Done (P4.04 migration creates `bets_one_active_per_player` partial unique index + P4.10 integration test asserts SQLSTATE 23505 on duplicate PENDING insert) |
-| REQ-DOM-04 | Bet bounds: min 1.00, max 1000.00 (env-overridable) | Pending |
-| REQ-DOM-07 | Cashout `bet × multiplier` with banker's rounding | Pending |
-| REQ-DOM-08 | Rich Round/Bet/Wallet aggregates (no anemic rows) | Pending |
+| REQ-DOM-04 | Bet bounds: min 1.00, max 1000.00 (env-overridable) | Done (P4.03 — BetAmount value object enforces BET_MIN_CENTS / BET_MAX_CENTS bounds with env-overridable constants) |
+| REQ-DOM-07 | Cashout `bet × multiplier` with banker's rounding | Done (P4.03 — Money.multiplyRounded shared-kernel extension + Bet.cashOut canonical consumer + 20k fast-check property; ADR-018) |
+| REQ-DOM-08 | Rich Round/Bet/Wallet aggregates (no anemic rows) | Done (P4.02 + P4.03 — Round + Bet aggregates with private ctor, static factories, behavior methods; ADR-014) |
 | REQ-GAME-01 | Autonomous round loop without external triggers | Done (P4.06 — RoundLoopService OnApplicationBootstrap + recursive setTimeout + four lifecycle use cases) |
 | REQ-GAME-02 | `GET /games/rounds/current` with masked bets | Done (P4.08 — RoundsController + GetCurrentRoundUseCase) |
 | REQ-GAME-03 | `GET /games/rounds/history?limit=20` | Done (P4.08 — RoundsController + GetRoundHistoryUseCase) |
 | REQ-GAME-04 | `GET /games/rounds/:roundId/verify` provably-fair data | Done (P4.08 — RoundsController + VerifyRoundUseCase) |
 | REQ-GAME-05 | `GET /games/bets/me` (paginated) | Done (P4.08 — BetsController + GetPlayerBetsUseCase + JwtGuard) |
-| REQ-GAME-08 | Reject bets outside BETTING with 409 + discriminated code | Pending |
+| REQ-GAME-08 | Reject bets outside BETTING with 409 + discriminated code | Done (P4.02 — Round.acceptBet throws RoundNotInBettingPhaseError when status !== BETTING; aggregate-level FSM gate ready for Phase 5 POST /games/bet to surface as 409) |
 | REQ-GAME-09 | `kill -9` survives — round loop reconstructs from DB | Done (P4.06 — five-branch recoverInFlightRound: no-open, BETTING, RUNNING, CRASHED with idempotent bet sweep, SETTLED) |
 | REQ-FAIR-01 | Pre-generated 1M-link hash chain (reverse-consumed) | Done (P4.05 — SeedChainBootstrap idempotent OnApplicationBootstrap) |
 | REQ-FAIR-02 | Reveal seed for round N only after N settles | Done (P4.08 — VerifyRoundUseCase 400 gate + GetCurrentRoundUseCase serverSeed nullification) |
-| REQ-FAIR-03 | Bustabit-canon HMAC-SHA-256 52-bit crash-point formula | Pending |
+| REQ-FAIR-03 | Bustabit-canon HMAC-SHA-256 52-bit crash-point formula | Done (P4.01 — `deriveCrashPoint` in packages/contracts implements `floor((100 * 2^52 - H) / (2^52 - H)) / 100` with 1-in-101 instant-crash bucket; verified against bustabit-rust reference + P4.11 CLI verifier MATCH; ADR-015) |
 | REQ-FAIR-04 | Pure-function provably-fair module in `packages/contracts` | Done (P4.01 ships `@crash/contracts/provably-fair`; P4.10 verify-round integration test independently re-invokes deriveCrashPoint against the server response and asserts byte-equality) |
 | REQ-FAIR-05 | Pre-round hash commitment displayed during BETTING | Done (P4.08 — CurrentRoundDto.seedHash always exposed during BETTING) |
-| REQ-TEST-01 | Domain unit tests (Round FSM, Bet, Wallet, provably-fair) | Done — unit suite green across services + 8 integration tests in P4.10 covering the Phase 4 surface end-to-end (live run gated to P4.11 smoke checkpoint) |
-| REQ-TEST-02 | Property tests for monetary + FSM invariants | Pending |
+| REQ-TEST-01 | Domain unit tests (Round FSM, Bet, Wallet, provably-fair) | Done (P4.02 + P4.03 unit suites green: round.aggregate.test.ts + bet.aggregate.test.ts + bet-amount.value-object.test.ts + 8 integration tests in P4.10 + P4.11 live run 32/32 smoke probes PASS) |
+| REQ-TEST-02 | Property tests for monetary + FSM invariants | Done (P4.03 — money-rounding.property.test.ts 2 props × 10k cases = 20k fast-check runs asserting loss-free monetary invariants + Wallet zero-net property in P3.08 10k cases + Round FSM exhaustive transition tests in P4.02) |
 
 #### Phase 5 — Saga Integration (8 reqs)
 | REQ-ID | Title | Status |
@@ -382,4 +382,4 @@ A v1 requirement is done when:
 
 ---
 
-*Last updated: 2026-05-25 by gsd-executor (P3.10 closeout — Phase 3 traceability marked Done; v1-complete count incremented to 12/95).*
+*Last updated: 2026-05-26 by gsd-executor (P4.12 closeout — Phase 4 traceability marked Done for all 19 REQ-IDs; v1-complete count incremented to 31/95).*

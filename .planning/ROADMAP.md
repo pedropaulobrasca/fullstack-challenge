@@ -8,7 +8,7 @@
 
 ## Phases
 
-- [ ] **Phase 1: Foundation & Infra** — Docker bootstrap, shared kernel (Money VO), contracts package, ESLint money guard, ADR scaffolding
+- [x] **Phase 1: Foundation & Infra** — Docker bootstrap, shared kernel (Money VO), contracts package, ESLint money guard, ADR scaffolding
 - [x] **Phase 2: Outbox/Inbox Messaging Spine** — Hand-rolled transactional outbox/inbox, quorum queues + DLX, publisher confirms
 - [x] **Phase 3: Wallet Service** — Wallet + Transaction aggregates, REST provisioning, AMQP debit/credit consumers, ledger model
 - [x] **Phase 4: Game Core (domain only)** — Round + Bet aggregates, provably-fair hash chain, autonomous round loop with crash recovery
@@ -268,7 +268,7 @@ These are not numbered phases. Pull from this list during Phase 10 if time permi
 | 1. Foundation & Infra | 10/10 | Complete | 2026-05-24 |
 | 2. Outbox/Inbox Messaging Spine | 10/10 | Complete | 2026-05-24 |
 | 3. Wallet Service | 10/10 | Complete | 2026-05-25 |
-| 4. Game Core (domain only) | 11/11 | Complete | 2026-05-26 |
+| 4. Game Core (domain only) | 12/12 | Complete | 2026-05-26 |
 | 5. Saga Integration | 0/0 | Not started | - |
 | 6. WebSocket Gateway & Multiplier Sync | 0/0 | Not started | - |
 | 7. Frontend Vertical Slice | 0/0 | Not started | - |
@@ -303,4 +303,4 @@ No structural deviations. The 10 phases map 1:1 to the SUMMARY clusters. Refinem
 
 ---
 
-*Last updated: 2026-05-25 by gsd-executor (P3.10 closeout — Phase 3 complete, 3/10 phases done).*
+*Last updated: 2026-05-26 by gsd-executor (P4.12 closeout — Phase 4 complete, 4/10 phases done, five Phase 4 ADRs landed).*

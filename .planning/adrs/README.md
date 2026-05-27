@@ -32,6 +32,16 @@ Each ADR records the constraints that drove the decision, the alternatives that 
 | [ADR-012](./ADR-012-jwt-validation-via-cached-jwks.md) | JWT validation via `jose` + cached JWKS at each service over passport-jwt + Kong JWT plugin | 3 | Accepted | Per-service `JwtGuard implements CanActivate` using `jose@^6.2.3` `createRemoteJWKSet` (10-minute `cacheMaxAge`, 30-second `cooldownDuration`) + `jwtVerify`; single dependency, no Passport-decorator + Bun-SWC friction; `KEYCLOAK_AUDIENCE=account` (Option B — accept Keycloak's default for public PKCE clients without a realm mapper). |
 | [ADR-013](./ADR-013-idempotent-subscribe-propagates-tx-em.md) | `@IdempotentSubscribe` propagates `txEm` to the handler signature | 3 | Accepted | Decorator passes the transactional `EntityManager` as the third positional argument to wrapped handlers; `OutboxRepository.add(env, route, em?)` accepts an optional EM — handlers thread `txEm` through all four writes (inbox claim, wallet UPDATE, transaction append, outbox row) so they commit in one Postgres TX. Spine public API change (minor). |
 
+## Phase 4 — Game Core
+
+| ADR | Title | Phase | Status | Summary |
+|-----|-------|-------|--------|---------|
+| [ADR-014](./ADR-014-bet-as-own-aggregate.md) | Bet is its own aggregate — not nested inside Round | 4 | Accepted | Bet is a sibling-of-Round aggregate referencing `RoundId`; the `Round.bets[]` collection is absent by construction; cross-aggregate consistency for round-crash → all-ACTIVE-bets → LOST flows through per-bet micro-TX in `CrashRoundUseCase`; partial unique index `bets_one_active_per_player` enforces REQ-DOM-02 at the DB before any aggregate code runs. |
+| [ADR-015](./ADR-015-crash-point-formula-and-client-seed-derivation.md) | Crash-point formula (Bustabit canon) and per-round client-seed derivation | 4 | Accepted | `HMAC-SHA-256(serverSeed, ${clientSeed}:${nonce})` with `floor((100 * 2^52 - H) / (2^52 - H)) / 100` + 1-in-101 instant-crash bucket; client seed for round N derives via `SHA256(prevRound.id + ":" + prevRound.crashedAt.toISOString())` — public, deterministic, derivable from prior-round CRASHED-time data; genesis uses `SHA256(GENESIS_CLIENT_SEED)`; deliberate variant from Bustabit's fixed-public-salt canon documented. |
+| [ADR-016](./ADR-016-hash-chain-pre-generation-depth.md) | Hash chain pre-generation at bootstrap (1M rounds) over lazy generation | 4 | Accepted | `SeedChainBootstrap implements OnApplicationBootstrap` generates `HASH_CHAIN_LENGTH=1000000` entries at first boot via `randomBytes(32)` terminal seed + `SHA256(seed[i+1])` walked in reverse; idempotent on restart via `countEntries() > 0n`; ~80MB transient heap + ~80MB DB storage; one-time commitment story over lazy-refill's head-pointer-mutation attack. |
+| [ADR-017](./ADR-017-round-loop-recursive-settimeout-and-on-application-bootstrap.md) | Round loop — recursive `setTimeout` + `OnApplicationBootstrap` over `setInterval` / worker thread | 4 | Accepted | `RoundLoopService implements OnApplicationBootstrap, OnApplicationShutdown` drives the autonomous `BETTING → RUNNING → CRASHED → SETTLED → BETTING` loop; recursive `setTimeout` scheduled once per transition with `crashAt = roundStartedAt + crashTimeMs(crashPoint)`; five-branch `recoverInFlightRound` survives `kill -9` (live SIGKILL drill PASSED at P4.11); single-process scope with documented `pg_try_advisory_lock` scale-out path. |
+| [ADR-018](./ADR-018-money-multiply-rounded-bankers-extension.md) | `Money.multiplyRounded` shared-kernel extension for banker's rounding cashout | 4 | Accepted | Dinero v2's `multiply` is precision-preserving (never rounds to currency exponent); `Money.multiplyRounded(factor, mode = "bankers")` composes `multiply` + `transformScale(product, currencyExponent, halfEven)` for banker's rounding at the aggregate boundary; `Bet.cashOut` is the canonical consumer; REQ-DOM-07 satisfied in Phase 4. |
+
 ## Conventions
 
 - **Filename**: `ADR-NNN-<kebab-slug>.md` where NNN is a zero-padded three-digit sequence number. ADRs are numbered globally across the project (not per phase).
@@ -42,9 +52,8 @@ Each ADR records the constraints that drove the decision, the alternatives that 
 
 ## Future ADRs
 
-Subsequent phases append ADR-014+ as decisions land. The anticipated catalogue is enumerated in `.planning/ROADMAP.md` under each phase's "Key decisions to make" list. Examples:
+Subsequent phases append ADR-019+ as decisions land. The anticipated catalogue is enumerated in `.planning/ROADMAP.md` under each phase's "Key decisions to make" list. Examples:
 
-- Phase 4: round FSM transition policy; provably-fair hash chain length; `multiply` rounding mode for cashout payouts; bet-is-its-own-aggregate vs nested-in-Round; recursive `setTimeout` round loop vs `setInterval` / worker thread.
 - Phase 5: saga state-machine persistence; compensation policy for insufficient-funds and timeout cases.
 - Phase 6: WebSocket room granularity; tick-rate and reconciliation policy.
 - Phase 7: frontend routing and auth-loader pattern; canvas renderer life-cycle.
