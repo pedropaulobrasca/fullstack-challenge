@@ -12,7 +12,7 @@
 - [x] **Phase 2: Outbox/Inbox Messaging Spine** — Hand-rolled transactional outbox/inbox, quorum queues + DLX, publisher confirms
 - [x] **Phase 3: Wallet Service** — Wallet + Transaction aggregates, REST provisioning, AMQP debit/credit consumers, ledger model
 - [x] **Phase 4: Game Core (domain only)** — Round + Bet aggregates, provably-fair hash chain, autonomous round loop with crash recovery
-- [ ] **Phase 5: Saga Integration** — End-to-end bet + cashout sagas, persistent saga state, kill-9 recovery, timeout compensation
+- [x] **Phase 5: Saga Integration** — End-to-end bet + cashout sagas, persistent saga state, kill-9 recovery, timeout compensation
 - [ ] **Phase 6: WebSocket Gateway & Multiplier Sync** — JWT-at-handshake, lobby + user rooms, 30Hz volatile tick broadcast, server-authoritative cashout timestamping
 - [ ] **Phase 7: Frontend Vertical Slice** — TanStack Start + Keycloak, Canvas curve renderer, bet panel, dark casino theme, full table-stakes UX
 - [ ] **Phase 8: Provably-Fair UX, History & Replay** — Commitment badge, client-side verifier (crypto.subtle), `/verify` route, deterministic replay reusing canvas renderer
@@ -152,18 +152,19 @@ Plans:
   - ADR-019: Orchestration over choreography (Game service owns saga state)
   - ADR-020: Bet placement asymmetry — `202 Accepted` + WS for bet, synchronous `200 OK` for cashout
 **Plans:** 11 plans
+**Plans landed**: 05-01 (Round.acceptBet aggregate guard + REQ-GAME-08 closure), 05-02 (RoundLoopService.getMultiplierAt pure synchronous multiplier source), 05-03 (bet_saga_state migration + aggregate + Mikro repo FOR UPDATE SKIP LOCKED), 05-04 (PlaceBetUseCase + POST /games/bet 202 PENDING), 05-05 (WalletDebitedHandler + WalletDebitRejectedHandler + compensation branch), 05-06 (CashOutUseCase + POST /games/bet/cashout 200 synchronous + first-line acceptedAt), 05-07 (SagaTimeoutSweeper @OnApplicationBootstrap recursive setTimeout), 05-08 (Kong PCRE-anchored POST routes), 05-09 (integration tests 7 scenarios + true-SIGKILL drill), 05-10 (smoke probes 33-38 + live saga bring-up + @Global MessagingSpineModule + DLX alignment fixes), 05-11 (ADR-019 + ADR-020 + STATE/ROADMAP/REQUIREMENTS closeout). Phase originally anticipated 10 plans (per Phase 5 anticipated catalogue); shipped 11 by promoting Round.acceptBet aggregate guard (05-01) and getMultiplierAt synchronous multiplier source (05-02) to standalone Wave 1 plans to enable parallel execution of 05-03 + 05-04 + 05-08 in Wave 2.
 Plans:
-- [ ] 05-01-PLAN.md — Round.acceptBet aggregate-boundary FSM guard + REQ-GAME-08 doc-drift closure
-- [ ] 05-02-PLAN.md — RoundLoopService.getMultiplierAt pure synchronous server-clock multiplier source
-- [ ] 05-03-PLAN.md — bet_saga_state migration + EntitySchema + BetSagaState aggregate + Mikro repo (claimExpired FOR UPDATE SKIP LOCKED)
-- [ ] 05-04-PLAN.md — PlaceBetUseCase + BetCommandController POST /games/bet (202 PENDING) + DTOs
-- [ ] 05-05-PLAN.md — WalletDebitedHandler (confirm + compensation branch) + WalletDebitRejectedHandler @IdempotentSubscribe
-- [ ] 05-06-PLAN.md — CashOutUseCase + POST /games/bet/cashout (200 synchronous) with controller-first-line acceptedAt
-- [ ] 05-07-PLAN.md — SagaTimeoutSweeper @OnApplicationBootstrap + SAGA_SWEEP_INTERVAL_MS env
-- [ ] 05-08-PLAN.md — Kong PCRE-anchored POST routes for /games/bet + /games/bet/cashout
-- [ ] 05-09-PLAN.md — Integration tests (7 scenarios incl. true-SIGKILL saga recovery)
-- [ ] 05-10-PLAN.md — Smoke probes 33-38 + blocking live walkthrough checkpoint
-- [ ] 05-11-PLAN.md — ADR-019 + ADR-020 + STATE/ROADMAP/REQUIREMENTS closeout
+- [x] 05-01-PLAN.md — Round.acceptBet aggregate-boundary FSM guard + REQ-GAME-08 doc-drift closure
+- [x] 05-02-PLAN.md — RoundLoopService.getMultiplierAt pure synchronous server-clock multiplier source
+- [x] 05-03-PLAN.md — bet_saga_state migration + EntitySchema + BetSagaState aggregate + Mikro repo (claimExpired FOR UPDATE SKIP LOCKED)
+- [x] 05-04-PLAN.md — PlaceBetUseCase + BetCommandController POST /games/bet (202 PENDING) + DTOs
+- [x] 05-05-PLAN.md — WalletDebitedHandler (confirm + compensation branch) + WalletDebitRejectedHandler @IdempotentSubscribe
+- [x] 05-06-PLAN.md — CashOutUseCase + POST /games/bet/cashout (200 synchronous) with controller-first-line acceptedAt
+- [x] 05-07-PLAN.md — SagaTimeoutSweeper @OnApplicationBootstrap + SAGA_SWEEP_INTERVAL_MS env
+- [x] 05-08-PLAN.md — Kong PCRE-anchored POST routes for /games/bet + /games/bet/cashout
+- [x] 05-09-PLAN.md — Integration tests (7 scenarios incl. true-SIGKILL saga recovery)
+- [x] 05-10-PLAN.md — Smoke probes 33-38 + blocking live walkthrough checkpoint
+- [x] 05-11-PLAN.md — ADR-019 + ADR-020 + STATE/ROADMAP/REQUIREMENTS closeout
 
 ### Phase 6: WebSocket Gateway & Multiplier Sync
 **Goal**: All connected clients see a synchronized server-authoritative multiplier and round lifecycle pushed at 30Hz, with JWT-validated handshakes, snapshot-on-reconnect, and a single server clock as cashout-race authority.
@@ -282,7 +283,7 @@ These are not numbered phases. Pull from this list during Phase 10 if time permi
 | 2. Outbox/Inbox Messaging Spine | 10/10 | Complete | 2026-05-24 |
 | 3. Wallet Service | 10/10 | Complete | 2026-05-25 |
 | 4. Game Core (domain only) | 12/12 | Complete | 2026-05-26 |
-| 5. Saga Integration | 0/0 | Not started | - |
+| 5. Saga Integration | 11/11 | Complete | 2026-05-27 |
 | 6. WebSocket Gateway & Multiplier Sync | 0/0 | Not started | - |
 | 7. Frontend Vertical Slice | 0/0 | Not started | - |
 | 8. Provably-Fair UX, History & Replay | 0/0 | Not started | - |
@@ -316,4 +317,4 @@ No structural deviations. The 10 phases map 1:1 to the SUMMARY clusters. Refinem
 
 ---
 
-*Last updated: 2026-05-26 by gsd-executor (P4.12 closeout — Phase 4 complete, 4/10 phases done, five Phase 4 ADRs landed).*
+*Last updated: 2026-05-27 by gsd-executor (P5.11 closeout — Phase 5 complete, 5/10 phases done, two Phase 5 ADRs landed: ADR-019 orchestration + ADR-020 bet-202/cashout-200 asymmetry).*

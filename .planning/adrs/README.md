@@ -42,6 +42,13 @@ Each ADR records the constraints that drove the decision, the alternatives that 
 | [ADR-017](./ADR-017-round-loop-recursive-settimeout-and-on-application-bootstrap.md) | Round loop — recursive `setTimeout` + `OnApplicationBootstrap` over `setInterval` / worker thread | 4 | Accepted | `RoundLoopService implements OnApplicationBootstrap, OnApplicationShutdown` drives the autonomous `BETTING → RUNNING → CRASHED → SETTLED → BETTING` loop; recursive `setTimeout` scheduled once per transition with `crashAt = roundStartedAt + crashTimeMs(crashPoint)`; five-branch `recoverInFlightRound` survives `kill -9` (live SIGKILL drill PASSED at P4.11); single-process scope with documented `pg_try_advisory_lock` scale-out path. |
 | [ADR-018](./ADR-018-money-multiply-rounded-bankers-extension.md) | `Money.multiplyRounded` shared-kernel extension for banker's rounding cashout | 4 | Accepted | Dinero v2's `multiply` is precision-preserving (never rounds to currency exponent); `Money.multiplyRounded(factor, mode = "bankers")` composes `multiply` + `transformScale(product, currencyExponent, halfEven)` for banker's rounding at the aggregate boundary; `Bet.cashOut` is the canonical consumer; REQ-DOM-07 satisfied in Phase 4. |
 
+## Phase 5 — Saga Integration
+
+| ADR | Title | Phase | Status | Summary |
+|-----|-------|-------|--------|---------|
+| [ADR-019](./ADR-019-orchestration-over-choreography.md) | Orchestration over choreography — Game service owns the bet saga FSM | 5 | Accepted | Game owns `bet_saga_state` (`DEBIT_PENDING → CONFIRMED \| REJECTED \| TIMED_OUT → COMPENSATED`); Wallet is a passive participant; orchestration justified by ≥3-step + branching + timeout + compensation (microservices.io); `@Global()` `MessagingSpineModule` discovery locked as DI contract from P5.10 fix; `SagaTimeoutSweeper` reuses ADR-017 recursive `setTimeout` + `OnApplicationBootstrap`; restart recovery via `FOR UPDATE SKIP LOCKED` over expired `DEBIT_PENDING` rows. |
+| [ADR-020](./ADR-020-bet-202-cashout-200-asymmetry.md) | Bet placement asymmetry — `202 Accepted` for bet, synchronous `200 OK` for cashout | 5 | Accepted | `POST /games/bet` returns `202 Accepted` (cross-service AMQP round-trip; saga confirms via WS `bet:active` in Phase 6); `POST /games/bet/cashout` returns synchronous `200 OK` with `{multiplier, payoutCents}` (single-service, single-TX, `cashoutAcceptedAt` stamped before any await per REQ-WS-05); DLX alignment lesson (cross-service queues use source-exchange DLX) from P5.10 fix locked as topology rule for all future cross-service consumers. |
+
 ## Conventions
 
 - **Filename**: `ADR-NNN-<kebab-slug>.md` where NNN is a zero-padded three-digit sequence number. ADRs are numbered globally across the project (not per phase).
@@ -52,11 +59,10 @@ Each ADR records the constraints that drove the decision, the alternatives that 
 
 ## Future ADRs
 
-Subsequent phases append ADR-019+ as decisions land. The anticipated catalogue is enumerated in `.planning/ROADMAP.md` under each phase's "Key decisions to make" list. Examples:
+Subsequent phases append ADR-021+ as decisions land. The anticipated catalogue is enumerated in `.planning/ROADMAP.md` under each phase's "Key decisions to make" list. Examples:
 
-- Phase 5: saga state-machine persistence; compensation policy for insufficient-funds and timeout cases.
-- Phase 6: WebSocket room granularity; tick-rate and reconciliation policy.
-- Phase 7: frontend routing and auth-loader pattern; canvas renderer life-cycle.
-- Phase 8: replay UI scope and storage shape.
-- Phase 9: leaderboard projection store and window granularity.
-- Phase 10: CI gating strategy and observability dashboard ownership.
+- Phase 6: WebSocket room granularity; tick-rate and reconciliation policy; server-authoritative `cashoutAcceptedAt` at gateway middleware.
+- Phase 7: frontend routing and auth-loader pattern; canvas renderer life-cycle; `BroadcastChannel` token refresh.
+- Phase 8: replay UI scope and storage shape; client-seed derivation surfacing.
+- Phase 9: leaderboard projection store and window granularity; server-enforced auto-cashout; per-session auto-bet config.
+- Phase 10: CI gating strategy and observability dashboard ownership; OpenTelemetry SDK choice.
