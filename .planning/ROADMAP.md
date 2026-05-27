@@ -149,8 +149,21 @@ Plans:
 **Parallelizable with**: None (integration phase — must serialize)
 **UI hint**: no
 **Key decisions to make** (ADRs):
-  - ADR-014: Orchestration over choreography (Game service owns saga state)
-  - ADR-015: Bet placement asymmetry — `202 Accepted` + WS for bet, synchronous `200 OK` for cashout
+  - ADR-019: Orchestration over choreography (Game service owns saga state)
+  - ADR-020: Bet placement asymmetry — `202 Accepted` + WS for bet, synchronous `200 OK` for cashout
+**Plans:** 11 plans
+Plans:
+- [ ] 05-01-PLAN.md — Round.acceptBet aggregate-boundary FSM guard + REQ-GAME-08 doc-drift closure
+- [ ] 05-02-PLAN.md — RoundLoopService.getMultiplierAt pure synchronous server-clock multiplier source
+- [ ] 05-03-PLAN.md — bet_saga_state migration + EntitySchema + BetSagaState aggregate + Mikro repo (claimExpired FOR UPDATE SKIP LOCKED)
+- [ ] 05-04-PLAN.md — PlaceBetUseCase + BetCommandController POST /games/bet (202 PENDING) + DTOs
+- [ ] 05-05-PLAN.md — WalletDebitedHandler (confirm + compensation branch) + WalletDebitRejectedHandler @IdempotentSubscribe
+- [ ] 05-06-PLAN.md — CashOutUseCase + POST /games/bet/cashout (200 synchronous) with controller-first-line acceptedAt
+- [ ] 05-07-PLAN.md — SagaTimeoutSweeper @OnApplicationBootstrap + SAGA_SWEEP_INTERVAL_MS env
+- [ ] 05-08-PLAN.md — Kong PCRE-anchored POST routes for /games/bet + /games/bet/cashout
+- [ ] 05-09-PLAN.md — Integration tests (7 scenarios incl. true-SIGKILL saga recovery)
+- [ ] 05-10-PLAN.md — Smoke probes 33-38 + blocking live walkthrough checkpoint
+- [ ] 05-11-PLAN.md — ADR-019 + ADR-020 + STATE/ROADMAP/REQUIREMENTS closeout
 
 ### Phase 6: WebSocket Gateway & Multiplier Sync
 **Goal**: All connected clients see a synchronized server-authoritative multiplier and round lifecycle pushed at 30Hz, with JWT-validated handshakes, snapshot-on-reconnect, and a single server clock as cashout-race authority.
