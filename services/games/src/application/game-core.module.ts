@@ -23,6 +23,7 @@ import { StartNewRoundUseCase } from "./use-cases/start-new-round.use-case";
 import { TransitionToRunningUseCase } from "./use-cases/transition-to-running.use-case";
 import { CrashRoundUseCase } from "./use-cases/crash-round.use-case";
 import { SettleRoundUseCase } from "./use-cases/settle-round.use-case";
+import { PlaceBetUseCase } from "./use-cases/place-bet.use-case";
 import { RoundLoopService } from "./round-loop.service";
 
 @Module({
@@ -48,6 +49,7 @@ import { RoundLoopService } from "./round-loop.service";
     TransitionToRunningUseCase,
     CrashRoundUseCase,
     SettleRoundUseCase,
+    PlaceBetUseCase,
     RoundLoopService,
   ],
   exports: [
@@ -59,6 +61,7 @@ import { RoundLoopService } from "./round-loop.service";
     GetRoundHistoryUseCase,
     VerifyRoundUseCase,
     GetPlayerBetsUseCase,
+    PlaceBetUseCase,
   ],
 })
 export class GameCoreModule {}

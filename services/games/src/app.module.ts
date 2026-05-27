@@ -13,6 +13,7 @@ import { GamesController } from "./presentation/controllers/games.controller";
 import { HealthController } from "./presentation/controllers/health.controller";
 import { RoundsController } from "./presentation/controllers/rounds.controller";
 import { BetsController } from "./presentation/controllers/bets.controller";
+import { BetCommandController } from "./presentation/controllers/bet-command.controller";
 import { GamesDeadLetterConsumer } from "./infrastructure/messaging/games-dead-letter.consumer";
 import { JwtGuard } from "./presentation/guards/jwt.guard";
 import { GameCoreModule } from "./application/game-core.module";
@@ -63,7 +64,13 @@ import { GameCoreModule } from "./application/game-core.module";
     }),
     GameCoreModule,
   ],
-  controllers: [GamesController, HealthController, RoundsController, BetsController],
+  controllers: [
+    GamesController,
+    HealthController,
+    RoundsController,
+    BetsController,
+    BetCommandController,
+  ],
   providers: [
     GamesDeadLetterConsumer,
     JwtGuard,
