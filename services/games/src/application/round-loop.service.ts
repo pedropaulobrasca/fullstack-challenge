@@ -9,6 +9,7 @@ import { crashTimeMs, deriveCrashPoint } from "@crash/contracts";
 import { env } from "../config/defaults";
 import { Round } from "../domain/round.aggregate";
 import { CrashPoint } from "../domain/value-objects/crash-point";
+import { Multiplier } from "../domain/value-objects/multiplier";
 import type { RoundRepository } from "../domain/round.repository";
 import type { SeedChainRepository } from "../domain/seed-chain.repository";
 import { ROUND_REPOSITORY, SEED_CHAIN_REPOSITORY } from "./tokens";
@@ -26,6 +27,8 @@ export class RoundLoopService
   private readonly log = new Logger(RoundLoopService.name);
   private timer: ReturnType<typeof setTimeout> | null = null;
   private running = false;
+  private currentRound: Round | null = null;
+  private currentCrashPoint: CrashPoint | null = null;
 
   constructor(
     @Inject(ROUND_REPOSITORY) private readonly rounds: RoundRepository,
@@ -65,6 +68,8 @@ export class RoundLoopService
       return;
     }
 
+    this.currentRound = open;
+    this.currentCrashPoint = open.crashPoint;
     const now = Date.now();
     switch (open.status) {
       case "BETTING": {
@@ -78,6 +83,7 @@ export class RoundLoopService
       }
       case "RUNNING": {
         const recovered = await this.recoverRunningRound(open);
+        this.currentCrashPoint = recovered.crashPoint;
         const elapsed = now - (open.startedAt?.getTime() ?? now);
         if (elapsed >= recovered.crashTimeMs) {
           await this.crashRound(open, recovered.crashPoint);
@@ -99,6 +105,7 @@ export class RoundLoopService
           open.crashPoint,
           new Date(),
         );
+        this.currentRound = reswept;
         await this.settleRound(reswept);
         return;
       }
@@ -132,6 +139,8 @@ export class RoundLoopService
 
   private async startNewRound(now: Date): Promise<void> {
     const round = await this.startNewRoundUseCase.execute(now);
+    this.currentRound = round;
+    this.currentCrashPoint = null;
     this.log.log(
       `round ${round.id as unknown as string} scheduled (nonce=${round.nonce.toString()}, bettingEndsAt=${round.bettingEndsAt.toISOString()})`,
     );
@@ -145,6 +154,8 @@ export class RoundLoopService
       round,
       new Date(),
     );
+    this.currentRound = result.round;
+    this.currentCrashPoint = result.crashPoint;
     this.log.log(
       `round ${result.round.id as unknown as string} running (crashPoint=${result.crashPoint.toNumber()}, crashTimeMs=${result.crashTimeMs})`,
     );
@@ -162,6 +173,8 @@ export class RoundLoopService
       crashPoint,
       new Date(),
     );
+    this.currentRound = crashed;
+    this.currentCrashPoint = crashPoint;
     this.log.log(
       `round ${crashed.id as unknown as string} crashed at ${crashPoint.toNumber()}x`,
     );
@@ -170,10 +183,25 @@ export class RoundLoopService
 
   private async settleRound(round: Round): Promise<void> {
     const settled = await this.settleRoundUseCase.execute(round, new Date());
+    this.currentRound = settled;
     this.log.log(
       `round ${settled.id as unknown as string} settled (seed revealed)`,
     );
     this.scheduleAt(env.COOLDOWN_MS, () => this.startNewRound(new Date()));
+  }
+
+  public getMultiplierAt(at: Date): Multiplier {
+    const round = this.currentRound;
+    if (round === null || round.status !== "RUNNING" || round.startedAt === null) {
+      throw new Error("no RUNNING round available for multiplier query");
+    }
+    const elapsedMs = Math.max(0, at.getTime() - round.startedAt.getTime());
+    const raw = Math.exp((env.GROWTH_RATE * elapsedMs) / 1000);
+    const cap = this.currentCrashPoint;
+    if (cap !== null && raw >= cap.toNumber()) {
+      return Multiplier.of(cap.toNumber());
+    }
+    return Multiplier.of(raw);
   }
 
   private scheduleAt(ms: number, fn: () => Promise<void>): void {
