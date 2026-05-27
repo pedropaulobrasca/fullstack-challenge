@@ -6,7 +6,10 @@ import { randomUUID } from "node:crypto";
 import { RoundId } from "@crash/shared-kernel";
 import { Round } from "../../src/domain/round.aggregate";
 import { CrashPoint } from "../../src/domain/value-objects/crash-point";
-import { IllegalRoundTransitionError } from "../../src/domain/errors";
+import {
+  IllegalRoundTransitionError,
+  RoundNotInBettingPhaseError,
+} from "../../src/domain/errors";
 
 const now = new Date("2026-05-25T12:00:00Z");
 const later = new Date("2026-05-25T12:00:05Z");
@@ -183,9 +186,69 @@ describe("Round immutability (snapshot semantics)", () => {
     expect(r.startedAt).toBeNull();
   });
 
-  test("ADR-014 absence: Round has no acceptBet method nor bets collection", () => {
-    const round = freshRound() as unknown as { acceptBet?: unknown; bets?: unknown };
-    expect(round.acceptBet).toBeUndefined();
+  test("ADR-014: Round still has no bets collection (acceptBet is a pure FSM guard, not aggregate ownership)", () => {
+    const round = freshRound() as unknown as { bets?: unknown };
     expect(round.bets).toBeUndefined();
+  });
+});
+
+describe("Round.acceptBet", () => {
+  test("from BETTING returns a Round still in BETTING with identity-preserving snapshot (REQ-GAME-08)", () => {
+    const round = freshRound();
+    const next = round.acceptBet(now);
+    expect(next.status).toBe("BETTING");
+    expect(next.id).toBe(round.id);
+    expect(next.nonce).toBe(round.nonce);
+    expect(next.bettingEndsAt).toEqual(round.bettingEndsAt);
+    expect(next.seedHash).toBe(round.seedHash);
+    expect(next.serverSeed).toBeNull();
+  });
+
+  test("from RUNNING throws RoundNotInBettingPhaseError carrying actual=RUNNING", () => {
+    const running = freshRound().start(later);
+    try {
+      running.acceptBet(later);
+      throw new Error("expected RoundNotInBettingPhaseError");
+    } catch (err) {
+      expect(err).toBeInstanceOf(RoundNotInBettingPhaseError);
+      const e = err as RoundNotInBettingPhaseError;
+      expect(e.name).toBe("RoundNotInBettingPhaseError");
+      expect(e.code).toBe("ROUND_NOT_IN_BETTING_PHASE");
+      expect(e.actual).toBe("RUNNING");
+    }
+  });
+
+  test("from CRASHED throws RoundNotInBettingPhaseError carrying actual=CRASHED", () => {
+    const crashed = freshRound().start(later).crash(CrashPoint.of(2.5), crashAt);
+    try {
+      crashed.acceptBet(crashAt);
+      throw new Error("expected RoundNotInBettingPhaseError");
+    } catch (err) {
+      expect(err).toBeInstanceOf(RoundNotInBettingPhaseError);
+      expect((err as RoundNotInBettingPhaseError).actual).toBe("CRASHED");
+    }
+  });
+
+  test("from SETTLED throws RoundNotInBettingPhaseError carrying actual=SETTLED", () => {
+    const settled = freshRound()
+      .start(later)
+      .crash(CrashPoint.of(2.5), crashAt)
+      .settle(VALID_SERVER_SEED, settleAt);
+    try {
+      settled.acceptBet(settleAt);
+      throw new Error("expected RoundNotInBettingPhaseError");
+    } catch (err) {
+      expect(err).toBeInstanceOf(RoundNotInBettingPhaseError);
+      expect((err as RoundNotInBettingPhaseError).actual).toBe("SETTLED");
+    }
+  });
+
+  test("RoundNotInBettingPhaseError exposes readonly actual and stable name/code", () => {
+    const err = new RoundNotInBettingPhaseError("RUNNING");
+    expect(err).toBeInstanceOf(Error);
+    expect(err.name).toBe("RoundNotInBettingPhaseError");
+    expect(err.code).toBe("ROUND_NOT_IN_BETTING_PHASE");
+    expect(err.actual).toBe("RUNNING");
+    expect(err.message).toContain("RUNNING");
   });
 });
