@@ -82,6 +82,7 @@ See `.planning/REQUIREMENTS.md` Open Configuration Values table. All 14 constant
 
 ### Recent plan completions (Phase 5)
 
+- **05-06 (2026-05-27)** — CashOutUseCase + POST /games/bet/cashout cashout endpoint. 6 files changed, 7 tests added (42 expect), 160/160 unit suite green, tsc --noEmit clean. Commits d38b6db (RED) → feb1695 (use case + 3 errors) → dd46013 (controller cashout method + DTO + module wiring). REQ-GAME-07 + REQ-SAGA-04 closed at the application layer. Server-clock authority verified: `const acceptedAt = new Date()` confirmed at line 69 of bet-command.controller.ts as the literal first executable line of the cashout method, before any await. Multiplier captured synchronously via `roundLoop.getMultiplierAt(acceptedAt)` (plan 05-02 artifact). Three new domain errors: RoundNotRunningError, NoActiveBetError, BetNotCashableError — each translated to discriminated 409s. translateError split into translatePlaceError + translateCashoutError to keep per-endpoint failure-mode dispatch bounded. Live HTTP + downstream wallet credit verification deferred to plan 05-09 integration scenario #5.
 - **05-04 (2026-05-27)** — PlaceBetUseCase + POST /games/bet command controller. 8 files changed, 6 tests added (47 expect), 144/144 unit suite green, tsc --noEmit clean. Commits 1fd7847 (RED) → e2d54ac (use case + error) → 8525e09 (controller + DTOs + wiring). REQ-GAME-06 + REQ-SAGA-01 step 1 closed at the application layer. Live HTTP verification deferred to 05-10.
 
 ### Phase history
@@ -128,4 +129,4 @@ See `.planning/REQUIREMENTS.md` Open Configuration Values table. All 14 constant
 
 ---
 
-*Last updated: 2026-05-26 by gsd-executor (P4.12 closeout — five Phase 4 ADRs (014-018) authored, ROADMAP + REQUIREMENTS advanced, Phase 4 complete: 4/10 phases done, v1-complete count 31/95).*
+*Last updated: 2026-05-27 by gsd-executor (P5.06 — CashOutUseCase + POST /games/bet/cashout shipped with server-clock acceptedAt at first-line position, 7/7 unit tests green, 160/160 full suite green, tsc --noEmit clean; REQ-GAME-07 + REQ-SAGA-04 closed at application layer).*
