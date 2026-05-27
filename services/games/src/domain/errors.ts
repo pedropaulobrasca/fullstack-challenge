@@ -63,6 +63,16 @@ export class CrashPointOutOfBoundsError extends DomainError {
   }
 }
 
+export class RoundNotInBettingPhaseError extends DomainError {
+  readonly code = "ROUND_NOT_IN_BETTING_PHASE";
+  readonly actual: RoundStatus | "NO_OPEN_ROUND";
+
+  constructor(actual: RoundStatus | "NO_OPEN_ROUND") {
+    super(`Round is not in BETTING phase (actual=${actual})`);
+    this.actual = actual;
+  }
+}
+
 export class SeedNotYetRevealedError extends DomainError {
   readonly code = "SEED_NOT_YET_REVEALED";
   readonly roundId: RoundId;

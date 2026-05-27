@@ -2,7 +2,7 @@ import type { RoundId } from "@crash/shared-kernel";
 import type { RoundStatus } from "./value-objects/round-status";
 import { CrashPoint } from "./value-objects/crash-point";
 import { isValidSeedHex } from "./value-objects/seed";
-import { IllegalRoundTransitionError } from "./errors";
+import { IllegalRoundTransitionError, RoundNotInBettingPhaseError } from "./errors";
 
 export type RoundProps = {
   id: RoundId;
@@ -103,6 +103,13 @@ export class Round {
 
   get createdAt(): Date {
     return this.props.createdAt;
+  }
+
+  acceptBet(_now: Date): Round {
+    if (this.props.status !== "BETTING") {
+      throw new RoundNotInBettingPhaseError(this.props.status);
+    }
+    return this;
   }
 
   start(now: Date): Round {
