@@ -348,23 +348,291 @@ probe_games_seed_chain_initialized() {
 }
 
 probe_games_kong_mutation_block() {
-  local name="32: POST /games/bet blocked at Kong (404 + no Route matched body)"
-  local response
-  response=$(curl -s -w "\n%{http_code}" -X POST http://localhost:8000/games/bet || echo $'\n000')
-  local code="${response##*$'\n'}"
-  local body="${response%$'\n'*}"
-  if [[ "${code}" != "404" ]]; then
-    record_fail "${name}" "expected 404, got ${code}"
-    return
-  fi
-  if echo "${body}" | grep -q "no Route matched"; then
-    record_pass "${name}"
+  local name="32: POST /games/bet at Kong reaches games-service (route opened in 05-08)"
+  local code
+  code=$(curl -s -o /dev/null -w "%{http_code}" -X POST http://localhost:8000/games/bet || echo "000")
+  if [[ "${code}" == "401" ]]; then
+    record_pass "${name} (JwtGuard rejects unauthenticated POST)"
+  elif [[ "${code}" == "404" ]]; then
+    record_fail "${name}" "Kong returned 404 — expected route games-bet-place to be open after 05-08"
   else
-    record_fail "${name}" "404 status ok but body missing 'no Route matched': ${body}"
+    record_fail "${name}" "expected 401 from JwtGuard, got ${code}"
   fi
 }
 
-echo "Running Phase 1+2+3+4 smoke probes against local stack..."
+wait_for_round_phase() {
+  local desired="$1"
+  local timeout_s="${2:-15}"
+  local deadline=$(( $(date +%s) + timeout_s ))
+  while [[ $(date +%s) -lt ${deadline} ]]; do
+    local body
+    body=$(curl -s http://localhost:8000/games/rounds/current || echo "")
+    local status
+    status=$(echo "${body}" | jq -r '.status // empty' 2>/dev/null || echo "")
+    if [[ "${status}" == "${desired}" ]]; then
+      return 0
+    fi
+    sleep 0.4
+  done
+  return 1
+}
+
+probe_games_bet_place_outside_betting() {
+  local name="33: POST /games/bet during RUNNING returns 409 ROUND_NOT_IN_BETTING_PHASE"
+  if [[ -z "${WALLETS_TOKEN}" ]]; then
+    record_fail "${name}" "no WALLETS_TOKEN"
+    return
+  fi
+  local attempt
+  for attempt in 1 2 3; do
+    if ! wait_for_round_phase "RUNNING" 15; then
+      record_fail "${name}" "round never entered RUNNING within 15s (attempt ${attempt})"
+      return
+    fi
+    local response
+    response=$(curl -s -w "\n%{http_code}" -X POST \
+      -H "Authorization: Bearer ${WALLETS_TOKEN}" \
+      -H "Content-Type: application/json" \
+      -d '{"amountCents":"10000"}' \
+      http://localhost:8000/games/bet || echo $'\n000')
+    local code="${response##*$'\n'}"
+    local body="${response%$'\n'*}"
+    if [[ "${code}" == "409" ]]; then
+      local err_code
+      err_code=$(echo "${body}" | jq -r '.code // .message.code // .error.code // empty' 2>/dev/null || echo "")
+      if [[ "${err_code}" == "ROUND_NOT_IN_BETTING_PHASE" ]]; then
+        record_pass "${name}"
+        return
+      fi
+      record_fail "${name}" "expected code ROUND_NOT_IN_BETTING_PHASE, got '${err_code}' body=${body}"
+      return
+    fi
+    if [[ "${code}" == "202" ]]; then
+      sleep 1
+      continue
+    fi
+    record_fail "${name}" "expected 409, got ${code} body=${body}"
+    return
+  done
+  record_fail "${name}" "round phase kept flipping during 3 attempts"
+}
+
+GAMES_LAST_BET_ID=""
+GAMES_LAST_BET_AMOUNT="10000"
+
+probe_games_bet_place_happy() {
+  local name="34: POST /games/bet during BETTING returns 202 PENDING + bet settles to ACTIVE"
+  if [[ -z "${WALLETS_TOKEN}" ]]; then
+    record_fail "${name}" "no WALLETS_TOKEN"
+    return
+  fi
+  if ! wait_for_round_phase "BETTING" 20; then
+    record_fail "${name}" "round never entered BETTING within 20s"
+    return
+  fi
+  local response
+  response=$(curl -s -w "\n%{http_code}" -X POST \
+    -H "Authorization: Bearer ${WALLETS_TOKEN}" \
+    -H "Content-Type: application/json" \
+    -d "{\"amountCents\":\"${GAMES_LAST_BET_AMOUNT}\"}" \
+    http://localhost:8000/games/bet || echo $'\n000')
+  local code="${response##*$'\n'}"
+  local body="${response%$'\n'*}"
+  if [[ "${code}" != "202" ]]; then
+    record_fail "${name}" "expected 202, got ${code} body=${body}"
+    return
+  fi
+  local status
+  status=$(echo "${body}" | jq -r '.status // empty' 2>/dev/null || echo "")
+  local bet_id
+  bet_id=$(echo "${body}" | jq -r '.betId // empty' 2>/dev/null || echo "")
+  if [[ "${status}" != "PENDING" ]]; then
+    record_fail "${name}" "expected status PENDING, got '${status}'"
+    return
+  fi
+  if ! [[ "${bet_id}" =~ ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$ ]]; then
+    record_fail "${name}" "expected betId uuid, got '${bet_id}'"
+    return
+  fi
+  GAMES_LAST_BET_ID="${bet_id}"
+  local deadline=$(( $(date +%s) + 10 ))
+  local terminal=""
+  while [[ $(date +%s) -lt ${deadline} ]]; do
+    local bets_body
+    bets_body=$(curl -s -H "Authorization: Bearer ${WALLETS_TOKEN}" http://localhost:8000/games/bets/me || echo "")
+    terminal=$(echo "${bets_body}" | jq -r --arg id "${bet_id}" '.bets[] | select(.id == $id) | .status' 2>/dev/null | head -n1)
+    if [[ "${terminal}" == "ACTIVE" || "${terminal}" == "REFUNDED" ]]; then
+      record_pass "${name} (betId=${bet_id:0:8} status=${terminal})"
+      return
+    fi
+    sleep 0.5
+  done
+  record_fail "${name}" "bet ${bet_id} never reached ACTIVE/REFUNDED within 10s (last='${terminal}')"
+}
+
+probe_games_balance_decreased_after_bet() {
+  local name="35: wallet balance decreases by bet amount after settlement"
+  if [[ -z "${WALLETS_TOKEN}" ]]; then
+    record_fail "${name}" "no WALLETS_TOKEN"
+    return
+  fi
+  if [[ -z "${GAMES_LAST_BET_ID}" ]]; then
+    record_fail "${name}" "no GAMES_LAST_BET_ID (probe 34 must run first)"
+    return
+  fi
+  local bets_body
+  bets_body=$(curl -s -H "Authorization: Bearer ${WALLETS_TOKEN}" http://localhost:8000/games/bets/me || echo "")
+  local bet_status
+  bet_status=$(echo "${bets_body}" | jq -r --arg id "${GAMES_LAST_BET_ID}" '.bets[] | select(.id == $id) | .status' 2>/dev/null | head -n1)
+  local body
+  body=$(curl -s -H "Authorization: Bearer ${WALLETS_TOKEN}" http://localhost:8000/wallets/me || echo "")
+  local amount
+  amount=$(echo "${body}" | jq -r '.balance.amount // empty' 2>/dev/null || echo "")
+  if ! [[ "${amount}" =~ ^[0-9]+$ ]]; then
+    record_fail "${name}" "balance amount not numeric: '${amount}'"
+    return
+  fi
+  if [[ "${bet_status}" == "ACTIVE" ]]; then
+    if [[ "${amount}" -le 100000 && "${amount}" -lt 100000 ]]; then
+      record_pass "${name} (balance=${amount} after ACTIVE bet of ${GAMES_LAST_BET_AMOUNT})"
+    else
+      record_fail "${name}" "expected balance < 100000 after ACTIVE bet, got ${amount}"
+    fi
+  elif [[ "${bet_status}" == "REFUNDED" ]]; then
+    if [[ "${amount}" -ge 100000 ]]; then
+      record_pass "${name} (balance=${amount} unchanged after REFUNDED bet)"
+    else
+      record_fail "${name}" "expected balance >= 100000 after REFUNDED bet, got ${amount}"
+    fi
+  else
+    record_fail "${name}" "unexpected bet status '${bet_status}' (expected ACTIVE/REFUNDED)"
+  fi
+}
+
+GAMES_LAST_CASHOUT_PAYOUT=""
+
+probe_games_bet_cashout_during_running() {
+  local name="36: POST /games/bet/cashout during RUNNING returns 200 + multiplier > 1"
+  if [[ -z "${WALLETS_TOKEN}" ]]; then
+    record_fail "${name}" "no WALLETS_TOKEN"
+    return
+  fi
+  if [[ -z "${GAMES_LAST_BET_ID}" ]]; then
+    record_fail "${name}" "no prior bet (probe 34 must succeed)"
+    return
+  fi
+  local bets_body
+  bets_body=$(curl -s -H "Authorization: Bearer ${WALLETS_TOKEN}" http://localhost:8000/games/bets/me || echo "")
+  local current_status
+  current_status=$(echo "${bets_body}" | jq -r --arg id "${GAMES_LAST_BET_ID}" '.bets[] | select(.id == $id) | .status' 2>/dev/null | head -n1)
+  if [[ "${current_status}" != "ACTIVE" ]]; then
+    record_fail "${name}" "bet ${GAMES_LAST_BET_ID:0:8} is '${current_status}', not ACTIVE — cannot cash out"
+    return
+  fi
+  if ! wait_for_round_phase "RUNNING" 15; then
+    record_fail "${name}" "round never entered RUNNING within 15s"
+    return
+  fi
+  local response
+  response=$(curl -s -w "\n%{http_code}" -X POST \
+    -H "Authorization: Bearer ${WALLETS_TOKEN}" \
+    http://localhost:8000/games/bet/cashout || echo $'\n000')
+  local code="${response##*$'\n'}"
+  local body="${response%$'\n'*}"
+  if [[ "${code}" != "200" ]]; then
+    record_fail "${name}" "expected 200, got ${code} body=${body}"
+    return
+  fi
+  local mult
+  mult=$(echo "${body}" | jq -r '.multiplier // empty' 2>/dev/null || echo "")
+  local payout_amount
+  payout_amount=$(echo "${body}" | jq -r '.payoutCents.amount // empty' 2>/dev/null || echo "")
+  local payout_scale
+  payout_scale=$(echo "${body}" | jq -r '.payoutCents.scale // empty' 2>/dev/null || echo "")
+  if ! awk -v m="${mult}" 'BEGIN { exit !(m+0 > 1.0) }'; then
+    record_fail "${name}" "expected multiplier > 1.0, got '${mult}'"
+    return
+  fi
+  if ! [[ "${payout_amount}" =~ ^[0-9]+$ ]]; then
+    record_fail "${name}" "payoutCents.amount not bigint string: '${payout_amount}'"
+    return
+  fi
+  if [[ "${payout_scale}" != "2" ]]; then
+    record_fail "${name}" "expected payoutCents.scale=2, got '${payout_scale}'"
+    return
+  fi
+  GAMES_LAST_CASHOUT_PAYOUT="${payout_amount}"
+  record_pass "${name} (multiplier=${mult} payout=${payout_amount})"
+}
+
+probe_games_balance_credited_after_cashout() {
+  local name="37: wallet balance credited by payoutCents after cashout"
+  if [[ -z "${WALLETS_TOKEN}" ]]; then
+    record_fail "${name}" "no WALLETS_TOKEN"
+    return
+  fi
+  if [[ -z "${GAMES_LAST_CASHOUT_PAYOUT}" ]]; then
+    record_fail "${name}" "no prior cashout payout (probe 36 must succeed)"
+    return
+  fi
+  local deadline=$(( $(date +%s) + 8 ))
+  local final_amount=""
+  while [[ $(date +%s) -lt ${deadline} ]]; do
+    local body
+    body=$(curl -s -H "Authorization: Bearer ${WALLETS_TOKEN}" http://localhost:8000/wallets/me || echo "")
+    final_amount=$(echo "${body}" | jq -r '.balance.amount // empty' 2>/dev/null || echo "")
+    if [[ "${final_amount}" =~ ^[0-9]+$ ]]; then
+      local expected_min=$(( 100000 - GAMES_LAST_BET_AMOUNT + GAMES_LAST_CASHOUT_PAYOUT ))
+      if [[ "${final_amount}" -ge "${expected_min}" ]]; then
+        record_pass "${name} (balance=${final_amount} >= ${expected_min})"
+        return
+      fi
+    fi
+    sleep 0.4
+  done
+  record_fail "${name}" "balance never reached expected credit within 8s (last='${final_amount}')"
+}
+
+probe_games_bet_cashout_without_active() {
+  local name="38: POST /games/bet/cashout without ACTIVE bet returns 409"
+  if [[ -z "${WALLETS_TOKEN}" ]]; then
+    record_fail "${name}" "no WALLETS_TOKEN"
+    return
+  fi
+  local deadline=$(( $(date +%s) + 25 ))
+  while [[ $(date +%s) -lt ${deadline} ]]; do
+    local bets_body
+    bets_body=$(curl -s -H "Authorization: Bearer ${WALLETS_TOKEN}" http://localhost:8000/games/bets/me || echo "")
+    local has_active
+    has_active=$(echo "${bets_body}" | jq -r '[.bets[] | select(.status == "ACTIVE")] | length' 2>/dev/null || echo "1")
+    if [[ "${has_active}" == "0" ]]; then
+      break
+    fi
+    sleep 0.5
+  done
+  local response
+  response=$(curl -s -w "\n%{http_code}" -X POST \
+    -H "Authorization: Bearer ${WALLETS_TOKEN}" \
+    http://localhost:8000/games/bet/cashout || echo $'\n000')
+  local code="${response##*$'\n'}"
+  local body="${response%$'\n'*}"
+  if [[ "${code}" != "409" ]]; then
+    record_fail "${name}" "expected 409, got ${code} body=${body}"
+    return
+  fi
+  local err_code
+  err_code=$(echo "${body}" | jq -r '.code // .message.code // .error.code // empty' 2>/dev/null || echo "")
+  case "${err_code}" in
+    NO_ACTIVE_BET|BET_NOT_CASHABLE|ROUND_NOT_RUNNING)
+      record_pass "${name} (code=${err_code})"
+      ;;
+    *)
+      record_fail "${name}" "expected code in {NO_ACTIVE_BET,BET_NOT_CASHABLE,ROUND_NOT_RUNNING}, got '${err_code}' body=${body}"
+      ;;
+  esac
+}
+
+echo "Running Phase 1+2+3+4+5 smoke probes against local stack..."
 echo
 
 probe_postgres
@@ -387,6 +655,12 @@ probe_games_bets_me_unauth
 probe_games_bets_me_auth
 probe_games_seed_chain_initialized
 probe_games_kong_mutation_block
+probe_games_bet_place_outside_betting
+probe_games_bet_place_happy
+probe_games_balance_decreased_after_bet
+probe_games_bet_cashout_during_running
+probe_games_balance_credited_after_cashout
+probe_games_bet_cashout_without_active
 
 TOTAL=$((PASS + FAIL))
 echo
