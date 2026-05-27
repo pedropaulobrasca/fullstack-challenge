@@ -61,6 +61,7 @@ export class MessagingSpineModule {
     const optionsModule = MessagingOptionsModule.forRootAsync(asyncOptions);
     return {
       module: MessagingSpineModule,
+      global: true,
       imports: [
         optionsModule,
         MessagingClsModule.forRoot(),

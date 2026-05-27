@@ -40,7 +40,7 @@ import { GameCoreModule } from "./application/game-core.module";
             {
               name: QUEUES.GAMES_WALLET_EVENTS,
               deliveryLimit: env.RMQ_DELIVERY_LIMIT_MAIN,
-              dlx: EXCHANGES.GAME_DLX,
+              dlx: EXCHANGES.WALLET_DLX,
             },
             {
               name: QUEUES.GAMES_DLQ,
