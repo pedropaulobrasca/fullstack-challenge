@@ -28,6 +28,18 @@ services:
         methods:
           - GET
         strip_path: false
+      - name: games-bet-place
+        paths:
+          - ~/games/bet$
+        methods:
+          - POST
+        strip_path: false
+      - name: games-bet-cashout
+        paths:
+          - ~/games/bet/cashout$
+        methods:
+          - POST
+        strip_path: false
 
   - name: wallets-service
     url: http://wallets:4002
