@@ -268,7 +268,7 @@ Each v1 REQ-ID maps to exactly one phase in `ROADMAP.md`. v2 (REQ-STRETCH-*) liv
 | REQ-GAME-03 | `GET /games/rounds/history?limit=20` | Done (P4.08 — RoundsController + GetRoundHistoryUseCase) |
 | REQ-GAME-04 | `GET /games/rounds/:roundId/verify` provably-fair data | Done (P4.08 — RoundsController + VerifyRoundUseCase) |
 | REQ-GAME-05 | `GET /games/bets/me` (paginated) | Done (P4.08 — BetsController + GetPlayerBetsUseCase + JwtGuard) |
-| REQ-GAME-08 | Reject bets outside BETTING with 409 + discriminated code | Done (P4.02 — Round.acceptBet throws RoundNotInBettingPhaseError when status !== BETTING; aggregate-level FSM gate ready for Phase 5 POST /games/bet to surface as 409) |
+| REQ-GAME-08 | Reject bets outside BETTING with 409 + discriminated code | Done (P4.02 aggregate FSM via existing Round.start/crash/settle + Phase 5 plan 05-01 adds Round.acceptBet(now) aggregate-boundary guard surfacing RoundNotInBettingPhaseError; Phase 5 plan 05-04 surfaces the 409 ConflictException with discriminated code ROUND_NOT_IN_BETTING_PHASE via POST /games/bet) |
 | REQ-GAME-09 | `kill -9` survives — round loop reconstructs from DB | Done (P4.06 — five-branch recoverInFlightRound: no-open, BETTING, RUNNING, CRASHED with idempotent bet sweep, SETTLED) |
 | REQ-FAIR-01 | Pre-generated 1M-link hash chain (reverse-consumed) | Done (P4.05 — SeedChainBootstrap idempotent OnApplicationBootstrap) |
 | REQ-FAIR-02 | Reveal seed for round N only after N settles | Done (P4.08 — VerifyRoundUseCase 400 gate + GetCurrentRoundUseCase serverSeed nullification) |
