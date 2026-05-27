@@ -123,3 +123,31 @@ export class BetAlreadyActiveError extends DomainError {
     this.existingBetId = existingBetId;
   }
 }
+
+export class RoundNotRunningError extends DomainError {
+  readonly code = "ROUND_NOT_RUNNING";
+  readonly actual: RoundStatus | "NO_OPEN_ROUND";
+
+  constructor(actual: RoundStatus | "NO_OPEN_ROUND") {
+    super(`Round is not RUNNING (actual=${actual})`);
+    this.actual = actual;
+  }
+}
+
+export class NoActiveBetError extends DomainError {
+  readonly code = "NO_ACTIVE_BET";
+
+  constructor() {
+    super("Player has no active bet on the current round");
+  }
+}
+
+export class BetNotCashableError extends DomainError {
+  readonly code = "BET_NOT_CASHABLE";
+  readonly status: BetStatus | "RACE";
+
+  constructor(status: BetStatus | "RACE") {
+    super(`Bet cannot be cashed out (status=${status})`);
+    this.status = status;
+  }
+}
