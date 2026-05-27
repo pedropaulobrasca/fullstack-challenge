@@ -2,6 +2,7 @@ import { DomainError } from "@crash/shared-kernel";
 import type { RoundId } from "@crash/shared-kernel";
 import type { RoundStatus } from "./value-objects/round-status";
 import type { BetStatus } from "./value-objects/bet-status";
+import type { BetSagaStatus } from "./bet-saga-state.aggregate";
 
 export class IllegalRoundTransitionError extends DomainError {
   readonly code = "ILLEGAL_ROUND_TRANSITION";
@@ -80,5 +81,35 @@ export class SeedNotYetRevealedError extends DomainError {
   constructor(roundId: RoundId) {
     super(`Server seed for round ${roundId} not yet revealed (round not SETTLED)`);
     this.roundId = roundId;
+  }
+}
+
+export class IllegalBetSagaTransitionError extends DomainError {
+  readonly code = "ILLEGAL_BET_SAGA_TRANSITION";
+  readonly from: BetSagaStatus;
+  readonly to: BetSagaStatus;
+
+  constructor(from: BetSagaStatus, to: BetSagaStatus) {
+    super(`Illegal BetSagaState transition: ${from} -> ${to}`);
+    this.from = from;
+    this.to = to;
+  }
+}
+
+export class BetSagaNotFoundError extends DomainError {
+  readonly code = "BET_SAGA_NOT_FOUND";
+  readonly correlationId: string;
+
+  constructor(correlationId: string) {
+    super(`No BetSagaState found for correlationId=${correlationId}`);
+    this.correlationId = correlationId;
+  }
+}
+
+export class SagaTimeoutError extends DomainError {
+  readonly code = "SAGA_TIMEOUT";
+
+  constructor(message = "Saga deadline elapsed before terminal event arrived") {
+    super(message);
   }
 }
