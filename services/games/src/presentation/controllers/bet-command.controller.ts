@@ -11,19 +11,30 @@ import {
 import { Money, PlayerId } from "@crash/shared-kernel";
 import { env } from "../../config/defaults";
 import { PlaceBetUseCase } from "../../application/use-cases/place-bet.use-case";
+import { CashOutUseCase } from "../../application/use-cases/cash-out.use-case";
+import { RoundLoopService } from "../../application/round-loop.service";
+import type { Multiplier } from "../../domain/value-objects/multiplier";
 import {
   BetAlreadyActiveError,
   BetAmountOutOfBoundsError,
+  BetNotCashableError,
+  NoActiveBetError,
   RoundNotInBettingPhaseError,
+  RoundNotRunningError,
 } from "../../domain/errors";
 import { PlaceBetRequestDto } from "../dtos/place-bet.request.dto";
 import { PlaceBetResponseDto } from "../dtos/place-bet.response.dto";
+import type { CashoutResponseDto } from "../dtos/cashout.response.dto";
 import { JwtGuard, type AuthenticatedRequest } from "../guards/jwt.guard";
 
 @Controller("games/bet")
 @UseGuards(JwtGuard)
 export class BetCommandController {
-  constructor(private readonly placeBet: PlaceBetUseCase) {}
+  constructor(
+    private readonly placeBet: PlaceBetUseCase,
+    private readonly cashOut: CashOutUseCase,
+    private readonly roundLoop: RoundLoopService,
+  ) {}
 
   @Post()
   @HttpCode(202)
@@ -48,11 +59,33 @@ export class BetCommandController {
         status: result.status,
       };
     } catch (err) {
-      this.translateError(err);
+      this.translatePlaceError(err);
     }
   }
 
-  private translateError(err: unknown): never {
+  @Post("cashout")
+  @HttpCode(200)
+  async cashout(@Req() req: AuthenticatedRequest): Promise<CashoutResponseDto> {
+    const acceptedAt = new Date();
+    const playerId = PlayerId(req.user!.playerId);
+    let multiplier: Multiplier;
+    try {
+      multiplier = this.roundLoop.getMultiplierAt(acceptedAt);
+    } catch {
+      throw new ConflictException({ code: "ROUND_NOT_RUNNING", phase: "UNKNOWN" });
+    }
+    try {
+      const result = await this.cashOut.execute({ playerId, multiplier, acceptedAt });
+      return {
+        multiplier: result.multiplier.toNumber(),
+        payoutCents: result.payout.toSnapshot(),
+      };
+    } catch (err) {
+      this.translateCashoutError(err);
+    }
+  }
+
+  private translatePlaceError(err: unknown): never {
     if (err instanceof RoundNotInBettingPhaseError) {
       throw new ConflictException({
         code: "ROUND_NOT_IN_BETTING_PHASE",
@@ -71,6 +104,25 @@ export class BetCommandController {
         amountCents: err.amountCents.toString(),
         min: err.min.toString(),
         max: err.max.toString(),
+      });
+    }
+    throw err;
+  }
+
+  private translateCashoutError(err: unknown): never {
+    if (err instanceof RoundNotRunningError) {
+      throw new ConflictException({
+        code: "ROUND_NOT_RUNNING",
+        phase: err.actual,
+      });
+    }
+    if (err instanceof NoActiveBetError) {
+      throw new ConflictException({ code: "NO_ACTIVE_BET" });
+    }
+    if (err instanceof BetNotCashableError) {
+      throw new ConflictException({
+        code: "BET_NOT_CASHABLE",
+        status: err.status,
       });
     }
     throw err;

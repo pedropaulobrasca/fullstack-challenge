@@ -24,6 +24,7 @@ import { TransitionToRunningUseCase } from "./use-cases/transition-to-running.us
 import { CrashRoundUseCase } from "./use-cases/crash-round.use-case";
 import { SettleRoundUseCase } from "./use-cases/settle-round.use-case";
 import { PlaceBetUseCase } from "./use-cases/place-bet.use-case";
+import { CashOutUseCase } from "./use-cases/cash-out.use-case";
 import { RoundLoopService } from "./round-loop.service";
 import { WalletDebitedHandler } from "./handlers/wallet-debited.handler";
 import { WalletDebitRejectedHandler } from "./handlers/wallet-debit-rejected.handler";
@@ -52,6 +53,7 @@ import { WalletDebitRejectedHandler } from "./handlers/wallet-debit-rejected.han
     CrashRoundUseCase,
     SettleRoundUseCase,
     PlaceBetUseCase,
+    CashOutUseCase,
     RoundLoopService,
     WalletDebitedHandler,
     WalletDebitRejectedHandler,
@@ -66,6 +68,8 @@ import { WalletDebitRejectedHandler } from "./handlers/wallet-debit-rejected.han
     VerifyRoundUseCase,
     GetPlayerBetsUseCase,
     PlaceBetUseCase,
+    CashOutUseCase,
+    RoundLoopService,
   ],
 })
 export class GameCoreModule {}
