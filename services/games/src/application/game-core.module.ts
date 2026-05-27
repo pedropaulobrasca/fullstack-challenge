@@ -26,6 +26,7 @@ import { SettleRoundUseCase } from "./use-cases/settle-round.use-case";
 import { PlaceBetUseCase } from "./use-cases/place-bet.use-case";
 import { CashOutUseCase } from "./use-cases/cash-out.use-case";
 import { RoundLoopService } from "./round-loop.service";
+import { SagaTimeoutSweeper } from "./saga-timeout-sweeper.service";
 import { WalletDebitedHandler } from "./handlers/wallet-debited.handler";
 import { WalletDebitRejectedHandler } from "./handlers/wallet-debit-rejected.handler";
 
@@ -55,6 +56,7 @@ import { WalletDebitRejectedHandler } from "./handlers/wallet-debit-rejected.han
     PlaceBetUseCase,
     CashOutUseCase,
     RoundLoopService,
+    SagaTimeoutSweeper,
     WalletDebitedHandler,
     WalletDebitRejectedHandler,
   ],
