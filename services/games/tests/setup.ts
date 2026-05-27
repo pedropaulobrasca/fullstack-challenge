@@ -15,6 +15,7 @@ function applyDefaults(): void {
   process.env.BET_MAX_CENTS ??= "100000";
   process.env.HASH_CHAIN_LENGTH ??= "1000000";
   process.env.SAGA_TIMEOUT_MS ??= "5000";
+  process.env.SAGA_SWEEP_INTERVAL_MS ??= "1000";
   process.env.OUTBOX_POLL_INTERVAL_MS ??= "1000";
   process.env.OUTBOX_POLL_BATCH_SIZE ??= "100";
   process.env.RMQ_DELIVERY_LIMIT_MAIN ??= "5";
