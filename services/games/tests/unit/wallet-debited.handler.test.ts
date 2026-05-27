@@ -199,7 +199,7 @@ describe("WalletDebitedHandler", () => {
 
     const envelope = buildEnvelope({ correlationId, playerId: "player-1" });
 
-    await h.handler.handle(envelope as never, {} as never, h.txEm as never);
+    await h.handler.handleEnvelope(envelope as never, {} as never, h.txEm as never);
 
     expect(h.bets.tryTransitionCalls).toHaveLength(1);
     expect(h.bets.tryTransitionCalls[0]!.id).toBe(betId);
@@ -259,7 +259,7 @@ describe("WalletDebitedHandler", () => {
 
     const envelope = buildEnvelope({ correlationId, playerId: "player-1" });
 
-    await h.handler.handle(envelope as never, {} as never, h.txEm as never);
+    await h.handler.handleEnvelope(envelope as never, {} as never, h.txEm as never);
 
     expect(h.bets.tryTransitionCalls).toHaveLength(0);
     expect(h.outbox.calls).toHaveLength(1);
@@ -298,7 +298,7 @@ describe("WalletDebitedHandler", () => {
 
     const envelope = buildEnvelope({ correlationId });
 
-    await h.handler.handle(envelope as never, {} as never, h.txEm as never);
+    await h.handler.handleEnvelope(envelope as never, {} as never, h.txEm as never);
 
     expect(h.bets.tryTransitionCalls).toHaveLength(0);
     expect(h.sagas.transitionCalls).toHaveLength(0);
@@ -311,7 +311,7 @@ describe("WalletDebitedHandler", () => {
 
     const envelope = buildEnvelope({});
 
-    await h.handler.handle(envelope as never, {} as never, h.txEm as never);
+    await h.handler.handleEnvelope(envelope as never, {} as never, h.txEm as never);
 
     expect(h.bets.tryTransitionCalls).toHaveLength(0);
     expect(h.sagas.transitionCalls).toHaveLength(0);
@@ -334,7 +334,7 @@ describe("WalletDebitedHandler", () => {
 
     const envelope = buildEnvelope({ correlationId });
 
-    await h.handler.handle(envelope as never, {} as never, h.txEm as never);
+    await h.handler.handleEnvelope(envelope as never, {} as never, h.txEm as never);
 
     expect(h.bets.tryTransitionCalls).toHaveLength(1);
     expect(h.sagas.transitionCalls).toHaveLength(0);
