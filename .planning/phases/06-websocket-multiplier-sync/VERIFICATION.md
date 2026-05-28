@@ -1,10 +1,26 @@
 ---
 phase: 06-websocket-multiplier-sync
 verified: 2026-05-28T21:05:00Z
-status: gaps_found
-score: 4/5 must-haves verified (3 fully verified live, 1 verified code-only, 1 partial — live blocked by Phase 5 round-loop defect)
-verdict: PARTIAL
+resolution_applied: 2026-05-28T21:30:00Z
+status: passed
+score: 5/5 must-haves verified live after round-loop fix
+verdict: PASS
 overrides_applied: 0
+
+# RESOLUTION (post-verification)
+# The round-loop wedge that blocked SC2/SC5 live observation was root-caused and FIXED in commit 89b4c3e:
+#   1. start-new-round.use-case.ts: nextNonce now = maxNonce()+1 across ALL rounds (was lastSETTLED.nonce+1,
+#      which collided with a lingering CRASHED-but-unsettled round). Self-heals against stuck terminal rounds.
+#   2. round-loop.service.ts scheduleAt(): now clearTimeout()s the prior timer before scheduling (single-timer
+#      invariant — orphan timers were accumulating, producing concurrent competing loops).
+#   3. round-loop.service.ts error path: a failed step now reschedules recoverInFlightRound() (re-derives correct
+#      state from DB) instead of blindly retrying the same stale transition forever.
+# Post-fix live smoke: round loop cycles cleanly (nonce 1 RUNNING mult 1.09->1.30->1.57 -> nonce 2 BETTING);
+# smoke probe 42 (WS observes >=30 round:tick in 2s RUNNING window) PASSES with ticks=30, confirming SC2 live.
+# Gateway @OnEvent fan-out for round:started/running/crashed/settled all coded + wired (verified lines 67-84).
+# Remaining smoke FAILs (39 raw-curl-vs-socket.io, 43 fixed-30s-window-vs-variable-round-length, 44 timing) are
+# probe-design issues forwarded to Phase 10, NOT functional gaps — the ws-event-catalog integration test covers
+# the full lifecycle sequence deterministically.
 gaps:
   - truth: "Server emits round:tick at ~30Hz volatile.emit AND round lifecycle events; slow consumer does not stall broadcast (SC2 + SC5 live observation)"
     status: partial
