@@ -1,0 +1,58 @@
+import { Logger } from "@nestjs/common";
+import {
+  WebSocketGateway,
+  WebSocketServer,
+  type OnGatewayConnection,
+  type OnGatewayDisconnect,
+} from "@nestjs/websockets";
+import type { Server, Socket } from "socket.io";
+import { PlayerId } from "@crash/shared-kernel";
+import { env } from "../../config/defaults";
+import { GetWsSnapshotUseCase } from "../../application/use-cases/get-ws-snapshot.use-case";
+
+@WebSocketGateway({
+  path: env.WS_PATH,
+  cors: { origin: true, credentials: true },
+})
+export class GameWsGateway
+  implements OnGatewayConnection, OnGatewayDisconnect
+{
+  private readonly log = new Logger(GameWsGateway.name);
+
+  @WebSocketServer() server!: Server;
+
+  constructor(private readonly snapshot: GetWsSnapshotUseCase) {}
+
+  async handleConnection(socket: Socket): Promise<void> {
+    const playerId = socket.data?.playerId;
+    if (typeof playerId !== "string" || playerId.length === 0) {
+      this.log.warn(`socket ${socket.id} missing playerId — disconnecting`);
+      socket.disconnect(true);
+      return;
+    }
+
+    socket.join("lobby");
+    socket.join(`user:${playerId}`);
+
+    try {
+      const payload = await this.snapshot.execute(PlayerId(playerId));
+      socket.emit("round:snapshot", payload);
+    } catch (err) {
+      this.log.error(
+        `snapshot assembly failed for socket ${socket.id}`,
+        err instanceof Error ? err.stack : String(err),
+      );
+      socket.disconnect(true);
+    }
+  }
+
+  handleDisconnect(_socket: Socket): void {}
+
+  emitToLobby(event: string, payload: unknown): void {
+    this.server.to("lobby").emit(event, payload);
+  }
+
+  emitToPlayer(playerId: string, event: string, payload: unknown): void {
+    this.server.to(`user:${playerId}`).emit(event, payload);
+  }
+}
