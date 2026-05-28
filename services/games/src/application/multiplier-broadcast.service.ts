@@ -1,8 +1,9 @@
-import { Inject, Injectable, Logger } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
+import { ModuleRef } from "@nestjs/core";
 import { env } from "../config/defaults";
 import type { RoundLoopService } from "./round-loop.service";
 import { ROUND_LOOP_SERVICE } from "./tokens";
-import { GameWsGateway } from "../presentation/gateways/game-ws.gateway";
+import type { GameWsGateway } from "../presentation/gateways/game-ws.gateway";
 
 @Injectable()
 export class MultiplierBroadcastService {
@@ -14,12 +15,26 @@ export class MultiplierBroadcastService {
   private running = false;
   private timer: ReturnType<typeof setTimeout> | null = null;
   private currentRoundId: string | null = null;
+  private gatewayRef: GameWsGateway | null = null;
+  private roundLoopRef: RoundLoopService | null = null;
 
-  constructor(
-    @Inject(ROUND_LOOP_SERVICE)
-    private readonly roundLoop: RoundLoopService,
-    private readonly gateway: GameWsGateway,
-  ) {}
+  constructor(private readonly moduleRef: ModuleRef) {}
+
+  private resolveGateway(): GameWsGateway | null {
+    if (this.gatewayRef !== null) return this.gatewayRef;
+    const { GameWsGateway } = require("../presentation/gateways/game-ws.gateway");
+    this.gatewayRef = this.moduleRef.get(GameWsGateway, { strict: false });
+    return this.gatewayRef;
+  }
+
+  private resolveRoundLoop(): RoundLoopService {
+    if (this.roundLoopRef !== null) return this.roundLoopRef;
+    this.roundLoopRef = this.moduleRef.get<RoundLoopService>(
+      ROUND_LOOP_SERVICE,
+      { strict: false },
+    );
+    return this.roundLoopRef;
+  }
 
   start(roundId: string): void {
     if (this.running) return;
@@ -48,9 +63,10 @@ export class MultiplierBroadcastService {
     const now = new Date();
     const roundId = this.currentRoundId;
     try {
-      const multiplier = this.roundLoop.getMultiplierAt(now);
-      if (roundId !== null) {
-        this.gateway.server.to("lobby").volatile.emit("round:tick", {
+      const multiplier = this.resolveRoundLoop().getMultiplierAt(now);
+      const gateway = this.resolveGateway();
+      if (roundId !== null && gateway !== null) {
+        gateway.server.to("lobby").volatile.emit("round:tick", {
           roundId,
           multiplier: multiplier.toNumber(),
           t: now.getTime(),

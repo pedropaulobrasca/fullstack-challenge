@@ -16,10 +16,11 @@ const systemClock: Clock = { now: () => new Date() };
 
 @Injectable()
 export class GetWsSnapshotUseCase {
+  private readonly clock: Clock = systemClock;
+
   constructor(
     @Inject(ROUND_REPOSITORY) private readonly rounds: RoundRepository,
     @Inject(BET_REPOSITORY) private readonly bets: BetRepository,
-    private readonly clock: Clock = systemClock,
   ) {}
 
   async execute(playerId: PlayerId | null): Promise<RoundSnapshotPayload | null> {
