@@ -75,13 +75,13 @@
 
 ### WebSocket Gateway (WS)
 
-- [ ] **REQ-WS-01**: WebSocket gateway authenticates the JWT at handshake (custom Socket.IO IoAdapter validating via cached JWKS).
-- [ ] **REQ-WS-02**: WebSocket gateway joins each connected socket to a single global `lobby` room plus a per-user `user:{playerId}` private room.
-- [ ] **REQ-WS-03**: WebSocket gateway emits the following server→client events: `round:started` (BETTING phase begins, with seed hash + timing), `round:running` (BETTING ends, RUNNING begins), `round:tick` (`{ multiplier, t }` volatile at ~30 Hz), `round:crashed` (`{ crashPoint, seed, hash }`), `round:settled` (next round in N ms), `bet:placed` (other player), `bet:cashed_out` (other player), `bet:my_active` / `bet:my_cashed_out` / `bet:my_refunded` (private channel).
-- [ ] **REQ-WS-04**: WebSocket gateway sends a `round:snapshot` on every connect / reconnect so a client that joins mid-round can render correctly.
-- [ ] **REQ-WS-05**: WebSocket gateway computes `cashoutAcceptedAt` at the inbound message handler before any await — this server timestamp is the only authority for cashout-vs-crash race resolution.
-- [ ] **REQ-WS-06**: WebSocket gateway emits ticks as `volatile.emit` so a slow consumer cannot block the broadcast loop.
-- [ ] **REQ-WS-07**: WebSocket clients reconnect with exponential backoff and resync via `round:snapshot` on reconnect.
+- [x] **REQ-WS-01**: WebSocket gateway authenticates the JWT at handshake (custom Socket.IO IoAdapter validating via cached JWKS).
+- [x] **REQ-WS-02**: WebSocket gateway joins each connected socket to a single global `lobby` room plus a per-user `user:{playerId}` private room.
+- [x] **REQ-WS-03**: WebSocket gateway emits the following server→client events: `round:started` (BETTING phase begins, with seed hash + timing), `round:running` (BETTING ends, RUNNING begins), `round:tick` (`{ multiplier, t }` volatile at ~30 Hz), `round:crashed` (`{ crashPoint, seed, hash }`), `round:settled` (next round in N ms), `bet:placed` (other player), `bet:cashed_out` (other player), `bet:my_active` / `bet:my_cashed_out` / `bet:my_refunded` (private channel).
+- [x] **REQ-WS-04**: WebSocket gateway sends a `round:snapshot` on every connect / reconnect so a client that joins mid-round can render correctly.
+- [x] **REQ-WS-05**: WebSocket gateway computes `cashoutAcceptedAt` at the inbound message handler before any await — this server timestamp is the only authority for cashout-vs-crash race resolution.
+- [x] **REQ-WS-06**: WebSocket gateway emits ticks as `volatile.emit` so a slow consumer cannot block the broadcast loop.
+- [x] **REQ-WS-07**: WebSocket clients reconnect with exponential backoff and resync via `round:snapshot` on reconnect.
 
 ### Frontend (FE)
 
@@ -216,7 +216,7 @@ Each v1 REQ-ID maps to exactly one phase in `ROADMAP.md`. v2 (REQ-STRETCH-*) liv
 ### Coverage summary
 
 - **v1 mapped**: 95 / 95 (100%)
-- **v1 complete**: 39 / 95 (Phase 1: REQ-AUTH-05 + REQ-DOC-03; Phase 2: REQ-WALL-05 + REQ-WALL-06 + REQ-SAGA-05 + REQ-SAGA-06; Phase 3: REQ-DOM-03 + REQ-AUTH-04 + REQ-WALL-01 + REQ-WALL-02 + REQ-WALL-03 + REQ-WALL-04 + REQ-WALL-07; Phase 4: REQ-DOM-01 + REQ-DOM-02 + REQ-DOM-04 + REQ-DOM-07 + REQ-DOM-08 + REQ-GAME-01 + REQ-GAME-02 + REQ-GAME-03 + REQ-GAME-04 + REQ-GAME-05 + REQ-GAME-08 + REQ-GAME-09 + REQ-FAIR-01 + REQ-FAIR-02 + REQ-FAIR-03 + REQ-FAIR-04 + REQ-FAIR-05 + REQ-TEST-01 + REQ-TEST-02; Phase 5: REQ-GAME-06 + REQ-GAME-07 + REQ-SAGA-01 + REQ-SAGA-02 + REQ-SAGA-03 + REQ-SAGA-04 + REQ-TEST-03 + REQ-TEST-04)
+- **v1 complete**: 46 / 95 (Phase 1: REQ-AUTH-05 + REQ-DOC-03; Phase 2: REQ-WALL-05 + REQ-WALL-06 + REQ-SAGA-05 + REQ-SAGA-06; Phase 3: REQ-DOM-03 + REQ-AUTH-04 + REQ-WALL-01 + REQ-WALL-02 + REQ-WALL-03 + REQ-WALL-04 + REQ-WALL-07; Phase 4: REQ-DOM-01 + REQ-DOM-02 + REQ-DOM-04 + REQ-DOM-07 + REQ-DOM-08 + REQ-GAME-01 + REQ-GAME-02 + REQ-GAME-03 + REQ-GAME-04 + REQ-GAME-05 + REQ-GAME-08 + REQ-GAME-09 + REQ-FAIR-01 + REQ-FAIR-02 + REQ-FAIR-03 + REQ-FAIR-04 + REQ-FAIR-05 + REQ-TEST-01 + REQ-TEST-02; Phase 5: REQ-GAME-06 + REQ-GAME-07 + REQ-SAGA-01 + REQ-SAGA-02 + REQ-SAGA-03 + REQ-SAGA-04 + REQ-TEST-03 + REQ-TEST-04; Phase 6: REQ-WS-01 + REQ-WS-02 + REQ-WS-03 + REQ-WS-04 + REQ-WS-05 + REQ-WS-06 + REQ-WS-07 — REQ-AUTH-01/02/03 remain Pending, frontend OIDC deferred to Phase 7)
 - **Orphans**: 0
 - **Duplicates**: 0
 - **Stretch (v2) deferred**: 8
@@ -293,16 +293,16 @@ Each v1 REQ-ID maps to exactly one phase in `ROADMAP.md`. v2 (REQ-STRETCH-*) liv
 #### Phase 6 — WebSocket Gateway & Multiplier Sync (10 reqs)
 | REQ-ID | Title | Status |
 |--------|-------|--------|
-| REQ-AUTH-01 | OIDC Authorization Code + PKCE (S256) via oidc-spa | Pending |
-| REQ-AUTH-02 | Token persistence + silent renewal | Pending |
-| REQ-AUTH-03 | `BroadcastChannel`-coordinated multi-tab refresh | Pending |
-| REQ-WS-01 | JWT-at-handshake via custom Socket.IO IoAdapter | Pending |
-| REQ-WS-02 | Sockets joined to `lobby` + `user:{playerId}` | Pending |
-| REQ-WS-03 | Round + bet + cashout server→client events | Pending |
-| REQ-WS-04 | `round:snapshot` on connect / reconnect | Pending |
-| REQ-WS-05 | `cashoutAcceptedAt` stamped at gateway middleware | Pending |
-| REQ-WS-06 | `volatile.emit` for ticks (slow-consumer-safe) | Pending |
-| REQ-WS-07 | Client reconnect with exponential backoff + resync | Pending |
+| REQ-AUTH-01 | OIDC Authorization Code + PKCE (S256) via oidc-spa | Pending (frontend OIDC deferred to Phase 7 per Phase 6 RESEARCH Deferred Ideas; backend JWT-at-WS-handshake validated via REQ-WS-01) |
+| REQ-AUTH-02 | Token persistence + silent renewal | Pending (Phase 7 silent renewal — frontend scope) |
+| REQ-AUTH-03 | `BroadcastChannel`-coordinated multi-tab refresh | Pending (Phase 7 BroadcastChannel — frontend scope) |
+| REQ-WS-01 | JWT-at-handshake via custom Socket.IO IoAdapter | Done (P6.01 — JwtVerifierService extracted from JwtGuard for shared cached-JWKS validation; P6.03 — JwtIoAdapter installs io.use() handshake middleware rejecting any token that does not verify against the Keycloak JWKS, sets socket.data.playerId from the verified sub claim; smoke probe 40 no-token → UNAUTHORIZED PASS live; ADR-021 + ADR-022 lock the standalone WS_PORT=4101 surface) |
+| REQ-WS-02 | Sockets joined to `lobby` + `user:{playerId}` | Done (P6.03 — handleConnection auto-joins lobby + user:{playerId} before snapshot emit; user-room name derived solely from verified-JWT sub claim — T-06-07 mitigation; integration ws-rooms.test.ts; ADR-021 locks single-lobby-over-per-round-rooms) |
+| REQ-WS-03 | Round + bet + cashout server→client events | Done (P6.03 round:snapshot payload schemas + P6.05 EventEmitter2 lifecycle @OnEvent fan-out to lobby for round:started/running/crashed/settled + P6.06 WsBridgeConsumer dual-emit bet:placed/cashed_out masked to lobby + bet:my_active/refunded/cashed_out raw to user:{playerId}; integration ws-event-catalog.test.ts) |
+| REQ-WS-04 | `round:snapshot` on connect / reconnect | Done (P6.03 — GetWsSnapshotUseCase composes Round + active bets, masks bystander playerIds, includes caller's un-masked bet; handleConnection emits per-socket idempotently across reconnects; smoke probe 41 snapshot-on-connect PASS live; integration ws-snapshot.test.ts incl. multi-tab parity) |
+| REQ-WS-05 | `cashoutAcceptedAt` stamped at gateway middleware | Done (Phase 5 P5.06 — `const acceptedAt = new Date()` as the literal first executable line of POST /games/bet/cashout at bet-command.controller.ts:69; P6.10 ADR-023 codifies the invariant + interprets "gateway middleware" as the NestJS HTTP controller layer + documents why cashout was NOT migrated to a WS inbound message (event-loop contention with the 30Hz tick loop tightens the race); P6.08 cashout-race.property.test.ts covers the ±50ms window across 50 fast-check cases) |
+| REQ-WS-06 | `volatile.emit` for ticks (slow-consumer-safe) | Done (P6.04 — MultiplierBroadcastService server.to('lobby').volatile.emit('round:tick', …) on a 33ms recursive-setTimeout loop, sole volatile owner in the codebase; P6.08 ws-tick-volatile.test.ts asserts ~30Hz frequency within tolerance; ADR-022 locks the 30Hz tick + 60fps client interpolation) |
+| REQ-WS-07 | Client reconnect with exponential backoff + resync | Done (Socket.IO client default exponential-backoff reconnection + P6.03 round:snapshot emitted on every handleConnection so a reconnecting client resyncs full state; integration ws-snapshot.test.ts reconnect re-emit; frontend client wiring lands in Phase 7) |
 
 #### Phase 7 — Frontend Vertical Slice (12 reqs)
 | REQ-ID | Title | Status |
@@ -382,4 +382,4 @@ A v1 requirement is done when:
 
 ---
 
-*Last updated: 2026-05-27 by gsd-executor (P5.11 closeout — Phase 5 traceability marked Done for all 8 REQ-IDs with plan citations: REQ-GAME-06 → P5.04, REQ-GAME-07 → P5.06, REQ-SAGA-01 → P5.04+P5.05, REQ-SAGA-02 → P5.03, REQ-SAGA-03 → P5.07, REQ-SAGA-04 → P5.06, REQ-TEST-03 → P5.09, REQ-TEST-04 → P5.09; v1-complete count incremented from 31/95 to 39/95).*
+*Last updated: 2026-05-28 by gsd-executor (P6.10 closeout — Phase 6 traceability marked Done for all 7 WS REQ-IDs with plan citations: REQ-WS-01 → P6.01+P6.03, REQ-WS-02 → P6.03, REQ-WS-03 → P6.03+P6.05+P6.06, REQ-WS-04 → P6.03, REQ-WS-05 → Phase 5 P5.06 + codified in P6.10 ADR-023 + P6.08 property test, REQ-WS-06 → P6.04, REQ-WS-07 → Socket.IO client default backoff + P6.03 snapshot-on-reconnect; REQ-AUTH-01/02/03 kept Pending — frontend OIDC deferred to Phase 7 per Phase 6 RESEARCH Deferred Ideas, backend JWT-at-WS-handshake done via REQ-WS-01; v1-complete count incremented from 39/95 to 46/95).*

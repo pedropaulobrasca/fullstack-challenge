@@ -49,6 +49,14 @@ Each ADR records the constraints that drove the decision, the alternatives that 
 | [ADR-019](./ADR-019-orchestration-over-choreography.md) | Orchestration over choreography — Game service owns the bet saga FSM | 5 | Accepted | Game owns `bet_saga_state` (`DEBIT_PENDING → CONFIRMED \| REJECTED \| TIMED_OUT → COMPENSATED`); Wallet is a passive participant; orchestration justified by ≥3-step + branching + timeout + compensation (microservices.io); `@Global()` `MessagingSpineModule` discovery locked as DI contract from P5.10 fix; `SagaTimeoutSweeper` reuses ADR-017 recursive `setTimeout` + `OnApplicationBootstrap`; restart recovery via `FOR UPDATE SKIP LOCKED` over expired `DEBIT_PENDING` rows. |
 | [ADR-020](./ADR-020-bet-202-cashout-200-asymmetry.md) | Bet placement asymmetry — `202 Accepted` for bet, synchronous `200 OK` for cashout | 5 | Accepted | `POST /games/bet` returns `202 Accepted` (cross-service AMQP round-trip; saga confirms via WS `bet:active` in Phase 6); `POST /games/bet/cashout` returns synchronous `200 OK` with `{multiplier, payoutCents}` (single-service, single-TX, `cashoutAcceptedAt` stamped before any await per REQ-WS-05); DLX alignment lesson (cross-service queues use source-exchange DLX) from P5.10 fix locked as topology rule for all future cross-service consumers. |
 
+## Phase 6 — WebSocket Gateway & Multiplier Sync
+
+| ADR | Title | Phase | Status | Summary |
+|-----|-------|-------|--------|---------|
+| [ADR-021](./ADR-021-single-global-lobby-room.md) | Single global `lobby` room over per-round rooms | 6 | Accepted | Every socket joins exactly `lobby` (public broadcast: round lifecycle + 30Hz tick + masked bet feed) + `user:{playerId}` (private `bet:my_*`), set once at `handleConnection` and never changed; per-round rooms rejected because only one round runs at a time (ADR-017) so they would force a full membership reshuffle every ~7-15s for zero scoping benefit and race the snapshot-on-connect logic. |
+| [ADR-022](./ADR-022-30hz-server-tick-60fps-client-interpolation.md) | 30 Hz server tick + 60 fps client interpolation | 6 | Accepted | Server emits authoritative `round:tick` every 33ms via `volatile.emit` on a recursive `setTimeout` loop (`SERVER_TICK_HZ=30`); client (Phase 7) renders at 60fps via rAF computing the multiplier locally from `e^(GROWTH_RATE*t/1000)` anchored to `roundStartedAt` and reconciling toward each tick via EWMA clock-offset; ~50% of 60Hz bandwidth with no smoothness loss. Consequence: standalone Socket.IO server on `WS_PORT=4101` + websocket-only transport (Bun `@nestjs/platform-express` lacks `server.listeners()` for engine.io `attach()` — P6.09 fix). |
+| [ADR-023](./ADR-023-server-authoritative-cashout-accepted-at.md) | Server-authoritative `cashoutAcceptedAt` at the HTTP controller's first executable line | 6 | Accepted | `cashoutAcceptedAt = new Date()` is the literal first executable line of `POST /games/bet/cashout` (`bet-command.controller.ts:69`, locked in Phase 5) — the sole authority for cashout-vs-crash race resolution; REQ-WS-05's "gateway middleware" interpreted as the NestJS HTTP controller layer; cashout NOT migrated to a WS inbound message because a WS handler shares the event loop with the 30Hz tick broadcast, delaying the stamp under load and tightening the race; ±50ms race property test (P6.08) covers 50 cases. |
+
 ## Conventions
 
 - **Filename**: `ADR-NNN-<kebab-slug>.md` where NNN is a zero-padded three-digit sequence number. ADRs are numbered globally across the project (not per phase).
@@ -59,9 +67,8 @@ Each ADR records the constraints that drove the decision, the alternatives that 
 
 ## Future ADRs
 
-Subsequent phases append ADR-021+ as decisions land. The anticipated catalogue is enumerated in `.planning/ROADMAP.md` under each phase's "Key decisions to make" list. Examples:
+Subsequent phases append ADR-024+ as decisions land. The anticipated catalogue is enumerated in `.planning/ROADMAP.md` under each phase's "Key decisions to make" list. Examples:
 
-- Phase 6: WebSocket room granularity; tick-rate and reconciliation policy; server-authoritative `cashoutAcceptedAt` at gateway middleware.
 - Phase 7: frontend routing and auth-loader pattern; canvas renderer life-cycle; `BroadcastChannel` token refresh.
 - Phase 8: replay UI scope and storage shape; client-seed derivation surfacing.
 - Phase 9: leaderboard projection store and window granularity; server-enforced auto-cashout; per-session auto-bet config.

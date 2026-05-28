@@ -13,7 +13,7 @@
 - [x] **Phase 3: Wallet Service** — Wallet + Transaction aggregates, REST provisioning, AMQP debit/credit consumers, ledger model
 - [x] **Phase 4: Game Core (domain only)** — Round + Bet aggregates, provably-fair hash chain, autonomous round loop with crash recovery
 - [x] **Phase 5: Saga Integration** — End-to-end bet + cashout sagas, persistent saga state, kill-9 recovery, timeout compensation
-- [ ] **Phase 6: WebSocket Gateway & Multiplier Sync** — JWT-at-handshake, lobby + user rooms, 30Hz volatile tick broadcast, server-authoritative cashout timestamping
+- [x] **Phase 6: WebSocket Gateway & Multiplier Sync** — JWT-at-handshake, lobby + user rooms, 30Hz volatile tick broadcast, server-authoritative cashout timestamping
 - [ ] **Phase 7: Frontend Vertical Slice** — TanStack Start + Keycloak, Canvas curve renderer, bet panel, dark casino theme, full table-stakes UX
 - [ ] **Phase 8: Provably-Fair UX, History & Replay** — Commitment badge, client-side verifier (crypto.subtle), `/verify` route, deterministic replay reusing canvas renderer
 - [ ] **Phase 9: Auto Features & Leaderboard** — Server-enforced auto-cashout, auto-bet (fixed + Martingale), stop-loss/stop-win, 24h leaderboard projection (light CQRS)
@@ -185,17 +185,18 @@ Plans:
   - ADR-018: Server-authoritative `cashoutAcceptedAt` at gateway middleware (race resolution canon)
 
 **Plans:** 10 plans
+**Plans landed**: 06-01 (JwtVerifierService extracted from JwtGuard for a shared HTTP + WS cached-JWKS auth surface), 06-02 (deps install gated by package-legitimacy checkpoint + WS_PATH env), 06-03 (JwtIoAdapter handshake middleware + GameWsGateway auto-joining lobby + user:{playerId} + GetWsSnapshotUseCase + strict zod ws-event payload schemas), 06-04 (MultiplierBroadcastService 30Hz recursive-setTimeout volatile.emit round:tick, sole volatile owner), 06-05 (EventEmitter2 in-process bus — RoundLoopService lifecycle emits → GameWsGateway @OnEvent lobby fan-out, string DI tokens break the RoundLoop↔MultiplierBroadcast cycle), 06-06 (WsBridgeConsumer @RabbitSubscribe game.events → dual-emit bet:placed/cashed_out masked to lobby + bet:my_active/refunded/cashed_out raw to user:{playerId}), 06-07 (Kong games-ws route PCRE-anchored ~/ws, declared first to win PCRE matching), 06-08 (5 WS integration tests + ws-client helper + cashout-race ±50ms property test), 06-09 (smoke probes 39-44 + live bring-up — triple boot-fix: Clock DI field-initializer + RoundLoop↔MultiplierBroadcast ModuleRef lazy resolution + socket.io standalone WS_PORT=4101 Bun http-attach fix; handshake JWT-reject + snapshot-on-connect PASS live), 06-10 (ADR-021/022/023 + STATE/ROADMAP/REQUIREMENTS closeout). REQ-AUTH-01/02/03 (frontend OIDC) deferred to Phase 7 per RESEARCH Deferred Ideas; backend WS auth (REQ-WS-01) closes the JWT-at-handshake surface.
 Plans:
-- [ ] 06-01-PLAN.md — Extract JwtVerifierService from JwtGuard (shared HTTP + WS auth surface)
-- [ ] 06-02-PLAN.md — Install @nestjs/websockets + platform-socket.io + socket.io + @nestjs/event-emitter (gated by Package Legitimacy checkpoint) + WS_PATH env
-- [ ] 06-03-PLAN.md — JwtIoAdapter + GameWsGateway + GetWsSnapshotUseCase + ws-event payload schemas
-- [ ] 06-04-PLAN.md — MultiplierBroadcastService (30Hz recursive setTimeout + volatile.emit round:tick)
-- [ ] 06-05-PLAN.md — EventEmitter2 lifecycle hooks (RoundLoopService → @OnEvent gateway broadcasts)
-- [ ] 06-06-PLAN.md — WsBridgeConsumer (@RabbitSubscribe game.events → bet:placed/active/refunded/cashed_out fan-out)
-- [ ] 06-07-PLAN.md — Kong games-ws route at PCRE-anchored ~/ws$
-- [ ] 06-08-PLAN.md — WS integration tests (handshake / rooms / snapshot / event catalog / tick volatile) + cashout-race property test
-- [ ] 06-09-PLAN.md — Smoke probes 39-44 + blocking live walkthrough checkpoint
-- [ ] 06-10-PLAN.md — ADR-021 + ADR-022 + ADR-023 + STATE/ROADMAP/REQUIREMENTS closeout
+- [x] 06-01-PLAN.md — Extract JwtVerifierService from JwtGuard (shared HTTP + WS auth surface)
+- [x] 06-02-PLAN.md — Install @nestjs/websockets + platform-socket.io + socket.io + @nestjs/event-emitter (gated by Package Legitimacy checkpoint) + WS_PATH env
+- [x] 06-03-PLAN.md — JwtIoAdapter + GameWsGateway + GetWsSnapshotUseCase + ws-event payload schemas
+- [x] 06-04-PLAN.md — MultiplierBroadcastService (30Hz recursive setTimeout + volatile.emit round:tick)
+- [x] 06-05-PLAN.md — EventEmitter2 lifecycle hooks (RoundLoopService → @OnEvent gateway broadcasts)
+- [x] 06-06-PLAN.md — WsBridgeConsumer (@RabbitSubscribe game.events → bet:placed/active/refunded/cashed_out fan-out)
+- [x] 06-07-PLAN.md — Kong games-ws route at PCRE-anchored ~/ws$
+- [x] 06-08-PLAN.md — WS integration tests (handshake / rooms / snapshot / event catalog / tick volatile) + cashout-race property test
+- [x] 06-09-PLAN.md — Smoke probes 39-44 + blocking live walkthrough checkpoint
+- [x] 06-10-PLAN.md — ADR-021 + ADR-022 + ADR-023 + STATE/ROADMAP/REQUIREMENTS closeout
 
 ### Phase 7: Frontend Vertical Slice
 **Goal**: A logged-in player can complete the full Crash loop in a polished dark-casino UI — bet during the betting window, watch the multiplier climb in real time on a smooth Canvas curve, cash out (or lose), see their balance update, and view the live bet/cashout feed — fully responsive.
@@ -297,7 +298,7 @@ These are not numbered phases. Pull from this list during Phase 10 if time permi
 | 3. Wallet Service | 10/10 | Complete | 2026-05-25 |
 | 4. Game Core (domain only) | 12/12 | Complete | 2026-05-26 |
 | 5. Saga Integration | 11/11 | Complete | 2026-05-27 |
-| 6. WebSocket Gateway & Multiplier Sync | 0/0 | Not started | - |
+| 6. WebSocket Gateway & Multiplier Sync | 10/10 | Complete | 2026-05-28 |
 | 7. Frontend Vertical Slice | 0/0 | Not started | - |
 | 8. Provably-Fair UX, History & Replay | 0/0 | Not started | - |
 | 9. Auto Features & Leaderboard | 0/0 | Not started | - |
@@ -330,4 +331,4 @@ No structural deviations. The 10 phases map 1:1 to the SUMMARY clusters. Refinem
 
 ---
 
-*Last updated: 2026-05-27 by gsd-executor (P5.11 closeout — Phase 5 complete, 5/10 phases done, two Phase 5 ADRs landed: ADR-019 orchestration + ADR-020 bet-202/cashout-200 asymmetry).*
+*Last updated: 2026-05-28 by gsd-executor (P6.10 closeout — Phase 6 complete, 6/10 phases done, three Phase 6 ADRs landed: ADR-021 single global lobby + ADR-022 30Hz tick/60fps interpolation + ADR-023 server-authoritative cashoutAcceptedAt; REQ-WS-01..07 marked Done; REQ-AUTH-01/02/03 deferred to Phase 7).*
