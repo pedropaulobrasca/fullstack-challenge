@@ -1,6 +1,5 @@
-import { createHash } from "node:crypto";
 import { Inject, Injectable } from "@nestjs/common";
-import type { MoneySnapshot, PlayerId } from "@crash/shared-kernel";
+import type { MoneySnapshot } from "@crash/shared-kernel";
 import { multiplierAt } from "@crash/contracts";
 import { env } from "../../config/defaults";
 import { BET_REPOSITORY, ROUND_REPOSITORY } from "../tokens";
@@ -10,6 +9,7 @@ import type { Bet } from "../../domain/bet.aggregate";
 import type { Round } from "../../domain/round.aggregate";
 import type { RoundStatus } from "../../domain/value-objects/round-status";
 import type { BetStatus } from "../../domain/value-objects/bet-status";
+import { maskPlayerId } from "./mask-player-id";
 
 export type CurrentRoundBetView = {
   betId: string;
@@ -36,13 +36,6 @@ export type CurrentRoundView = {
   currentMultiplier: number | null;
   bets: CurrentRoundBetView[];
 };
-
-function maskPlayerId(playerId: PlayerId): string {
-  return createHash("sha256")
-    .update(playerId as unknown as string)
-    .digest("hex")
-    .substring(0, 8);
-}
 
 @Injectable()
 export class GetCurrentRoundUseCase {
