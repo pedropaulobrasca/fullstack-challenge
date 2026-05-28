@@ -9,7 +9,7 @@ const bigIntFromString = z
   .regex(/^\d+$/)
   .transform((raw) => BigInt(raw));
 
-const gamesEnvSchema = sharedEnvSchema.extend({
+export const gamesEnvSchema = sharedEnvSchema.extend({
   PORT: z.coerce.number().int().positive().default(4001),
   BETTING_WINDOW_MS: z.coerce.number().int().positive().default(5000),
   COOLDOWN_MS: z.coerce.number().int().positive().default(2000),
@@ -31,6 +31,10 @@ const gamesEnvSchema = sharedEnvSchema.extend({
   KEYCLOAK_ISSUER: z.string().url(),
   KEYCLOAK_JWKS_URI: z.string().url(),
   KEYCLOAK_AUDIENCE: z.string().min(1).default("account"),
+  WS_PATH: z
+    .string()
+    .regex(/^\/.+$/, "WS_PATH must start with '/' and be non-empty")
+    .default("/ws"),
 });
 
 export const env = Object.freeze(gamesEnvSchema.parse(process.env));
