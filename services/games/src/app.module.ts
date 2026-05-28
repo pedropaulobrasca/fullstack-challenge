@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { APP_PIPE } from "@nestjs/core";
 import { MikroOrmModule } from "@mikro-orm/nestjs";
+import { EventEmitterModule } from "@nestjs/event-emitter";
 import { ZodValidationPipe } from "nestjs-zod";
 import {
   MessagingSpineModule,
@@ -15,6 +16,7 @@ import { RoundsController } from "./presentation/controllers/rounds.controller";
 import { BetsController } from "./presentation/controllers/bets.controller";
 import { BetCommandController } from "./presentation/controllers/bet-command.controller";
 import { GamesDeadLetterConsumer } from "./infrastructure/messaging/games-dead-letter.consumer";
+import { WsBridgeConsumer } from "./infrastructure/messaging/ws-bridge.consumer";
 import { JwtGuard } from "./presentation/guards/jwt.guard";
 import { JwtVerifierService } from "./presentation/auth/jwt-verifier.service";
 import { GameWsGateway } from "./presentation/gateways/game-ws.gateway";
@@ -23,6 +25,7 @@ import { GameCoreModule } from "./application/game-core.module";
 @Module({
   imports: [
     MikroOrmModule.forRoot(mikroOrmConfig),
+    EventEmitterModule.forRoot(),
     MessagingSpineModule.forRootAsync({
       useFactory: () => ({
         amqpUrl: env.RABBITMQ_URL,
@@ -85,6 +88,7 @@ import { GameCoreModule } from "./application/game-core.module";
   ],
   providers: [
     GamesDeadLetterConsumer,
+    WsBridgeConsumer,
     JwtGuard,
     JwtVerifierService,
     GameWsGateway,
