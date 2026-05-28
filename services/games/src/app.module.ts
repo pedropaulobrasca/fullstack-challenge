@@ -16,6 +16,7 @@ import { BetsController } from "./presentation/controllers/bets.controller";
 import { BetCommandController } from "./presentation/controllers/bet-command.controller";
 import { GamesDeadLetterConsumer } from "./infrastructure/messaging/games-dead-letter.consumer";
 import { JwtGuard } from "./presentation/guards/jwt.guard";
+import { JwtVerifierService } from "./presentation/auth/jwt-verifier.service";
 import { GameCoreModule } from "./application/game-core.module";
 
 @Module({
@@ -74,6 +75,7 @@ import { GameCoreModule } from "./application/game-core.module";
   providers: [
     GamesDeadLetterConsumer,
     JwtGuard,
+    JwtVerifierService,
     { provide: APP_PIPE, useClass: ZodValidationPipe },
   ],
 })

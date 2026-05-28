@@ -2,10 +2,9 @@ import {
   CanActivate,
   ExecutionContext,
   Injectable,
-  Optional,
   UnauthorizedException,
 } from "@nestjs/common";
-import { createRemoteJWKSet, jwtVerify, type JWTVerifyGetKey } from "jose";
+import { JwtVerifierService } from "../auth/jwt-verifier.service";
 
 export interface AuthenticatedRequest {
   headers: Record<string, string | string[] | undefined>;
@@ -18,30 +17,9 @@ export interface JwtGuardOptions {
   audience: string;
 }
 
-function loadEnvOptions(): JwtGuardOptions {
-  const { env } = require("../../config/defaults") as typeof import("../../config/defaults");
-  return {
-    jwksUri: env.KEYCLOAK_JWKS_URI,
-    issuer: env.KEYCLOAK_ISSUER,
-    audience: env.KEYCLOAK_AUDIENCE,
-  };
-}
-
 @Injectable()
 export class JwtGuard implements CanActivate {
-  private readonly issuer: string;
-  private readonly audience: string;
-  private readonly jwks: JWTVerifyGetKey;
-
-  constructor(@Optional() options?: JwtGuardOptions) {
-    const resolved = options ?? loadEnvOptions();
-    this.issuer = resolved.issuer;
-    this.audience = resolved.audience;
-    this.jwks = createRemoteJWKSet(new URL(resolved.jwksUri), {
-      cacheMaxAge: 600_000,
-      cooldownDuration: 30_000,
-    });
-  }
+  constructor(private readonly verifier: JwtVerifierService) {}
 
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
     const req = ctx.switchToHttp().getRequest<AuthenticatedRequest>();
@@ -57,21 +35,8 @@ export class JwtGuard implements CanActivate {
       throw new UnauthorizedException("MISSING_BEARER_TOKEN");
     }
 
-    try {
-      const { payload } = await jwtVerify(token, this.jwks, {
-        issuer: this.issuer,
-        audience: this.audience,
-      });
-      const playerId = typeof payload.sub === "string" ? payload.sub : "";
-      const tokenExp = typeof payload.exp === "number" ? payload.exp : 0;
-      if (!playerId || !tokenExp) {
-        throw new UnauthorizedException("INVALID_TOKEN");
-      }
-      req.user = { playerId, tokenExp };
-      return true;
-    } catch (err) {
-      if (err instanceof UnauthorizedException) throw err;
-      throw new UnauthorizedException("INVALID_TOKEN");
-    }
+    const { playerId, tokenExp } = await this.verifier.verify(token);
+    req.user = { playerId, tokenExp };
+    return true;
   }
 }
