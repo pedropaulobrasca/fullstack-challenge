@@ -11,6 +11,7 @@ const bigIntFromString = z
 
 export const gamesEnvSchema = sharedEnvSchema.extend({
   PORT: z.coerce.number().int().positive().default(4001),
+  WS_PORT: z.coerce.number().int().positive().default(4101),
   BETTING_WINDOW_MS: z.coerce.number().int().positive().default(5000),
   COOLDOWN_MS: z.coerce.number().int().positive().default(2000),
   SERVER_TICK_HZ: z.coerce.number().int().positive().default(30),

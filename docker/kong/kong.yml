@@ -1,16 +1,20 @@
 _format_version: "3.0"
 
 services:
-  - name: games-service
-    url: http://games:4001
+  - name: games-ws-service
+    url: http://games:4101
     routes:
       - name: games-ws
         paths:
-          - ~/ws$
+          - ~/ws/?$
         protocols:
           - http
           - https
         strip_path: false
+
+  - name: games-service
+    url: http://games:4001
+    routes:
       - name: games-current
         paths:
           - ~/games/rounds/current$

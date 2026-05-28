@@ -136,6 +136,7 @@ services:
       target: runtime
     ports:
       - "4001:4001"
+      - "4101:4101"
     env_file:
       - ./services/games/.env
     depends_on:

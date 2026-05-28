@@ -2,6 +2,7 @@ import { IoAdapter } from "@nestjs/platform-socket.io";
 import type { INestApplicationContext } from "@nestjs/common";
 import { Logger } from "@nestjs/common";
 import type { ServerOptions, Server, Socket } from "socket.io";
+import { env } from "../../config/defaults";
 import type { JwtVerifierService } from "../auth/jwt-verifier.service";
 
 type HandshakeShape = {
@@ -19,8 +20,19 @@ export class JwtIoAdapter extends IoAdapter {
     super(app);
   }
 
-  createIOServer(port: number, options?: ServerOptions): Server {
-    const server: Server = super.createIOServer(port, options);
+  createIOServer(_port: number, options?: ServerOptions): Server {
+    const standaloneOptions: Partial<ServerOptions> = {
+      ...(options ?? {}),
+      transports: ["websocket"],
+      allowUpgrades: false,
+    };
+    const server: Server = super.createIOServer(
+      env.WS_PORT,
+      standaloneOptions as ServerOptions,
+    );
+    this.log.log(
+      `socket.io listening on standalone port ${env.WS_PORT} (path ${env.WS_PATH})`,
+    );
     server.use(async (socket: Socket, next: (err?: Error) => void) => {
       try {
         const token = this.extractToken(socket);

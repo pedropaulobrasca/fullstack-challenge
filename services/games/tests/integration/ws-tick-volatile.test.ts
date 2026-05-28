@@ -43,10 +43,8 @@ async function bootWsApp(): Promise<void> {
   app.useWebSocketAdapter(new JwtIoAdapter(app, verifier));
   await app.init();
   await app.listen(0, "127.0.0.1");
-  const address = (app.getHttpServer().address?.() ?? {}) as { port?: number };
-  const port = address.port ?? 0;
-  baseUrl = `http://127.0.0.1:${port}`;
   const { env } = await import("../../src/config/defaults");
+  baseUrl = `http://127.0.0.1:${env.WS_PORT}`;
   wsPath = env.WS_PATH;
 }
 

@@ -26,6 +26,7 @@ const KONG_BASE = process.env.KONG_BASE_URL ?? "http://localhost:8000";
 
 let app: any;
 let baseUrl: string;
+let wsBaseUrl: string;
 let wsPath: string;
 let playerToken: string;
 let serverTickHz: number;
@@ -51,6 +52,7 @@ async function bootWsApp(): Promise<void> {
   const port = address.port ?? 0;
   baseUrl = `http://127.0.0.1:${port}`;
   const { env } = await import("../../src/config/defaults");
+  wsBaseUrl = `http://127.0.0.1:${env.WS_PORT}`;
   wsPath = env.WS_PATH;
   serverTickHz = env.SERVER_TICK_HZ;
 }
@@ -84,7 +86,7 @@ describe("ws-event-catalog integration (REQ-WS-03)", () => {
     "round arc emits started -> running -> ticks -> crashed -> settled in order",
     async () => {
       const client = createWsClient({
-        baseUrl,
+        baseUrl: wsBaseUrl,
         path: wsPath,
         token: playerToken,
       });
@@ -145,7 +147,7 @@ describe("ws-event-catalog integration (REQ-WS-03)", () => {
     "placing a bet during BETTING surfaces bet:placed and bet:my_active over WS",
     async () => {
       const client = createWsClient({
-        baseUrl,
+        baseUrl: wsBaseUrl,
         path: wsPath,
         token: playerToken,
       });

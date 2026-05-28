@@ -28,6 +28,7 @@ function applyDefaults(): void {
     "http://localhost:8080/realms/crash-game-test/protocol/openid-connect/certs";
   process.env.KEYCLOAK_AUDIENCE ??= "account";
   process.env.WS_PATH ??= "/ws";
+  process.env.WS_PORT ??= "4101";
 }
 
 applyDefaults();
