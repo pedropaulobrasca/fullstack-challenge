@@ -74,7 +74,7 @@
 
 ### Blockers
 
-(None.)
+- **P6.09 checkpoint BLOCKED (2026-05-28)**: After the mandatory `docker compose build games`, the games container exits(1) on boot. `GetWsSnapshotUseCase` (services/games/src/application/use-cases/get-ws-snapshot.use-case.ts:22) declares constructor param index[2] `clock: Clock = systemClock`; `Clock` is an interface (erases to `Object`), Nest tries to inject it, and no `Clock`/`CLOCK` provider exists. Crash-loop blocks WS smoke probes 39-44 and the 06-08 integration/property suites. Fix in 06-04: remove the DI param (reference `systemClock` directly) or register a `CLOCK` token provider in game-core.module.ts. All other services healthy.
 
 ### Open Configuration Values (env-driven, awaiting Phase 1 to materialize)
 
