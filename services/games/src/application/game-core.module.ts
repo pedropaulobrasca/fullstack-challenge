@@ -11,6 +11,8 @@ import { MikroBetSagaStateRepository } from "../infrastructure/repositories/mikr
 import {
   BET_REPOSITORY,
   BET_SAGA_REPOSITORY,
+  MULTIPLIER_BROADCAST_SERVICE,
+  ROUND_LOOP_SERVICE,
   ROUND_REPOSITORY,
   SEED_CHAIN_REPOSITORY,
 } from "./tokens";
@@ -27,6 +29,7 @@ import { SettleRoundUseCase } from "./use-cases/settle-round.use-case";
 import { PlaceBetUseCase } from "./use-cases/place-bet.use-case";
 import { CashOutUseCase } from "./use-cases/cash-out.use-case";
 import { RoundLoopService } from "./round-loop.service";
+import { MultiplierBroadcastService } from "./multiplier-broadcast.service";
 import { SagaTimeoutSweeper } from "./saga-timeout-sweeper.service";
 import { WalletDebitedHandler } from "./handlers/wallet-debited.handler";
 import { WalletDebitRejectedHandler } from "./handlers/wallet-debit-rejected.handler";
@@ -58,6 +61,9 @@ import { WalletDebitRejectedHandler } from "./handlers/wallet-debit-rejected.han
     PlaceBetUseCase,
     CashOutUseCase,
     RoundLoopService,
+    { provide: ROUND_LOOP_SERVICE, useExisting: RoundLoopService },
+    MultiplierBroadcastService,
+    { provide: MULTIPLIER_BROADCAST_SERVICE, useExisting: MultiplierBroadcastService },
     SagaTimeoutSweeper,
     WalletDebitedHandler,
     WalletDebitRejectedHandler,
@@ -75,6 +81,7 @@ import { WalletDebitRejectedHandler } from "./handlers/wallet-debit-rejected.han
     PlaceBetUseCase,
     CashOutUseCase,
     RoundLoopService,
+    MultiplierBroadcastService,
   ],
 })
 export class GameCoreModule {}
