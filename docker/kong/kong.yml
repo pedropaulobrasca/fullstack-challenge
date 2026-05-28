@@ -4,6 +4,13 @@ services:
   - name: games-service
     url: http://games:4001
     routes:
+      - name: games-ws
+        paths:
+          - ~/ws$
+        protocols:
+          - http
+          - https
+        strip_path: false
       - name: games-current
         paths:
           - ~/games/rounds/current$
