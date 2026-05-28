@@ -184,6 +184,19 @@ Plans:
   - ADR-017: 30Hz server tick + 60fps client interpolation (over per-frame server broadcast)
   - ADR-018: Server-authoritative `cashoutAcceptedAt` at gateway middleware (race resolution canon)
 
+**Plans:** 10 plans
+Plans:
+- [ ] 06-01-PLAN.md — Extract JwtVerifierService from JwtGuard (shared HTTP + WS auth surface)
+- [ ] 06-02-PLAN.md — Install @nestjs/websockets + platform-socket.io + socket.io + @nestjs/event-emitter (gated by Package Legitimacy checkpoint) + WS_PATH env
+- [ ] 06-03-PLAN.md — JwtIoAdapter + GameWsGateway + GetWsSnapshotUseCase + ws-event payload schemas
+- [ ] 06-04-PLAN.md — MultiplierBroadcastService (30Hz recursive setTimeout + volatile.emit round:tick)
+- [ ] 06-05-PLAN.md — EventEmitter2 lifecycle hooks (RoundLoopService → @OnEvent gateway broadcasts)
+- [ ] 06-06-PLAN.md — WsBridgeConsumer (@RabbitSubscribe game.events → bet:placed/active/refunded/cashed_out fan-out)
+- [ ] 06-07-PLAN.md — Kong games-ws route at PCRE-anchored ~/ws$
+- [ ] 06-08-PLAN.md — WS integration tests (handshake / rooms / snapshot / event catalog / tick volatile) + cashout-race property test
+- [ ] 06-09-PLAN.md — Smoke probes 39-44 + blocking live walkthrough checkpoint
+- [ ] 06-10-PLAN.md — ADR-021 + ADR-022 + ADR-023 + STATE/ROADMAP/REQUIREMENTS closeout
+
 ### Phase 7: Frontend Vertical Slice
 **Goal**: A logged-in player can complete the full Crash loop in a polished dark-casino UI — bet during the betting window, watch the multiplier climb in real time on a smooth Canvas curve, cash out (or lose), see their balance update, and view the live bet/cashout feed — fully responsive.
 **Depends on**: Phase 6
