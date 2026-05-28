@@ -632,7 +632,195 @@ probe_games_bet_cashout_without_active() {
   esac
 }
 
-echo "Running Phase 1+2+3+4+5 smoke probes against local stack..."
+probe_games_ws_kong_upgrade_route() {
+  local name="39: GET /ws via Kong with Upgrade header reaches games (not Kong 404)"
+  local response
+  response=$(curl -s -i \
+    -H "Connection: Upgrade" \
+    -H "Upgrade: websocket" \
+    http://localhost:8000/ws 2>/dev/null || echo "CURL_FAIL")
+  local code
+  code=$(echo "${response}" | sed -nE 's/^HTTP\/[0-9.]+ ([0-9]+).*/\1/p' | head -n1)
+  if echo "${response}" | grep -qi "no Route matched"; then
+    record_fail "${name}" "Kong-origin 404 'no Route matched' — games-ws route is shadowed or missing"
+    return
+  fi
+  case "${code}" in
+    400|401|426|101|200|404)
+      if [[ "${code}" == "404" ]]; then
+        if echo "${response}" | grep -qi "no Route matched"; then
+          record_fail "${name}" "Kong 404 no Route matched"
+        else
+          record_pass "${name} (games-origin 404, route forwarded)"
+        fi
+      else
+        record_pass "${name} (HTTP ${code} from games engine)"
+      fi
+      ;;
+    *)
+      record_fail "${name}" "unexpected status '${code}' body=$(echo "${response}" | tail -n3)"
+      ;;
+  esac
+}
+
+probe_games_ws_handshake_denied() {
+  local name="40: WS handshake without token returns connect_error UNAUTHORIZED"
+  local output
+  output=$(cd services/games && bun -e '
+    import { io } from "socket.io-client";
+    const s = io("http://localhost:8000/", { path: "/ws", transports: ["websocket"], reconnection: false });
+    s.on("connect_error", (e) => { console.log("CONNECT_ERROR " + e.message); s.close(); process.exit(0); });
+    s.on("connect", () => { console.log("UNEXPECTED_CONNECT"); s.close(); process.exit(1); });
+    setTimeout(() => { console.log("TIMEOUT"); process.exit(1); }, 5000);
+  ' 2>&1 || echo "RUN_FAIL")
+  if echo "${output}" | grep -q "CONNECT_ERROR.*UNAUTHORIZED"; then
+    record_pass "${name}"
+  else
+    record_fail "${name}" "expected CONNECT_ERROR UNAUTHORIZED, got: ${output}"
+  fi
+}
+
+probe_games_ws_snapshot_on_connect() {
+  local name="41: WS handshake with token receives round:snapshot within 5s"
+  if [[ -z "${WALLETS_TOKEN}" ]]; then
+    record_fail "${name}" "no WALLETS_TOKEN"
+    return
+  fi
+  local output
+  output=$(cd services/games && WALLETS_TOKEN="${WALLETS_TOKEN}" bun -e '
+    import { io } from "socket.io-client";
+    const s = io("http://localhost:8000/", { path: "/ws", auth: { token: process.env.WALLETS_TOKEN }, transports: ["websocket"], reconnection: false });
+    s.on("connect_error", (e) => { console.log("CONNECT_ERROR " + e.message); process.exit(1); });
+    s.on("round:snapshot", (p) => {
+      const hasRound = p && Object.prototype.hasOwnProperty.call(p, "round");
+      const hasServerTime = p && Object.prototype.hasOwnProperty.call(p, "serverTime");
+      console.log("SNAPSHOT round=" + hasRound + " serverTime=" + hasServerTime);
+      s.close();
+      process.exit(0);
+    });
+    setTimeout(() => { console.log("TIMEOUT"); process.exit(1); }, 5000);
+  ' 2>&1 || echo "RUN_FAIL")
+  if echo "${output}" | grep -q "SNAPSHOT round=true serverTime=true"; then
+    record_pass "${name}"
+  elif echo "${output}" | grep -q "SNAPSHOT"; then
+    record_fail "${name}" "snapshot missing round/serverTime key: ${output}"
+  else
+    record_fail "${name}" "expected round:snapshot, got: ${output}"
+  fi
+}
+
+probe_games_ws_tick_frequency() {
+  local name="42: WS observes >= 30 round:tick during 2s RUNNING window"
+  if [[ -z "${WALLETS_TOKEN}" ]]; then
+    record_fail "${name}" "no WALLETS_TOKEN"
+    return
+  fi
+  if ! wait_for_round_phase "RUNNING" 15; then
+    record_fail "${name}" "round never entered RUNNING within 15s"
+    return
+  fi
+  local output
+  output=$(cd services/games && WALLETS_TOKEN="${WALLETS_TOKEN}" bun -e '
+    import { io } from "socket.io-client";
+    const s = io("http://localhost:8000/", { path: "/ws", auth: { token: process.env.WALLETS_TOKEN }, transports: ["websocket"], reconnection: false });
+    let ticks = 0;
+    let counting = false;
+    s.on("connect_error", (e) => { console.log("CONNECT_ERROR " + e.message); process.exit(1); });
+    s.on("round:tick", () => { if (counting) ticks++; });
+    s.on("connect", () => {
+      counting = true;
+      setTimeout(() => { console.log("TICKS " + ticks); s.close(); process.exit(0); }, 2000);
+    });
+    setTimeout(() => { console.log("TIMEOUT ticks=" + ticks); process.exit(1); }, 8000);
+  ' 2>&1 || echo "RUN_FAIL")
+  local count
+  count=$(echo "${output}" | sed -nE 's/^TICKS ([0-9]+).*/\1/p' | head -n1)
+  if [[ "${count}" =~ ^[0-9]+$ ]] && [[ "${count}" -ge 30 ]]; then
+    record_pass "${name} (ticks=${count})"
+  else
+    record_fail "${name}" "expected >= 30 ticks in 2s, got '${count}' output=${output}"
+  fi
+}
+
+probe_games_ws_lifecycle_sequence() {
+  local name="43: WS observes round:started/running/crashed/settled within 30s"
+  if [[ -z "${WALLETS_TOKEN}" ]]; then
+    record_fail "${name}" "no WALLETS_TOKEN"
+    return
+  fi
+  local output
+  output=$(cd services/games && WALLETS_TOKEN="${WALLETS_TOKEN}" bun -e '
+    import { io } from "socket.io-client";
+    const s = io("http://localhost:8000/", { path: "/ws", auth: { token: process.env.WALLETS_TOKEN }, transports: ["websocket"], reconnection: false });
+    const seen = new Set();
+    const want = ["round:started", "round:running", "round:crashed", "round:settled"];
+    s.on("connect_error", (e) => { console.log("CONNECT_ERROR " + e.message); process.exit(1); });
+    for (const ev of want) {
+      s.on(ev, () => {
+        seen.add(ev);
+        if (want.every((w) => seen.has(w))) {
+          console.log("LIFECYCLE_OK " + want.join(","));
+          s.close();
+          process.exit(0);
+        }
+      });
+    }
+    setTimeout(() => { console.log("TIMEOUT seen=" + [...seen].join(",")); process.exit(1); }, 30000);
+  ' 2>&1 || echo "RUN_FAIL")
+  if echo "${output}" | grep -q "LIFECYCLE_OK"; then
+    record_pass "${name}"
+  else
+    record_fail "${name}" "expected all four lifecycle events, got: ${output}"
+  fi
+}
+
+probe_games_bet_ws_my_active() {
+  local name="44: REST bet during BETTING surfaces bet:my_active over WS within 5s"
+  if [[ -z "${WALLETS_TOKEN}" ]]; then
+    record_fail "${name}" "no WALLETS_TOKEN"
+    return
+  fi
+  if ! wait_for_round_phase "BETTING" 20; then
+    record_fail "${name}" "round never entered BETTING within 20s"
+    return
+  fi
+  local output
+  output=$(cd services/games && WALLETS_TOKEN="${WALLETS_TOKEN}" bun -e '
+    import { io } from "socket.io-client";
+    const token = process.env.WALLETS_TOKEN;
+    const s = io("http://localhost:8000/", { path: "/ws", auth: { token }, transports: ["websocket"], reconnection: false });
+    s.on("connect_error", (e) => { console.log("CONNECT_ERROR " + e.message); process.exit(1); });
+    s.on("bet:my_active", (p) => {
+      const id = p && (p.betId || p.id) ? (p.betId || p.id) : "";
+      console.log("BET_MY_ACTIVE " + id);
+      s.close();
+      process.exit(0);
+    });
+    s.on("connect", async () => {
+      try {
+        const res = await fetch("http://localhost:8000/games/bet", {
+          method: "POST",
+          headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" },
+          body: JSON.stringify({ amountCents: "10000" }),
+        });
+        const body = await res.json().catch(() => ({}));
+        console.log("BET_POST " + res.status + " " + (body.betId || ""));
+        if (res.status !== 202) { console.log("BET_REJECTED"); process.exit(1); }
+      } catch (e) {
+        console.log("BET_POST_FAIL " + (e && e.message ? e.message : String(e)));
+        process.exit(1);
+      }
+    });
+    setTimeout(() => { console.log("TIMEOUT"); process.exit(1); }, 12000);
+  ' 2>&1 || echo "RUN_FAIL")
+  if echo "${output}" | grep -q "BET_MY_ACTIVE"; then
+    record_pass "${name} ($(echo "${output}" | grep BET_MY_ACTIVE | head -n1))"
+  else
+    record_fail "${name}" "expected bet:my_active event, got: ${output}"
+  fi
+}
+
+echo "Running Phase 1+2+3+4+5+6 smoke probes against local stack..."
 echo
 
 probe_postgres
@@ -661,6 +849,12 @@ probe_games_balance_decreased_after_bet
 probe_games_bet_cashout_during_running
 probe_games_balance_credited_after_cashout
 probe_games_bet_cashout_without_active
+probe_games_ws_kong_upgrade_route
+probe_games_ws_handshake_denied
+probe_games_ws_snapshot_on_connect
+probe_games_ws_tick_frequency
+probe_games_ws_lifecycle_sequence
+probe_games_bet_ws_my_active
 
 TOTAL=$((PASS + FAIL))
 echo
