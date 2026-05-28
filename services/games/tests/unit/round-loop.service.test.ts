@@ -1,6 +1,7 @@
-import { afterEach, beforeEach, describe, expect, test } from "bun:test";
+import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
 import "../setup";
 import { randomUUID } from "node:crypto";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 import { generateSeedChain, FORMULA_VERSION } from "@crash/contracts";
 import { RoundId, type BetId, type PlayerId } from "@crash/shared-kernel";
 import { RoundLoopService } from "../../src/application/round-loop.service";
@@ -8,6 +9,8 @@ import { StartNewRoundUseCase } from "../../src/application/use-cases/start-new-
 import { TransitionToRunningUseCase } from "../../src/application/use-cases/transition-to-running.use-case";
 import { CrashRoundUseCase } from "../../src/application/use-cases/crash-round.use-case";
 import { SettleRoundUseCase } from "../../src/application/use-cases/settle-round.use-case";
+import { GAME_EVENTS } from "../../src/application/game-events";
+import { MultiplierBroadcastService } from "../../src/application/multiplier-broadcast.service";
 import { Round } from "../../src/domain/round.aggregate";
 import { Bet } from "../../src/domain/bet.aggregate";
 import { CrashPoint } from "../../src/domain/value-objects/crash-point";
@@ -162,11 +165,19 @@ class InMemorySeedChainRepository implements SeedChainRepository {
   }
 }
 
+type FakeMultiplierBroadcast = {
+  start: ReturnType<typeof mock>;
+  stop: ReturnType<typeof mock>;
+};
+
 type Harness = {
   loop: RoundLoopService;
   rounds: InMemoryRoundRepository;
   bets: InMemoryBetRepository;
   chain: InMemorySeedChainRepository;
+  emitter: EventEmitter2;
+  emitSpy: ReturnType<typeof mock>;
+  broadcast: FakeMultiplierBroadcast;
 };
 
 function buildHarness(): Harness {
@@ -180,6 +191,13 @@ function buildHarness(): Harness {
   const runUC = new TransitionToRunningUseCase(rounds, chain);
   const crashUC = new CrashRoundUseCase(rounds, bets);
   const settleUC = new SettleRoundUseCase(rounds, chain);
+  const emitter = new EventEmitter2();
+  const emitSpy = mock((..._args: unknown[]) => true);
+  emitter.emit = emitSpy as unknown as typeof emitter.emit;
+  const broadcast: FakeMultiplierBroadcast = {
+    start: mock((_roundId: string) => undefined),
+    stop: mock(() => undefined),
+  };
   const loop = new RoundLoopService(
     rounds,
     chain,
@@ -187,8 +205,10 @@ function buildHarness(): Harness {
     runUC,
     crashUC,
     settleUC,
+    emitter,
+    broadcast as unknown as MultiplierBroadcastService,
   );
-  return { loop, rounds, bets, chain };
+  return { loop, rounds, bets, chain, emitter, emitSpy, broadcast };
 }
 
 function scheduledRound(
@@ -308,6 +328,110 @@ describe("RoundLoopService", () => {
     await new Promise((r) => setTimeout(r, 50));
     const openAfter = await harness.rounds.findOpen();
     expect(openAfter!.status).toBe(openBefore!.status);
+  });
+
+  test("bootstrap → startNewRound emits round.started with payload matching the new round", async () => {
+    await harness.loop.onApplicationBootstrap();
+
+    const startedCalls = harness.emitSpy.mock.calls.filter(
+      (c) => c[0] === GAME_EVENTS.ROUND_STARTED,
+    );
+    expect(startedCalls.length).toBe(1);
+    const [, payload] = startedCalls[0] as [string, Record<string, unknown>];
+    const open = await harness.rounds.findOpen();
+    expect(payload).toEqual({
+      roundId: open!.id as unknown as string,
+      nonce: open!.nonce.toString(),
+      seedHash: open!.seedHash,
+      bettingEndsAt: open!.bettingEndsAt.toISOString(),
+    });
+  });
+
+  test("transitionToRunning calls multiplierBroadcast.start once and emits round.running", async () => {
+    const now = new Date();
+    const pastEnd = new Date(now.getTime() - 1_000);
+    scheduledRound(
+      harness.rounds,
+      harness.chain,
+      pastEnd,
+      new Date(now.getTime() - 6_000),
+    );
+
+    await harness.loop.onApplicationBootstrap();
+    await new Promise((r) => setTimeout(r, 30));
+
+    const open = await harness.rounds.findOpen();
+    expect(harness.broadcast.start).toHaveBeenCalledTimes(1);
+    expect(harness.broadcast.start.mock.calls[0][0]).toBe(
+      open!.id as unknown as string,
+    );
+
+    const runningCalls = harness.emitSpy.mock.calls.filter(
+      (c) => c[0] === GAME_EVENTS.ROUND_RUNNING,
+    );
+    expect(runningCalls.length).toBe(1);
+    const [, payload] = runningCalls[0] as [string, Record<string, unknown>];
+    expect(payload).toEqual({
+      roundId: open!.id as unknown as string,
+      startedAt: open!.startedAt!.toISOString(),
+    });
+  });
+
+  test("crashRound calls multiplierBroadcast.stop BEFORE emitting round.crashed", async () => {
+    const now = new Date();
+    const round = scheduledRound(
+      harness.rounds,
+      harness.chain,
+      new Date(now.getTime() - 10_000),
+      new Date(now.getTime() - 15_000),
+    );
+    const running = round.start(new Date(now.getTime() - 60_000));
+    harness.rounds.stored.set(running.id as unknown as string, running);
+
+    await harness.loop.onApplicationBootstrap();
+    await new Promise((r) => setTimeout(r, 50));
+
+    expect(harness.broadcast.stop).toHaveBeenCalledTimes(1);
+    const stopOrder = harness.broadcast.stop.mock.invocationCallOrder[0];
+
+    const crashedCalls = harness.emitSpy.mock.calls
+      .map((c, i) => ({ name: c[0], order: harness.emitSpy.mock.invocationCallOrder[i] }))
+      .filter((c) => c.name === GAME_EVENTS.ROUND_CRASHED);
+    expect(crashedCalls.length).toBe(1);
+    expect(stopOrder).toBeLessThan(crashedCalls[0].order);
+
+    const [, payload] = harness.emitSpy.mock.calls.filter(
+      (c) => c[0] === GAME_EVENTS.ROUND_CRASHED,
+    )[0] as [string, Record<string, unknown>];
+    expect(payload.roundId).toBe(running.id as unknown as string);
+    expect(typeof payload.crashPoint).toBe("number");
+    expect(typeof payload.crashedAt).toBe("string");
+  });
+
+  test("settleRound emits round.settled with serverSeed populated and conforms to schema", async () => {
+    const now = new Date();
+    const round = scheduledRound(
+      harness.rounds,
+      harness.chain,
+      new Date(now.getTime() - 10_000),
+      new Date(now.getTime() - 15_000),
+    );
+    const running = round.start(new Date(now.getTime() - 8_000));
+    const crashed = running.crash(CrashPoint.of(2.5), new Date(now.getTime() - 1_000));
+    harness.rounds.stored.set(crashed.id as unknown as string, crashed);
+
+    await harness.loop.onApplicationBootstrap();
+    await new Promise((r) => setTimeout(r, 30));
+
+    const settledCalls = harness.emitSpy.mock.calls.filter(
+      (c) => c[0] === GAME_EVENTS.ROUND_SETTLED,
+    );
+    expect(settledCalls.length).toBe(1);
+    const [, payload] = settledCalls[0] as [string, Record<string, unknown>];
+    expect(payload.roundId).toBe(crashed.id as unknown as string);
+    expect(typeof payload.serverSeed).toBe("string");
+    expect((payload.serverSeed as string).length).toBeGreaterThan(0);
+    expect(typeof payload.settledAt).toBe("string");
   });
 
   test("crash sweep transitions ACTIVE bets to LOST in a single pass", async () => {

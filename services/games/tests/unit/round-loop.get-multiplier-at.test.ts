@@ -5,6 +5,7 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import "../setup";
 import { randomUUID } from "node:crypto";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 import { FORMULA_VERSION } from "@crash/contracts";
 import { RoundId } from "@crash/shared-kernel";
 import { RoundLoopService } from "../../src/application/round-loop.service";
@@ -12,6 +13,7 @@ import { StartNewRoundUseCase } from "../../src/application/use-cases/start-new-
 import { TransitionToRunningUseCase } from "../../src/application/use-cases/transition-to-running.use-case";
 import { CrashRoundUseCase } from "../../src/application/use-cases/crash-round.use-case";
 import { SettleRoundUseCase } from "../../src/application/use-cases/settle-round.use-case";
+import type { MultiplierBroadcastService } from "../../src/application/multiplier-broadcast.service";
 import { Round } from "../../src/domain/round.aggregate";
 import { CrashPoint } from "../../src/domain/value-objects/crash-point";
 import type { RoundRepository } from "../../src/domain/round.repository";
@@ -122,7 +124,21 @@ function buildService(
   ) as unknown as TransitionToRunningUseCase;
   const crashUC = new StubCrashRoundUseCase() as unknown as CrashRoundUseCase;
   const settleUC = new StubSettleRoundUseCase() as unknown as SettleRoundUseCase;
-  return new RoundLoopService(rounds, chain, startUC, runUC, crashUC, settleUC);
+  const emitter = new EventEmitter2();
+  const broadcast = {
+    start: () => undefined,
+    stop: () => undefined,
+  } as unknown as MultiplierBroadcastService;
+  return new RoundLoopService(
+    rounds,
+    chain,
+    startUC,
+    runUC,
+    crashUC,
+    settleUC,
+    emitter,
+    broadcast,
+  );
 }
 
 describe("RoundLoopService.getMultiplierAt", () => {

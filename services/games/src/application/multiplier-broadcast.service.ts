@@ -1,6 +1,7 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable, Logger } from "@nestjs/common";
 import { env } from "../config/defaults";
-import { RoundLoopService } from "./round-loop.service";
+import type { RoundLoopService } from "./round-loop.service";
+import { ROUND_LOOP_SERVICE } from "./tokens";
 import { GameWsGateway } from "../presentation/gateways/game-ws.gateway";
 
 @Injectable()
@@ -15,6 +16,7 @@ export class MultiplierBroadcastService {
   private currentRoundId: string | null = null;
 
   constructor(
+    @Inject(ROUND_LOOP_SERVICE)
     private readonly roundLoop: RoundLoopService,
     private readonly gateway: GameWsGateway,
   ) {}
