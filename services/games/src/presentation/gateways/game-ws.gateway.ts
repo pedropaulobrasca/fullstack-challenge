@@ -1,4 +1,5 @@
 import { Logger } from "@nestjs/common";
+import { OnEvent } from "@nestjs/event-emitter";
 import {
   WebSocketGateway,
   WebSocketServer,
@@ -9,6 +10,13 @@ import type { Server, Socket } from "socket.io";
 import { PlayerId } from "@crash/shared-kernel";
 import { env } from "../../config/defaults";
 import { GetWsSnapshotUseCase } from "../../application/use-cases/get-ws-snapshot.use-case";
+import { GAME_EVENTS } from "../../application/game-events";
+import type {
+  RoundStartedPayload,
+  RoundRunningPayload,
+  RoundCrashedPayload,
+  RoundSettledPayload,
+} from "../dtos/ws-event.payloads";
 
 @WebSocketGateway({
   path: env.WS_PATH,
@@ -54,5 +62,25 @@ export class GameWsGateway
 
   emitToPlayer(playerId: string, event: string, payload: unknown): void {
     this.server.to(`user:${playerId}`).emit(event, payload);
+  }
+
+  @OnEvent(GAME_EVENTS.ROUND_STARTED)
+  onRoundStarted(payload: RoundStartedPayload): void {
+    this.server.to("lobby").emit("round:started", payload);
+  }
+
+  @OnEvent(GAME_EVENTS.ROUND_RUNNING)
+  onRoundRunning(payload: RoundRunningPayload): void {
+    this.server.to("lobby").emit("round:running", payload);
+  }
+
+  @OnEvent(GAME_EVENTS.ROUND_CRASHED)
+  onRoundCrashed(payload: RoundCrashedPayload): void {
+    this.server.to("lobby").emit("round:crashed", payload);
+  }
+
+  @OnEvent(GAME_EVENTS.ROUND_SETTLED)
+  onRoundSettled(payload: RoundSettledPayload): void {
+    this.server.to("lobby").emit("round:settled", payload);
   }
 }
