@@ -238,15 +238,19 @@ export class RoundLoopService
 
   private scheduleAt(ms: number, fn: () => Promise<void>): void {
     if (!this.running) return;
+    if (this.timer) {
+      clearTimeout(this.timer);
+      this.timer = null;
+    }
     const delay = Math.max(0, ms);
     this.timer = setTimeout(() => {
       if (!this.running) return;
       fn().catch((err) => {
         this.log.error(
-          `round loop step failed; retrying in ${ERROR_BACKOFF_MS}ms`,
+          `round loop step failed; recovering in ${ERROR_BACKOFF_MS}ms`,
           err instanceof Error ? err.stack : String(err),
         );
-        this.scheduleAt(ERROR_BACKOFF_MS, fn);
+        this.scheduleAt(ERROR_BACKOFF_MS, () => this.recoverInFlightRound());
       });
     }, delay);
   }

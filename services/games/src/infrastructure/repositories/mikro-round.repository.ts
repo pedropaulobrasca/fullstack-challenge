@@ -46,6 +46,19 @@ export class MikroRoundRepository implements RoundRepository {
     return row?.serverSeed ?? null;
   }
 
+  async maxNonce(): Promise<bigint | null> {
+    const rows = await this.em
+      .getConnection()
+      .execute<Array<{ max: string | null }>>(
+        "SELECT MAX(nonce) AS max FROM rounds",
+        [],
+        "all",
+        this.em.getTransactionContext(),
+      );
+    const max = rows[0]?.max ?? null;
+    return max === null ? null : BigInt(max);
+  }
+
   async listSettledHistory(limit: number, offset: number): Promise<Round[]> {
     const rows = await this.em.find(
       RoundEntitySchema,

@@ -6,6 +6,7 @@ export interface RoundRepository {
   findById(id: RoundId): Promise<Round | null>;
   findOpen(): Promise<Round | null>;
   findServerSeedByNonce(nonce: bigint): Promise<string | null>;
+  maxNonce(): Promise<bigint | null>;
   listSettledHistory(limit: number, offset: number): Promise<Round[]>;
   saveScheduled(round: Round): Promise<void>;
   transitionFromBettingToRunning(

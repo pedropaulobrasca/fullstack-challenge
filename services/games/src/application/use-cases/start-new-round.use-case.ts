@@ -20,7 +20,8 @@ export class StartNewRoundUseCase {
     const settledHistory = await this.rounds.listSettledHistory(1, 0);
     const previous = settledHistory[0] ?? null;
 
-    const nextNonce = previous === null ? 0n : previous.nonce + 1n;
+    const highestNonce = await this.rounds.maxNonce();
+    const nextNonce = highestNonce === null ? 0n : highestNonce + 1n;
     const clientSeed = deriveClientSeed(
       previous && previous.crashedAt
         ? { id: previous.id, crashedAt: previous.crashedAt }
