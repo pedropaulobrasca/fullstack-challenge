@@ -45,6 +45,11 @@ import { GameCoreModule } from "./application/game-core.module";
               dlx: EXCHANGES.WALLET_DLX,
             },
             {
+              name: QUEUES.GAMES_WS_BRIDGE,
+              deliveryLimit: env.RMQ_DELIVERY_LIMIT_MAIN,
+              dlx: EXCHANGES.GAME_DLX,
+            },
+            {
               name: QUEUES.GAMES_DLQ,
               deliveryLimit: env.RMQ_DELIVERY_LIMIT_DLQ,
             },
@@ -54,6 +59,11 @@ import { GameCoreModule } from "./application/game-core.module";
               queue: QUEUES.GAMES_WALLET_EVENTS,
               exchange: EXCHANGES.WALLET_EVENTS,
               routingKey: "wallet.*",
+            },
+            {
+              queue: QUEUES.GAMES_WS_BRIDGE,
+              exchange: EXCHANGES.GAME_EVENTS,
+              routingKey: "bet.*",
             },
             {
               queue: QUEUES.GAMES_DLQ,

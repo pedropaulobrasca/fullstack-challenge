@@ -11,6 +11,7 @@ export const QUEUES = {
   WALLET_DEBIT: "wallet.debit.q",
   WALLET_CREDIT: "wallet.credit.q",
   GAMES_WALLET_EVENTS: "games.wallet-events.q",
+  GAMES_WS_BRIDGE: "games.ws-bridge.q",
   WALLET_DLQ: "wallet.dlq",
   GAMES_DLQ: "games.dlq",
 } as const;
