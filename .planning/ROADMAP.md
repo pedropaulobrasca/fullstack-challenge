@@ -14,7 +14,7 @@
 - [x] **Phase 4: Game Core (domain only)** — Round + Bet aggregates, provably-fair hash chain, autonomous round loop with crash recovery
 - [x] **Phase 5: Saga Integration** — End-to-end bet + cashout sagas, persistent saga state, kill-9 recovery, timeout compensation
 - [x] **Phase 6: WebSocket Gateway & Multiplier Sync** — JWT-at-handshake, lobby + user rooms, 30Hz volatile tick broadcast, server-authoritative cashout timestamping
-- [ ] **Phase 7: Frontend Vertical Slice** — TanStack Start + Keycloak, Canvas curve renderer, bet panel, dark casino theme, full table-stakes UX
+- [x] **Phase 7: Frontend Vertical Slice** — TanStack Start + Keycloak, Canvas curve renderer, bet panel, dark casino theme, full table-stakes UX
 - [ ] **Phase 8: Provably-Fair UX, History & Replay** — Commitment badge, client-side verifier (crypto.subtle), `/verify` route, deterministic replay reusing canvas renderer
 - [ ] **Phase 9: Auto Features & Leaderboard** — Server-enforced auto-cashout, auto-bet (fixed + Martingale), stop-loss/stop-win, 24h leaderboard projection (light CQRS)
 - [ ] **Phase 10: Quality Hardening & Docs** — Playwright E2E, GitHub Actions CI, OpenTelemetry + Prometheus + Grafana, ADR audit, README with architecture diagrams
@@ -212,10 +212,25 @@ Plans:
 **Parallelizable with**: None (consumes WS + saga from prior phases)
 **UI hint**: yes
 **Key decisions to make** (ADRs):
-  - ADR-019: TanStack Start + oidc-spa for OIDC PKCE (over raw oidc-client-ts)
-  - ADR-020: Canvas 2D for crash curve (over SVG / WebGL)
-  - ADR-021: Zustand slice-per-concern with the multiplier rAF loop isolated to its own store (re-render scoping rationale)
-  - ADR-022: `BroadcastChannel`-coordinated token refresh across tabs
+  - ADR-024: TanStack Start + oidc-spa for OIDC Authorization Code + PKCE S256 (over raw oidc-client-ts / hand-rolled PKCE)
+  - ADR-025: Canvas 2D (rAF + devicePixelRatio + clearRect) for crash curve (over SVG / WebGL)
+  - ADR-026: Zustand slice-per-concern with the rAF multiplier loop isolated to its own store (re-render scoping rationale)
+  - ADR-027: multi-tab token refresh via oidc-spa's built-in `BroadcastChannel` (over hand-rolled cross-tab coordination)
+
+  > **ADR-renumber note**: these four were anticipated under the labels ADR-019..022, but those numbers were consumed by the shipped Phase 5 (ADR-019/020) and Phase 6 (ADR-021/022/023) ADRs before Phase 7 closed. Shipped ADRs are never renumbered, so the Phase 7 decisions took the next-free range ADR-024..027. Phase 8/9/10 anticipated-ADR labels below will likewise resolve to the next-free numbers when those phases ship (do not treat them as reserved).
+
+**Plans:** 9 plans
+**Plans landed**: 07-01 (pre-FE infra unblock — `@crash/contracts/ws` shared WS schemas, scoped Kong `cors` plugin for `http://localhost:3000` with `credentials:true`, `@crash/no-number-for-money` extended to `.tsx`), 07-02 (Wave-0 de-risking spike — RATIFIED boot mode `selective-ssr` + oidc `single-getOidc`; carry-forwards: browser-safe `@crash/contracts/multiplier` subpath + `OPTIONS` on every Kong route; oidc-spa v10.2.3 API drift recorded), 07-03 (TanStack Start scaffold on :3000 — dark-casino Tailwind v4 @theme [UI-SPEC hex], zod-parsed `VITE_` config module, shadcn 13-component set, first Vitest harness), 07-04 (one `oidcSpa.createUtils()` instance + `enforceLogin` guard + socket.io auth-function singleton + five slice-per-concern Zustand stores + isolated multiplier store [D-06] + schema-validated WS dispatch + TanStack Query hydration; REQ-AUTH-01/02/03 + REQ-FE-07/08), 07-05 (Money-VO bet validator + place-bet/cashout mutations + neutral BetPanel + accent CashoutButton live payout + Countdown; REQ-FE-04/05/06), 07-06 (Canvas 2D crash curve — `localMultiplier` via the shared `@crash/contracts` formula anchored to `roundStartedAt` + `reconcileOffset` EWMA never-snap + rAF loop writing only the isolated multiplier store + server-`crashValue` freeze + leak-free cancel + dPR/clearRect emerald→cyan single-glow draw; REQ-FE-02/03), 07-07 (live bet/cashout feed with own-action highlight + last-20 color-banded history strip; REQ-FE-07/08 visual), 07-08 (responsive D-01 assembly — history strip top, bet/curve/feed rails at lg+, single stacked column with sticky-bottom controls below; CurveSkeleton/HistorySkeleton; dedupedToast; the four reduced-motion-gated juice moments [counter-up, confetti, crash-flash, rising-curve glow]; REQ-FE-12/13/14), 07-09 (ADR-024..027 + STATE/ROADMAP/REQUIREMENTS closeout + the `config.ts` env-cents money-rule resolution). All 15 Phase 7 REQ-IDs (REQ-FE-01..08, REQ-FE-11..14, REQ-AUTH-01/02/03) delivered. Phase 8 items (REQ-FE-09/10, REQ-REPLAY-*) deliberately untouched.
+Plans:
+- [x] 07-01-PLAN.md — Pre-FE infra unblock: `@crash/contracts/ws` schemas + scoped Kong CORS + `.tsx` money-rule
+- [x] 07-02-PLAN.md — Wave-0 de-risking spike: boot mode + oidc instance + workspace-TS + CORS (RATIFIED selective-ssr + single-getOidc)
+- [x] 07-03-PLAN.md — TanStack Start scaffold + dark-casino @theme + typed `VITE_` config + shadcn + Vitest
+- [x] 07-04-PLAN.md — oidc auth + `enforceLogin` guard + socket singleton + Zustand slices + WS dispatch + Query hydration
+- [x] 07-05-PLAN.md — Money-VO bet validator + place-bet/cashout + BetPanel + CashoutButton + Countdown
+- [x] 07-06-PLAN.md — Canvas 2D crash curve: local multiplier + EWMA reconcile + rAF loop + dPR/clearRect draw
+- [x] 07-07-PLAN.md — Live bet/cashout feed (own-action highlight) + color-banded history strip
+- [x] 07-08-PLAN.md — Responsive D-01 assembly + skeletons + deduped toasts + the four juice moments
+- [x] 07-09-PLAN.md — ADR-024..027 + STATE/ROADMAP/REQUIREMENTS closeout + config.ts money-rule resolution
 
 ### Phase 8: Provably-Fair UX, History & Replay
 **Goal**: A player can prove every past round was fair by hashing the revealed seed in their own browser — no server trust required — and can replay any historical round byte-for-byte using the same canvas renderer the live game uses.
@@ -299,7 +314,7 @@ These are not numbered phases. Pull from this list during Phase 10 if time permi
 | 4. Game Core (domain only) | 12/12 | Complete | 2026-05-26 |
 | 5. Saga Integration | 11/11 | Complete | 2026-05-27 |
 | 6. WebSocket Gateway & Multiplier Sync | 10/10 | Complete | 2026-05-28 |
-| 7. Frontend Vertical Slice | 8/9 | In progress | - |
+| 7. Frontend Vertical Slice | 9/9 | Complete | 2026-05-29 |
 | 8. Provably-Fair UX, History & Replay | 0/0 | Not started | - |
 | 9. Auto Features & Leaderboard | 0/0 | Not started | - |
 | 10. Quality Hardening & Docs | 0/0 | Not started | - |
@@ -331,4 +346,4 @@ No structural deviations. The 10 phases map 1:1 to the SUMMARY clusters. Refinem
 
 ---
 
-*Last updated: 2026-05-29 by gsd-executor (P07-08 — responsive game page assembly + cross-cutting UX complete, Phase 7 at 8/9; index.tsx assembles the D-01 layout [history strip top, bet/cashout/countdown rail + center CrashCurve + LiveFeed rail at lg+, single stacked column with sticky-bottom controls below], CurveSkeleton/HistorySkeleton for the snapshot/history waits, dedupedToast keyed by message [one active toast per key, cleared on close, amber warnings] wired into the place-bet/cashout hook onError paths with cashout-too-late silent, and the four sanctioned juice moments [useCountUp balance tween, celebrate() single canvas-confetti burst, CrashFlash red flash+freeze overlay, 07-06 rising-curve glow] all honoring prefers-reduced-motion; BalancePill + ConnectionBadge mounted in the __root header; tsc clean, 65/65 tests green, no hex in index.tsx, no setInterval in celebrate.ts; REQ-FE-12/13/14 closed; commits e661ceb/9b19938. Previous: P07-07 live feed + history strip UI, ea3cc0e/2562fdb).*
+*Last updated: 2026-05-29 by gsd-executor (P07-09 — Phase 7 COMPLETE (9/9 plans, 7/10 phases). Closeout landed the four frontend ADRs (ADR-024 TanStack Start + oidc-spa PKCE-S256, ADR-025 Canvas 2D curve, ADR-026 Zustand isolated multiplier store, ADR-027 oidc-spa BroadcastChannel multi-tab refresh) at next-free numbers — the anticipated ADR-019..022 labels were reconciled to 024..027 (collided with shipped Phase 5/6 ADRs) with a renumber note; all 15 Phase 7 REQ-IDs confirmed delivered; the `config.ts` env-parsed bet-cents money-rule flag resolved with a justified narrow eslint-disable (rule not weakened, lint clean, 65/65 FE tests green). Next: `/gsd:verify-phase 7` + `/gsd:ui-review` then `/gsd:plan-phase 8`. Previous: P07-08 — responsive game page assembly + cross-cutting UX complete, Phase 7 at 8/9; index.tsx assembles the D-01 layout [history strip top, bet/cashout/countdown rail + center CrashCurve + LiveFeed rail at lg+, single stacked column with sticky-bottom controls below], CurveSkeleton/HistorySkeleton for the snapshot/history waits, dedupedToast keyed by message [one active toast per key, cleared on close, amber warnings] wired into the place-bet/cashout hook onError paths with cashout-too-late silent, and the four sanctioned juice moments [useCountUp balance tween, celebrate() single canvas-confetti burst, CrashFlash red flash+freeze overlay, 07-06 rising-curve glow] all honoring prefers-reduced-motion; BalancePill + ConnectionBadge mounted in the __root header; tsc clean, 65/65 tests green, no hex in index.tsx, no setInterval in celebrate.ts; REQ-FE-12/13/14 closed; commits e661ceb/9b19938. Previous: P07-07 live feed + history strip UI, ea3cc0e/2562fdb).*
