@@ -106,3 +106,90 @@ formula constants from the formula subpath) — NOT from the root barrel. `@cras
 > SPA mode because that path runs the route on the client; SSR masked it because Node has
 > `node:crypto`, but the SSR client-hydration bundle would hit it too). The subpath fix is
 > mandatory regardless of the boot-mode decision above.
+
+---
+
+## DECISION: oidc instance strategy
+
+**Decision: `single-getOidc` — use ONE oidc-spa instance from `oidc-spa/react-spa` and
+consume its built-in `getOidc()` accessor for the socket singleton. Do NOT create a second
+`createOidc` from `oidc-spa/core`. There is no dual-instance parity concern because the
+v10.2.3 react-spa API returns both the React hook AND the non-React accessor from the same
+underlying instance.**
+
+### Evidence (resolved from installed `oidc-spa@10.2.3` type surface + live discovery)
+
+- The installed `oidc-spa@10.2.3` `react-spa` builder returns a single `OidcSpaUtils`
+  object exposing, from **one** underlying core oidc instance:
+  - `useOidc` — React hook (components)
+  - `getOidc` — `Promise<Oidc>` accessor with `getAccessToken()` +
+    `subscribeToAccessTokenRotation(next)` — the non-React surface the socket.io singleton
+    consumes (Pattern 8 token-for-handshake)
+  - `enforceLogin` — TanStack Router loader/route guard
+  - `bootstrapOidc`, `OidcInitializationGate`
+  Because `getOidc` and `useOidc` come from the same `createUtils(...)` call, they share the
+  same session/storage/token by construction — **Open Question 1 / Assumption A1 is moot**:
+  the "two instances pointing at the same issuer" scenario does not arise.
+- Multi-tab single-refresh (Pitfall 5 / REQ-AUTH-03) is library-guaranteed: oidc-spa core
+  ships `loginPropagationToOtherTabs.js` / `logoutPropagationToOtherTabs.js` using
+  `BroadcastChannel` keyed by `configId` (issuer+clientId). With one shared instance, all
+  tabs coordinate on that channel — do NOT add a second refresh mechanism.
+- Live OIDC discovery confirms the wiring target: issuer
+  `http://localhost:8080/realms/crash-game`, `code_challenge_methods_supported=['plain','S256']`,
+  `authorization_code` grant present, realm `redirectUris`/`webOrigins` allow only :3000/:8080.
+  A real `player/player123` token was obtained via direct-grant (expires_in 3600, confirming
+  Pitfall 3's 1h lifespan) and used to drive the CORS spike below.
+
+### API-drift flag for 07-04 (important)
+
+RESEARCH Pattern 7 assumed `createReactOidc` / `beforeLoadFn` named exports. The installed
+v10.2.3 surface is the **`oidcSpa` builder** from `oidc-spa/react-spa` →
+`.createUtils({...})` → `{ useOidc, getOidc, enforceLogin, bootstrapOidc,
+OidcInitializationGate }`, plus a dedicated `oidc-spa/react-tanstack-start` entry point.
+07-04 must wire against this real API, not the assumed `createReactOidc`/`beforeLoadFn`.
+
+> Interactive PKCE login (redirect to Keycloak + callback) was NOT exercised headless — it
+> requires a real browser session. The instance-parity question it would have answered is
+> resolved structurally above (single instance), so the login round-trip is deferred to the
+> 07-04 live wiring + the phase live-smoke gate. Token issuance + backend acceptance is
+> already proven by the direct-grant token returning `balance.amount=60000 CRD` from
+> `/wallets/me` below.
+
+---
+
+## DECISION: CORS reachability
+
+**Decision: `fix-required` — the 07-01 Kong `cors` plugin correctly returns scoped headers
+on simple/non-preflighted requests, BUT every route's `methods:` filter omits `OPTIONS`, so
+browser CORS preflights 404 and block all credentialed/authorized REST calls. 07-03 MUST add
+`OPTIONS` to each Kong route's `methods:` list.**
+
+### Evidence (live curl against Kong :8000 from `Origin: http://localhost:3000`)
+
+| Probe | Result |
+|-------|--------|
+| `GET /games/rounds/current` (public, simple) | **200** · `Access-Control-Allow-Origin: http://localhost:3000` (scoped, not `*`) · `Access-Control-Allow-Credentials: true` · `Vary: Origin` — readable |
+| `GET /wallets/me` + `Bearer` (curl, no preflight) | **200** · scoped ACAO + credentials · body `balance.amount=60000 CRD` (Money snapshot) |
+| `OPTIONS /wallets/me` (preflight) | **404** |
+| `OPTIONS /games/bet` (preflight for POST place) | **404** |
+| `OPTIONS /games/bets/me` (preflight for authed GET) | **404** |
+| `OPTIONS /games/rounds/current` (preflight) | **404** |
+
+### Root cause + required fix for 07-03
+
+- The 07-01 `cors` plugin lists `OPTIONS` in its `methods`, but Kong only runs a plugin
+  **after a route matches**. Each route in `docker/kong/kong.yml` constrains `methods:` to
+  the business verb only (`wallets-me`→`[GET]`, `games-bet-place`→`[POST]`, etc.). A preflight
+  `OPTIONS` matches **no** route → Kong 404 → the cors plugin never answers the preflight →
+  the browser blocks the real request.
+- Today only true "simple requests" succeed (public `GET`, no `Authorization`, no
+  non-safelisted headers). Every authed GET (`/wallets/me`, `/games/bets/me` — carry
+  `Authorization`) and every JSON `POST` (`/games/bet`, `/games/bet/cashout`) WILL be
+  preflighted by a real browser and is currently **blocked**. The curl 200s above are
+  misleading because curl does not preflight.
+- **Fix (07-03):** add `OPTIONS` to the `methods:` list of every browser-reachable route
+  (`games-current`, `games-history`, `games-verify`, `games-bets-me`, `games-bet-place`,
+  `games-bet-cashout`, `wallets-provision`, `wallets-me`). Keep origins scoped to
+  `http://localhost:3000` with `credentials: true` (never `*`). Re-probe each `OPTIONS`
+  expecting `204`/`200` with the scoped ACAO + `Access-Control-Allow-Methods` /
+  `Access-Control-Allow-Headers` echoed.
