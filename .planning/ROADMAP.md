@@ -252,7 +252,7 @@ Plans:
 **Plans:** 10 plans
 Plans:
 - [x] 08-01-PLAN.md — Browser-safe @crash/contracts/provably-fair-browser subpath (crypto.subtle HMAC + SHA-256) + Phase 4 2.94 oracle test
-- [ ] 08-02-PLAN.md — Extend VerifyRoundDto with bets[] + growthRate; BetRepository.findByRound (no status filter)
+- [x] 08-02-PLAN.md — Extend VerifyRoundDto with bets[] + growthRate; BetRepository.findByRound (no status filter)
 - [ ] 08-03-PLAN.md — Refactor use-raf-curve.ts to accept optional RafCurveDriver (Phase 7 callers zero-diff)
 - [ ] 08-04-PLAN.md — VITE_REPLAY_SPEEDS/AUTOSTART/DRAWER_SLIDE_MS env + shadcn sheet/toggle-group/alert + fairness.store + replay.store
 - [ ] 08-05-PLAN.md — FairnessBadge + HashBlock + VerdictChip + VerificationDrawer (Sheet, mount at __root.tsx) + useVerifyPrevious
