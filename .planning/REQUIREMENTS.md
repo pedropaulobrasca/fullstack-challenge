@@ -85,7 +85,7 @@
 
 ### Frontend (FE)
 
-- [ ] **REQ-FE-01**: Frontend scaffolded as TanStack Start v1 + Vite + Tailwind v4 + shadcn/ui (CLI v4 TanStack Start template) + Zustand 5 + TanStack Query 5 + oidc-spa.
+- [x] **REQ-FE-01**: Frontend scaffolded as TanStack Start v1 + Vite + Tailwind v4 + shadcn/ui (CLI v4 TanStack Start template) + Zustand 5 + TanStack Query 5 + oidc-spa. (P07-03)
 - [ ] **REQ-FE-02**: Frontend renders the multiplier curve on a Canvas 2D element at 60 fps via `requestAnimationFrame`, with `devicePixelRatio` scaling and proper `clearRect` between frames.
 - [ ] **REQ-FE-03**: Frontend computes the multiplier locally each frame using the same `e^(GROWTH_RATE * t / 1000)` formula the server uses, anchored to `roundStartedAt` from the snapshot; corrects toward the server tick value via EWMA clock-offset (tween, never snap).
 - [ ] **REQ-FE-04**: Frontend renders a bet input with Money-VO validation (min/max bounds, no scientific notation, no negative); the Bet button is enabled only during BETTING phase and disabled when player already has an active bet.
@@ -95,8 +95,8 @@
 - [ ] **REQ-FE-08**: Frontend renders a history strip of the last 20 crash points, color-coded (red ≤ 1.5x, yellow 1.5-2x, green > 2x — thresholds env-tunable).
 - [ ] **REQ-FE-09**: Frontend renders the pre-round hash commitment in a always-visible badge; a click opens a verification drawer.
 - [ ] **REQ-FE-10**: Frontend has a `/verify/:roundId` route that fetches the verify endpoint and runs the provably-fair algorithm in-browser via `crypto.subtle` — no server recomputation; result is `MATCH ✓` / `MISMATCH ✗`.
-- [ ] **REQ-FE-11**: Frontend has a dark casino aesthetic (deep blacks, neon accents, smooth transitions) — see UI-SPEC.md (Phase 7 produces it).
-- [ ] **REQ-FE-12**: Frontend is responsive (desktop + mobile breakpoints from Tailwind defaults); touch interactions work for bet/cashout.
+- [x] **REQ-FE-11**: Frontend has a dark casino aesthetic (deep blacks, neon accents, smooth transitions) — see UI-SPEC.md (Phase 7 produces it). (P07-03 @theme tokens live)
+- [x] **REQ-FE-12**: Frontend is responsive (desktop + mobile breakpoints from Tailwind defaults); touch interactions work for bet/cashout. (P07-03 D-01 responsive shell; live touch controls in 07-06)
 - [ ] **REQ-FE-13**: Frontend has loading skeletons (round in flight, history fetch) and toast notifications with dedupe for errors (insufficient balance, network, etc.).
 - [ ] **REQ-FE-14**: Frontend shows balance update with subtle counter-up animation; cashout produces a celebration; crash produces a flash + freeze overlay.
 
@@ -307,7 +307,7 @@ Each v1 REQ-ID maps to exactly one phase in `ROADMAP.md`. v2 (REQ-STRETCH-*) liv
 #### Phase 7 — Frontend Vertical Slice (12 reqs)
 | REQ-ID | Title | Status |
 |--------|-------|--------|
-| REQ-FE-01 | TanStack Start scaffold + stack | Pending |
+| REQ-FE-01 | TanStack Start scaffold + stack | Done (P07-03: booting selective-SSR TanStack Start 1.168.14 + Vite 8 + Tailwind v4 @theme + shadcn 13-component set; Zustand 5 + TanStack Query 5 + oidc-spa present as deps, wired in 07-04+) |
 | REQ-FE-02 | Canvas 2D curve at 60fps with `devicePixelRatio` | Pending |
 | REQ-FE-03 | Local multiplier formula + EWMA clock-offset reconciliation | Pending |
 | REQ-FE-04 | Bet input with Money-VO validation + state-aware enable | In progress (P07-01: shared WS payload contract `@crash/contracts/ws` + `.tsx` money-rule enforcement groundwork; bet input UI lands in later Phase 7 plans) |
@@ -315,8 +315,8 @@ Each v1 REQ-ID maps to exactly one phase in `ROADMAP.md`. v2 (REQ-STRETCH-*) liv
 | REQ-FE-06 | BETTING countdown timer | Pending |
 | REQ-FE-07 | Live bet/cashout feed with own-action highlight | Pending |
 | REQ-FE-08 | History strip last 20 color-coded | Pending |
-| REQ-FE-11 | Dark casino aesthetic | Pending |
-| REQ-FE-12 | Responsive desktop + mobile + touch | Pending |
+| REQ-FE-11 | Dark casino aesthetic | Done (P07-03: UI-SPEC dark-casino @theme tokens live via CSS variables — background #0A0F14, card #111827, accent #00FF85→#22D3EE, destructive #EF4444; Fira Code/Fira Sans self-hosted; dark-by-default shell renders) |
+| REQ-FE-12 | Responsive desktop + mobile + touch | Done (P07-03: D-01 responsive layout skeleton — two-rail grid at lg+, single stacked column below; the live touch bet/cashout controls land in 07-06 but the responsive shell + breakpoints are in place) |
 | REQ-FE-13 | Loading skeletons + deduped toast errors | Pending |
 | REQ-FE-14 | Balance counter-up, cashout celebration, crash flash/freeze | Pending |
 
