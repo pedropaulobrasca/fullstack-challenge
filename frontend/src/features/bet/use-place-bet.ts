@@ -2,6 +2,11 @@ import { useMutation } from "@tanstack/react-query";
 import type { Money } from "@crash/shared-kernel";
 import { protectedFetch } from "@/lib/api";
 import { useBetStore } from "@/stores/bet.store";
+import {
+  toastInsufficientBalance,
+  toastBetWindowClosed,
+  toastNetwork,
+} from "@/lib/toast";
 
 export type PlaceBetErrorKey =
   | "insufficient-balance"
@@ -46,6 +51,15 @@ export function usePlaceBet() {
     mutationFn: placeBet,
     onMutate: () => {
       setPending(true);
+    },
+    onError: (error) => {
+      if (error.key === "insufficient-balance") {
+        toastInsufficientBalance();
+      } else if (error.key === "bet-window-closed") {
+        toastBetWindowClosed();
+      } else {
+        toastNetwork();
+      }
     },
     onSettled: () => {
       setPending(false);

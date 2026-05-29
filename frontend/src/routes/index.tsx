@@ -1,5 +1,21 @@
+import { useEffect } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { enforceLogin } from "@/auth/oidc";
+import { CrashCurve } from "@/components/crash-curve";
+import { BetPanel } from "@/components/bet-panel";
+import { CashoutButton } from "@/components/cashout-button";
+import { Countdown } from "@/components/countdown";
+import { LiveFeed } from "@/components/live-feed";
+import { HistoryStrip } from "@/components/history-strip";
+import { CurveSkeleton, HistorySkeleton } from "@/components/game-skeletons";
+import { CrashFlash } from "@/features/juice/crash-flash";
+import { celebrate } from "@/features/juice/celebrate";
+import { useWallet } from "@/features/wallet/use-wallet";
+import { useHistory } from "@/features/history/use-history";
+import { useRoundStore } from "@/stores/round.store";
+import { useBetStore } from "@/stores/bet.store";
+import { useConnectionStore } from "@/ws/use-game-socket";
+import { toastNetwork, clearToastKey } from "@/lib/toast";
 
 export const Route = createFileRoute("/")({
   ssr: false,
@@ -8,63 +24,68 @@ export const Route = createFileRoute("/")({
 });
 
 function GameRoute() {
+  useWallet();
+  const history = useHistory();
+  const hasRound = useRoundStore((state) => state.roundId !== null);
+  const celebrating = useBetStore((state) => state.celebrate);
+  const clearCelebration = useBetStore((state) => state.clearCelebration);
+  const connectionStatus = useConnectionStore((state) => state.status);
+
+  useEffect(() => {
+    if (celebrating) {
+      celebrate();
+      clearCelebration();
+    }
+  }, [celebrating, clearCelebration]);
+
+  useEffect(() => {
+    if (connectionStatus === "reconnecting") {
+      toastNetwork();
+    } else if (connectionStatus === "connected") {
+      clearToastKey("network");
+    }
+  }, [connectionStatus]);
+
   return (
-    <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-6 px-4 py-6 lg:px-6">
-      <HistoryStrip />
+    <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-6 px-4 pb-28 pt-6 lg:px-6 lg:pb-6">
+      <section
+        data-region="history-strip"
+        className="min-h-12 rounded-lg border border-border bg-card"
+      >
+        {history.isLoading ? <HistorySkeleton /> : <HistoryStrip />}
+      </section>
+
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[320px_minmax(0,1fr)_320px]">
-        <BetRail />
-        <CurveStage />
-        <FeedRail />
+        <aside
+          data-region="bet-rail"
+          className="sticky bottom-0 z-10 order-2 flex flex-col gap-4 border-t border-border bg-background py-3 lg:static lg:order-none lg:border-t-0 lg:bg-transparent lg:py-0"
+        >
+          <Countdown />
+          <BetPanel />
+          <CashoutButton />
+        </aside>
+
+        <section
+          data-region="curve-stage"
+          className="relative order-1 min-h-[40vh] overflow-hidden rounded-lg border border-border bg-card lg:order-none lg:min-h-[520px]"
+        >
+          {hasRound ? (
+            <>
+              <CrashCurve />
+              <CrashFlash />
+            </>
+          ) : (
+            <CurveSkeleton />
+          )}
+        </section>
+
+        <aside
+          data-region="feed-rail"
+          className="order-3 flex min-h-40 flex-col lg:order-none lg:min-h-[520px]"
+        >
+          <LiveFeed />
+        </aside>
       </div>
     </div>
-  );
-}
-
-function HistoryStrip() {
-  return (
-    <section
-      data-region="history-strip"
-      className="flex min-h-12 items-center gap-2 overflow-x-auto rounded-lg border border-border bg-card px-4 py-2"
-    >
-      <span className="text-sm text-muted-foreground">
-        Crash history will appear after the first round settles.
-      </span>
-    </section>
-  );
-}
-
-function CurveStage() {
-  return (
-    <section
-      data-region="curve-stage"
-      className="order-first flex min-h-[40vh] items-center justify-center rounded-lg border border-border bg-card lg:order-none lg:min-h-[520px]"
-    >
-      <span className="font-mono text-2xl font-semibold text-muted-foreground">Waiting for round</span>
-    </section>
-  );
-}
-
-function BetRail() {
-  return (
-    <aside
-      data-region="bet-rail"
-      className="flex min-h-40 flex-col gap-4 rounded-lg border border-border bg-card p-6"
-    >
-      <h2 className="font-sans text-sm font-semibold text-muted-foreground">Place Bet</h2>
-    </aside>
-  );
-}
-
-function FeedRail() {
-  return (
-    <aside
-      data-region="feed-rail"
-      className="flex min-h-40 flex-col gap-4 rounded-lg border border-border bg-card p-6"
-    >
-      <h2 className="font-sans text-sm font-semibold text-muted-foreground">No bets yet this round</h2>
-      <p className="text-sm text-muted-foreground">
-        Place a bet during the betting window to see the action here.
-      </p>
-    </aside>
   );
 }

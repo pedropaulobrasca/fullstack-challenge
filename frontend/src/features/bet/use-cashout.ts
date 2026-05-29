@@ -1,6 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { protectedFetch } from "@/lib/api";
 import { useBetStore } from "@/stores/bet.store";
+import { toastNetwork } from "@/lib/toast";
 
 export type CashoutErrorKey = "network";
 
@@ -37,6 +38,9 @@ export function useCashout() {
         return Promise.resolve();
       }
       return cashout(betId);
+    },
+    onError: () => {
+      toastNetwork();
     },
   });
 }

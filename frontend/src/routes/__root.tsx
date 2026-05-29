@@ -4,6 +4,8 @@ import { useState } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { OidcProvider } from "@/auth/oidc-provider";
 import { useGameSocket } from "@/ws/use-game-socket";
+import { BalancePill } from "@/components/balance-pill";
+import { ConnectionBadge } from "@/components/connection-badge";
 import appCss from "@/styles/globals.css?url";
 
 export const Route = createRootRoute({
@@ -57,8 +59,8 @@ function AppHeader() {
         <div data-slot="fairness-badge" aria-hidden className="h-6" />
       </div>
       <div className="flex items-center gap-4">
-        <div data-slot="connection-badge" />
-        <div data-slot="balance-pill" />
+        <ConnectionBadge />
+        <BalancePill />
       </div>
     </header>
   );
