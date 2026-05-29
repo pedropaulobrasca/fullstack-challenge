@@ -55,4 +55,9 @@ export function parseConfig(env: unknown): AppConfig {
   return buildConfig(configSchema.parse(env));
 }
 
-export const config: AppConfig = parseConfig(import.meta.env);
+let cached: AppConfig | undefined;
+
+export function getConfig(): AppConfig {
+  cached ??= parseConfig(import.meta.env);
+  return cached;
+}
