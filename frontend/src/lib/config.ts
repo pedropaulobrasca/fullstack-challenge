@@ -12,6 +12,8 @@ export const configSchema = z.object({
   VITE_BET_MIN_CENTS: z.coerce.number().int().nonnegative(),
   VITE_BET_MAX_CENTS: z.coerce.number().int().positive(),
   VITE_CURRENCY_CODE: z.string().min(1),
+  VITE_FEED_BUFFER_SIZE: z.coerce.number().int().positive(),
+  VITE_HISTORY_SIZE: z.coerce.number().int().positive(),
 });
 
 export type RawConfig = z.input<typeof configSchema>;
@@ -27,6 +29,8 @@ export type AppConfig = Readonly<{
   history: Readonly<{ redMaxX: number; yellowMaxX: number }>;
   bet: Readonly<{ minCents: number; maxCents: number }>;
   currencyCode: string;
+  feedBufferSize: number;
+  historySize: number;
 }>;
 
 export function buildConfig(env: ParsedConfig): AppConfig {
@@ -48,6 +52,8 @@ export function buildConfig(env: ParsedConfig): AppConfig {
       maxCents: env.VITE_BET_MAX_CENTS,
     }),
     currencyCode: env.VITE_CURRENCY_CODE,
+    feedBufferSize: env.VITE_FEED_BUFFER_SIZE,
+    historySize: env.VITE_HISTORY_SIZE,
   });
 }
 

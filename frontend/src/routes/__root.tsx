@@ -1,5 +1,9 @@
 import { createRootRoute, HeadContent, Outlet, Scripts } from "@tanstack/react-router";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useState } from "react";
 import { Toaster } from "@/components/ui/sonner";
+import { OidcProvider } from "@/auth/oidc-provider";
+import { useGameSocket } from "@/ws/use-game-socket";
 import appCss from "@/styles/globals.css?url";
 
 export const Route = createRootRoute({
@@ -15,23 +19,34 @@ export const Route = createRootRoute({
 });
 
 function RootComponent() {
+  const [queryClient] = useState(() => new QueryClient());
   return (
     <html lang="en" className="dark">
       <head>
         <HeadContent />
       </head>
       <body className="min-h-screen bg-background text-foreground font-sans antialiased">
-        <div className="flex min-h-screen flex-col">
-          <AppHeader />
-          <main className="flex-1">
-            <Outlet />
-          </main>
-        </div>
+        <QueryClientProvider client={queryClient}>
+          <OidcProvider>
+            <GameSession />
+          </OidcProvider>
+          <div className="flex min-h-screen flex-col">
+            <AppHeader />
+            <main className="flex-1">
+              <Outlet />
+            </main>
+          </div>
+        </QueryClientProvider>
         <Toaster position="top-center" richColors />
         <Scripts />
       </body>
     </html>
   );
+}
+
+function GameSession() {
+  useGameSocket();
+  return null;
 }
 
 function AppHeader() {

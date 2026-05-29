@@ -13,6 +13,8 @@ const validEnv = {
   VITE_BET_MIN_CENTS: "100",
   VITE_BET_MAX_CENTS: "100000",
   VITE_CURRENCY_CODE: "CRD",
+  VITE_FEED_BUFFER_SIZE: "50",
+  VITE_HISTORY_SIZE: "20",
 };
 
 describe("config schema", () => {
