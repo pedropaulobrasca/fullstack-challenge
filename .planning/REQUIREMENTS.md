@@ -232,7 +232,7 @@ Each v1 REQ-ID maps to exactly one phase in `ROADMAP.md`. v2 (REQ-STRETCH-*) liv
 | REQ-INFRA-04 | Pinned versions (Bun, Node, NestJS, MikroORM, Dinero, Socket.IO, TanStack, Tailwind, shadcn) | Pending |
 | REQ-INFRA-05 | Runtime constants from env (no hardcoded business values) | Pending |
 | REQ-DOM-05 | Wallet balance never negative (Postgres CHECK + invariant) | Pending |
-| REQ-DOM-06 | Money VO with bigint cents (no `number` for amounts) | Pending |
+| REQ-DOM-06 | Money VO with bigint cents (no `number` for amounts) | In progress (P07-01: `no-number-for-money` ESLint enforcement extended to `.tsx`; FE Money-VO usage lands in later Phase 7 plans) |
 | REQ-AUTH-05 | Pre-seeded `player/player123` + realm auto-import | Done (P1.2 + P1.9) |
 | REQ-DOC-03 | Demo user wallet seeded with 1000.00 CRD | Done (P1.9 documented; Phase 3 will land actual provisioning endpoint) |
 
@@ -310,7 +310,7 @@ Each v1 REQ-ID maps to exactly one phase in `ROADMAP.md`. v2 (REQ-STRETCH-*) liv
 | REQ-FE-01 | TanStack Start scaffold + stack | Pending |
 | REQ-FE-02 | Canvas 2D curve at 60fps with `devicePixelRatio` | Pending |
 | REQ-FE-03 | Local multiplier formula + EWMA clock-offset reconciliation | Pending |
-| REQ-FE-04 | Bet input with Money-VO validation + state-aware enable | Pending |
+| REQ-FE-04 | Bet input with Money-VO validation + state-aware enable | In progress (P07-01: shared WS payload contract `@crash/contracts/ws` + `.tsx` money-rule enforcement groundwork; bet input UI lands in later Phase 7 plans) |
 | REQ-FE-05 | Cashout button with live potential payout | Pending |
 | REQ-FE-06 | BETTING countdown timer | Pending |
 | REQ-FE-07 | Live bet/cashout feed with own-action highlight | Pending |
