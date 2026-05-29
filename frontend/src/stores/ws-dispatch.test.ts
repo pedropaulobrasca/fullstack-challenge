@@ -89,6 +89,24 @@ describe("round:crashed", () => {
       crashPoint: 3.41,
     });
   });
+
+  it("does not duplicate a history entry when a non-head round re-crashes (stable keys)", () => {
+    useHistoryStore.setState({
+      entries: [
+        { roundId: "r-head", crashPoint: 3.0 },
+        { roundId: "r-dup", crashPoint: 2.0 },
+      ],
+    });
+
+    dispatchWsEvent("round:crashed", {
+      roundId: "r-dup",
+      crashPoint: 2.0,
+      crashedAt: "2026-05-28T00:00:00.000Z",
+    });
+
+    const ids = useHistoryStore.getState().entries.map((e) => e.roundId);
+    expect(ids.filter((id) => id === "r-dup")).toHaveLength(1);
+  });
 });
 
 describe("feed circular buffer", () => {
