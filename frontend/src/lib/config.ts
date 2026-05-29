@@ -27,6 +27,7 @@ export type AppConfig = Readonly<{
   growthRate: number;
   ewmaAlpha: number;
   history: Readonly<{ redMaxX: number; yellowMaxX: number }>;
+  // eslint-disable-next-line @crash/no-number-for-money -- raw integer cents parsed from env, never a Money value; wrapped in Money.of(BigInt(...)) at the only consumer (features/bet/bet-amount.ts)
   bet: Readonly<{ minCents: number; maxCents: number }>;
   currencyCode: string;
   feedBufferSize: number;
