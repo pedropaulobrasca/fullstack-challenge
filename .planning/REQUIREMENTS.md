@@ -97,8 +97,8 @@
 - [ ] **REQ-FE-10**: Frontend has a `/verify/:roundId` route that fetches the verify endpoint and runs the provably-fair algorithm in-browser via `crypto.subtle` — no server recomputation; result is `MATCH ✓` / `MISMATCH ✗`.
 - [x] **REQ-FE-11**: Frontend has a dark casino aesthetic (deep blacks, neon accents, smooth transitions) — see UI-SPEC.md (Phase 7 produces it). (P07-03 @theme tokens live)
 - [x] **REQ-FE-12**: Frontend is responsive (desktop + mobile breakpoints from Tailwind defaults); touch interactions work for bet/cashout. (P07-03 D-01 responsive shell; live touch controls in 07-06)
-- [ ] **REQ-FE-13**: Frontend has loading skeletons (round in flight, history fetch) and toast notifications with dedupe for errors (insufficient balance, network, etc.).
-- [ ] **REQ-FE-14**: Frontend shows balance update with subtle counter-up animation; cashout produces a celebration; crash produces a flash + freeze overlay.
+- [x] **REQ-FE-13**: Frontend has loading skeletons (round in flight, history fetch) and toast notifications with dedupe for errors (insufficient balance, network, etc.). (P07-08: CurveSkeleton/HistorySkeleton + dedupedToast keyed by message, amber warnings)
+- [x] **REQ-FE-14**: Frontend shows balance update with subtle counter-up animation; cashout produces a celebration; crash produces a flash + freeze overlay. (P07-08: useCountUp tween + canvas-confetti burst + CrashFlash overlay, all reduced-motion gated)
 
 ### Auto Features (AUTO)
 
@@ -216,7 +216,7 @@ Each v1 REQ-ID maps to exactly one phase in `ROADMAP.md`. v2 (REQ-STRETCH-*) liv
 ### Coverage summary
 
 - **v1 mapped**: 95 / 95 (100%)
-- **v1 complete**: 54 / 95 (Phase 1: REQ-AUTH-05 + REQ-DOC-03; Phase 2: REQ-WALL-05 + REQ-WALL-06 + REQ-SAGA-05 + REQ-SAGA-06; Phase 3: REQ-DOM-03 + REQ-AUTH-04 + REQ-WALL-01 + REQ-WALL-02 + REQ-WALL-03 + REQ-WALL-04 + REQ-WALL-07; Phase 4: REQ-DOM-01 + REQ-DOM-02 + REQ-DOM-04 + REQ-DOM-07 + REQ-DOM-08 + REQ-GAME-01 + REQ-GAME-02 + REQ-GAME-03 + REQ-GAME-04 + REQ-GAME-05 + REQ-GAME-08 + REQ-GAME-09 + REQ-FAIR-01 + REQ-FAIR-02 + REQ-FAIR-03 + REQ-FAIR-04 + REQ-FAIR-05 + REQ-TEST-01 + REQ-TEST-02; Phase 5: REQ-GAME-06 + REQ-GAME-07 + REQ-SAGA-01 + REQ-SAGA-02 + REQ-SAGA-03 + REQ-SAGA-04 + REQ-TEST-03 + REQ-TEST-04; Phase 6: REQ-WS-01 + REQ-WS-02 + REQ-WS-03 + REQ-WS-04 + REQ-WS-05 + REQ-WS-06 + REQ-WS-07; Phase 7: REQ-FE-01 + REQ-FE-11 + REQ-FE-12 [P07-03] + REQ-AUTH-01 + REQ-AUTH-02 + REQ-AUTH-03 + REQ-FE-07 + REQ-FE-08 [P07-04])
+- **v1 complete**: 62 / 95 (Phase 1: REQ-AUTH-05 + REQ-DOC-03; Phase 2: REQ-WALL-05 + REQ-WALL-06 + REQ-SAGA-05 + REQ-SAGA-06; Phase 3: REQ-DOM-03 + REQ-AUTH-04 + REQ-WALL-01 + REQ-WALL-02 + REQ-WALL-03 + REQ-WALL-04 + REQ-WALL-07; Phase 4: REQ-DOM-01 + REQ-DOM-02 + REQ-DOM-04 + REQ-DOM-07 + REQ-DOM-08 + REQ-GAME-01 + REQ-GAME-02 + REQ-GAME-03 + REQ-GAME-04 + REQ-GAME-05 + REQ-GAME-08 + REQ-GAME-09 + REQ-FAIR-01 + REQ-FAIR-02 + REQ-FAIR-03 + REQ-FAIR-04 + REQ-FAIR-05 + REQ-TEST-01 + REQ-TEST-02; Phase 5: REQ-GAME-06 + REQ-GAME-07 + REQ-SAGA-01 + REQ-SAGA-02 + REQ-SAGA-03 + REQ-SAGA-04 + REQ-TEST-03 + REQ-TEST-04; Phase 6: REQ-WS-01 + REQ-WS-02 + REQ-WS-03 + REQ-WS-04 + REQ-WS-05 + REQ-WS-06 + REQ-WS-07; Phase 7: REQ-FE-01 + REQ-FE-11 + REQ-FE-12 + REQ-AUTH-01 + REQ-AUTH-02 + REQ-AUTH-03 + REQ-FE-07 + REQ-FE-08 + REQ-FE-04 + REQ-FE-05 + REQ-FE-06 + REQ-FE-02 + REQ-FE-03 + REQ-FE-13 + REQ-FE-14)
 - **Orphans**: 0
 - **Duplicates**: 0
 - **Stretch (v2) deferred**: 8
@@ -316,9 +316,9 @@ Each v1 REQ-ID maps to exactly one phase in `ROADMAP.md`. v2 (REQ-STRETCH-*) liv
 | REQ-FE-07 | Live bet/cashout feed with own-action highlight | Done (data side — P07-04 feed circular-buffer store hydrated by `bet:placed`/`bet:cashed_out` dispatch with `isOwn` flag; visual `LiveFeed`/`FeedRow` rendering landed P07-07 — newest-first scroll-area, own-action emerald accent rail, foreign muted, Money toString, empty state, unit-green) |
 | REQ-FE-08 | History strip last 20 color-coded | Done (data side — P07-04 history store seeded by `use-history` Query [last N] + `round:crashed` prepend; visual `HistoryStrip` color-banded strip landed P07-07 — `classifyBand` config-driven low/mid/high [redMaxX/yellowMaxX, `<=` inclusive, no literal thresholds], theme-token chips, tooltip, empty state, unit-green) |
 | REQ-FE-11 | Dark casino aesthetic | Done (P07-03: UI-SPEC dark-casino @theme tokens live via CSS variables — background #0A0F14, card #111827, accent #00FF85→#22D3EE, destructive #EF4444; Fira Code/Fira Sans self-hosted; dark-by-default shell renders) |
-| REQ-FE-12 | Responsive desktop + mobile + touch | Done (P07-03: D-01 responsive layout skeleton — two-rail grid at lg+, single stacked column below; the live touch bet/cashout controls land in 07-06 but the responsive shell + breakpoints are in place) |
-| REQ-FE-13 | Loading skeletons + deduped toast errors | Pending |
-| REQ-FE-14 | Balance counter-up, cashout celebration, crash flash/freeze | Pending |
+| REQ-FE-12 | Responsive desktop + mobile + touch | Done (P07-08: assembled D-01 — history strip top, bet rail + center curve + feed rail at lg+, single stacked column with sticky-bottom controls below; ≥44px touch targets on the live bet/cashout controls) |
+| REQ-FE-13 | Loading skeletons + deduped toast errors | Done (P07-08: CurveSkeleton + HistorySkeleton for the round-snapshot and history-fetch waits; dedupedToast keyed by message — one active toast per key, cleared on close — amber warnings for insufficient-balance / bet-window-closed / network) |
+| REQ-FE-14 | Balance counter-up, cashout celebration, crash flash/freeze | Done (P07-08: useCountUp rAF tween in BalancePill + celebrate() single canvas-confetti burst + CrashFlash red flash/freeze overlay; all four juice moments honor prefers-reduced-motion) |
 
 #### Phase 8 — Provably-Fair UX, History & Replay (5 reqs)
 | REQ-ID | Title | Status |

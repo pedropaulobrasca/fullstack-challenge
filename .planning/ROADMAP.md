@@ -299,7 +299,7 @@ These are not numbered phases. Pull from this list during Phase 10 if time permi
 | 4. Game Core (domain only) | 12/12 | Complete | 2026-05-26 |
 | 5. Saga Integration | 11/11 | Complete | 2026-05-27 |
 | 6. WebSocket Gateway & Multiplier Sync | 10/10 | Complete | 2026-05-28 |
-| 7. Frontend Vertical Slice | 7/9 | In progress | - |
+| 7. Frontend Vertical Slice | 8/9 | In progress | - |
 | 8. Provably-Fair UX, History & Replay | 0/0 | Not started | - |
 | 9. Auto Features & Leaderboard | 0/0 | Not started | - |
 | 10. Quality Hardening & Docs | 0/0 | Not started | - |
@@ -331,4 +331,4 @@ No structural deviations. The 10 phases map 1:1 to the SUMMARY clusters. Refinem
 
 ---
 
-*Last updated: 2026-05-29 by gsd-executor (P07-07 — live feed + history strip UI complete, Phase 7 at 7/9; classifyBand pure config-driven crash-band classifier [low/mid/high from history.redMaxX/yellowMaxX, <= inclusive, zero literal thresholds] + bandChipClass theme-token map [destructive/warning/accent, no hex], HistoryStrip last-20 color-banded Fira Code tabular chips reading history.store newest-first with tooltip + empty state, LiveFeed/FeedRow streaming feed.store newest-first in a scroll-area with own-action emerald accent rail + muted foreign rows + Money toString [only multiplier is a number] + empty state; 48/48 tests green; REQ-FE-07/08 delivered as rendered UI; commits ea3cc0e/2562fdb).*
+*Last updated: 2026-05-29 by gsd-executor (P07-08 — responsive game page assembly + cross-cutting UX complete, Phase 7 at 8/9; index.tsx assembles the D-01 layout [history strip top, bet/cashout/countdown rail + center CrashCurve + LiveFeed rail at lg+, single stacked column with sticky-bottom controls below], CurveSkeleton/HistorySkeleton for the snapshot/history waits, dedupedToast keyed by message [one active toast per key, cleared on close, amber warnings] wired into the place-bet/cashout hook onError paths with cashout-too-late silent, and the four sanctioned juice moments [useCountUp balance tween, celebrate() single canvas-confetti burst, CrashFlash red flash+freeze overlay, 07-06 rising-curve glow] all honoring prefers-reduced-motion; BalancePill + ConnectionBadge mounted in the __root header; tsc clean, 65/65 tests green, no hex in index.tsx, no setInterval in celebrate.ts; REQ-FE-12/13/14 closed; commits e661ceb/9b19938. Previous: P07-07 live feed + history strip UI, ea3cc0e/2562fdb).*
