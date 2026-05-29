@@ -299,7 +299,7 @@ These are not numbered phases. Pull from this list during Phase 10 if time permi
 | 4. Game Core (domain only) | 12/12 | Complete | 2026-05-26 |
 | 5. Saga Integration | 11/11 | Complete | 2026-05-27 |
 | 6. WebSocket Gateway & Multiplier Sync | 10/10 | Complete | 2026-05-28 |
-| 7. Frontend Vertical Slice | 6/9 | In progress | - |
+| 7. Frontend Vertical Slice | 7/9 | In progress | - |
 | 8. Provably-Fair UX, History & Replay | 0/0 | Not started | - |
 | 9. Auto Features & Leaderboard | 0/0 | Not started | - |
 | 10. Quality Hardening & Docs | 0/0 | Not started | - |
@@ -331,4 +331,4 @@ No structural deviations. The 10 phases map 1:1 to the SUMMARY clusters. Refinem
 
 ---
 
-*Last updated: 2026-05-29 by gsd-executor (P07-06 — Canvas 2D crash curve renderer complete, Phase 7 at 6/9; localMultiplier via shared @crash/contracts multiplierAt anchored to roundStartedAt + serverOffsetMs [byte-identical to server], reconcileOffset pure EWMA never-snap, useRafCurve rAF loop writing ONLY the isolated multiplier store [D-06] freezing at server crashValue on CRASHED + leak-free cancel, drawCurve dPR setTransform + clearRect-first emerald->cyan single-glow path + crash-red freeze + on-canvas Fira Code, CrashCurve ResizeObserver dPR sizing + prefers-reduced-motion + off-loop draw; REQ-FE-02/03 marked Done; commits 5756896/4d34c15).*
+*Last updated: 2026-05-29 by gsd-executor (P07-07 — live feed + history strip UI complete, Phase 7 at 7/9; classifyBand pure config-driven crash-band classifier [low/mid/high from history.redMaxX/yellowMaxX, <= inclusive, zero literal thresholds] + bandChipClass theme-token map [destructive/warning/accent, no hex], HistoryStrip last-20 color-banded Fira Code tabular chips reading history.store newest-first with tooltip + empty state, LiveFeed/FeedRow streaming feed.store newest-first in a scroll-area with own-action emerald accent rail + muted foreign rows + Money toString [only multiplier is a number] + empty state; 48/48 tests green; REQ-FE-07/08 delivered as rendered UI; commits ea3cc0e/2562fdb).*
