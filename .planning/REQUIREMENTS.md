@@ -86,8 +86,8 @@
 ### Frontend (FE)
 
 - [x] **REQ-FE-01**: Frontend scaffolded as TanStack Start v1 + Vite + Tailwind v4 + shadcn/ui (CLI v4 TanStack Start template) + Zustand 5 + TanStack Query 5 + oidc-spa. (P07-03)
-- [ ] **REQ-FE-02**: Frontend renders the multiplier curve on a Canvas 2D element at 60 fps via `requestAnimationFrame`, with `devicePixelRatio` scaling and proper `clearRect` between frames.
-- [ ] **REQ-FE-03**: Frontend computes the multiplier locally each frame using the same `e^(GROWTH_RATE * t / 1000)` formula the server uses, anchored to `roundStartedAt` from the snapshot; corrects toward the server tick value via EWMA clock-offset (tween, never snap).
+- [x] **REQ-FE-02**: Frontend renders the multiplier curve on a Canvas 2D element at 60 fps via `requestAnimationFrame`, with `devicePixelRatio` scaling and proper `clearRect` between frames.
+- [x] **REQ-FE-03**: Frontend computes the multiplier locally each frame using the same `e^(GROWTH_RATE * t / 1000)` formula the server uses, anchored to `roundStartedAt` from the snapshot; corrects toward the server tick value via EWMA clock-offset (tween, never snap).
 - [x] **REQ-FE-04**: Frontend renders a bet input with Money-VO validation (min/max bounds, no scientific notation, no negative); the Bet button is enabled only during BETTING phase and disabled when player already has an active bet.
 - [x] **REQ-FE-05**: Frontend renders a Cashout button with live potential-payout display (`bet × current multiplier`) — enabled only while the player has an ACTIVE bet during RUNNING phase.
 - [x] **REQ-FE-06**: Frontend renders a countdown timer for the BETTING window.
@@ -308,8 +308,8 @@ Each v1 REQ-ID maps to exactly one phase in `ROADMAP.md`. v2 (REQ-STRETCH-*) liv
 | REQ-ID | Title | Status |
 |--------|-------|--------|
 | REQ-FE-01 | TanStack Start scaffold + stack | Done (P07-03: booting selective-SSR TanStack Start 1.168.14 + Vite 8 + Tailwind v4 @theme + shadcn 13-component set; Zustand 5 + TanStack Query 5 + oidc-spa present as deps, wired in 07-04+) |
-| REQ-FE-02 | Canvas 2D curve at 60fps with `devicePixelRatio` | Pending |
-| REQ-FE-03 | Local multiplier formula + EWMA clock-offset reconciliation | Pending |
+| REQ-FE-02 | Canvas 2D curve at 60fps with `devicePixelRatio` | Done (P07-06) |
+| REQ-FE-03 | Local multiplier formula + EWMA clock-offset reconciliation | Done (P07-06) |
 | REQ-FE-04 | Bet input with Money-VO validation + state-aware enable | Done (P07-05: `parseBetAmount` rejects negative/scientific/out-of-bounds via Money VO with config bounds + currency-exponent precision; BetPanel Place Bet enabled iff BETTING && !myBet && !pending, "Bet Active" otherwise) |
 | REQ-FE-05 | Cashout button with live potential payout | Done (P07-05: CashoutButton accent CTA enabled only RUNNING+ACTIVE, live `Money.fromSnapshot(myBet.amount).multiplyRounded(renderedMultiplier)` payout subscribed to the isolated multiplier store D-06) |
 | REQ-FE-06 | BETTING countdown timer | Done (P07-05: Countdown reads round.store.bettingEndsAt, renders seconds remaining + thin progress bar, window derived from the snapshot not a hardcoded duration) |

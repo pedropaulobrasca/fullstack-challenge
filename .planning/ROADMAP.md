@@ -299,7 +299,7 @@ These are not numbered phases. Pull from this list during Phase 10 if time permi
 | 4. Game Core (domain only) | 12/12 | Complete | 2026-05-26 |
 | 5. Saga Integration | 11/11 | Complete | 2026-05-27 |
 | 6. WebSocket Gateway & Multiplier Sync | 10/10 | Complete | 2026-05-28 |
-| 7. Frontend Vertical Slice | 5/9 | In progress | - |
+| 7. Frontend Vertical Slice | 6/9 | In progress | - |
 | 8. Provably-Fair UX, History & Replay | 0/0 | Not started | - |
 | 9. Auto Features & Leaderboard | 0/0 | Not started | - |
 | 10. Quality Hardening & Docs | 0/0 | Not started | - |
@@ -331,4 +331,4 @@ No structural deviations. The 10 phases map 1:1 to the SUMMARY clusters. Refinem
 
 ---
 
-*Last updated: 2026-05-29 by gsd-executor (P07-05 — bet panel + live-payout cashout + betting countdown complete, Phase 7 at 5/9; Money-VO parseBetAmount validator + use-place-bet/use-cashout TanStack mutations + neutral state-aware BetPanel + accent CashoutButton subscribed to the isolated multiplier store [D-06] + bettingEndsAt-driven Countdown; REQ-FE-04/05/06 marked Done; commits 2917997/da4ed36).*
+*Last updated: 2026-05-29 by gsd-executor (P07-06 — Canvas 2D crash curve renderer complete, Phase 7 at 6/9; localMultiplier via shared @crash/contracts multiplierAt anchored to roundStartedAt + serverOffsetMs [byte-identical to server], reconcileOffset pure EWMA never-snap, useRafCurve rAF loop writing ONLY the isolated multiplier store [D-06] freezing at server crashValue on CRASHED + leak-free cancel, drawCurve dPR setTransform + clearRect-first emerald->cyan single-glow path + crash-red freeze + on-canvas Fira Code, CrashCurve ResizeObserver dPR sizing + prefers-reduced-motion + off-loop draw; REQ-FE-02/03 marked Done; commits 5756896/4d34c15).*
