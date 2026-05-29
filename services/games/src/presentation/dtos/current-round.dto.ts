@@ -1,17 +1,6 @@
-import { moneySnapshotSchema } from "@crash/contracts";
 import { createZodDto } from "nestjs-zod";
 import { z } from "zod";
-
-const currentRoundBetSchema = z
-  .object({
-    betId: z.string().uuid(),
-    playerIdMasked: z.string(),
-    amount: moneySnapshotSchema,
-    status: z.enum(["PENDING", "ACTIVE", "CASHED_OUT", "LOST", "REFUNDED"]),
-    cashedOutMultiplier: z.number().nullable(),
-    payout: moneySnapshotSchema.nullable(),
-  })
-  .strict();
+import { roundBetViewSchema } from "./round-bet-view.dto";
 
 export const currentRoundSchema = z
   .object({
@@ -28,7 +17,7 @@ export const currentRoundSchema = z
     crashPoint: z.number().nullable(),
     serverSeed: z.string().nullable(),
     currentMultiplier: z.number().nullable(),
-    bets: z.array(currentRoundBetSchema),
+    bets: z.array(roundBetViewSchema),
   })
   .strict();
 

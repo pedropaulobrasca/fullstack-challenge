@@ -1,5 +1,6 @@
 import { createZodDto } from "nestjs-zod";
 import { z } from "zod";
+import { roundBetViewSchema } from "./round-bet-view.dto";
 
 export const verifyRoundSchema = z
   .object({
@@ -13,6 +14,8 @@ export const verifyRoundSchema = z
     matches: z.boolean(),
     formulaVersion: z.number().int(),
     previousServerSeed: z.string().nullable(),
+    bets: z.array(roundBetViewSchema),
+    growthRate: z.number().positive(),
   })
   .strict();
 
