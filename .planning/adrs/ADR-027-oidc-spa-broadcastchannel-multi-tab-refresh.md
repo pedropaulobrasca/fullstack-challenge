@@ -1,0 +1,48 @@
+# ADR-027: Multi-tab token refresh via `oidc-spa`'s built-in `BroadcastChannel` over hand-rolled cross-tab coordination
+
+**Status**: Accepted
+**Date**: 2026-05-29
+**Phase**: 7
+
+## Context
+
+A player can have the game open in several browser tabs at once — a second tab to watch, a stale tab left open from earlier. Every tab holds the same OIDC session and the same access token, and every tab's token approaches expiry at the same instant. REQ-AUTH-03 requires that token rotation be *coordinated* across tabs: when the token nears expiry, exactly ONE refresh happens and all tabs adopt the rotated token — not N independent refreshes, one per tab.
+
+The failure mode if it is uncoordinated is PITFALLS Pitfall 5, the refresh storm. With refresh-token rotation enabled (the secure Keycloak default — each refresh invalidates the prior refresh token and issues a new one), N tabs each noticing "my token is about to expire" and each firing its own refresh-token grant at the same second produces a race: the realm processes them in some order, the first rotation invalidates the refresh token the others are mid-flight with, those grants fail, and the losing tabs are bounced into a re-login loop. The more tabs, the worse the thrash. It is an availability bug (users randomly logged out) born from a correctness gap (no cross-tab coordination), and it is precisely the surface a hand-rolled token layer gets wrong.
+
+ADR-024 already chose `oidc-spa@10.2.3` for the OIDC flow specifically because it solves PKCE, silent renewal, AND multi-tab coordination as library configuration with zero hand-rolled token code. This ADR records the multi-tab half of that choice as a standing, separately-citable guard — because the temptation to "add a quick `BroadcastChannel` to coordinate tabs" or "add a refresh timer" is exactly the change that reintroduces the storm, and the guard needs to be findable on its own when a future plan considers touching the auth module.
+
+This is also the FE realization of the multi-tab intent the ROADMAP originally anticipated as "ADR-022". That number was consumed by Phase 6's 30 Hz-tick / 60 fps-interpolation ADR before Phase 7 shipped, so the multi-tab decision takes the next free number (ADR-027); the ROADMAP's stale anticipated labels are reconciled to the actual numbers in this phase's closeout.
+
+## Considered
+
+- **Option A — `oidc-spa`'s built-in `BroadcastChannel` election (chosen)** — let the library coordinate cross-tab refresh internally. `oidc-spa`'s core uses a `BroadcastChannel` so that across N tabs sharing the session, a single tab performs the refresh and the rotated token is broadcast to the others; the app writes no coordination code at all. Pros: the storm cannot occur by construction — there is one refresh per rotation regardless of tab count; zero hand-rolled token/coordination code in the app (the 07-04 grep confirms no `BroadcastChannel`, `setInterval`, or `setTimeout` in `auth/oidc.ts`); the 07-02 two-tab spike observed exactly one refreshing tab, so the behavior is verified by observation, not assumed. Cons: the coordination is a library black box — we trust and verify it (the spike) rather than reading our own election code.
+- **Option B — hand-rolled `BroadcastChannel` / `localStorage`-event coordination** — write our own leader election: a `BroadcastChannel` (or `storage` events) on which tabs negotiate which one refreshes, with the winner broadcasting the rotated token. Pros: full visibility into the coordination logic. Cons: it is a second, parallel refresh mechanism layered on top of (or fighting against) the library's own — and a second mechanism is *itself* the storm (two coordinators each deciding to refresh reintroduces the exact race REQ-AUTH-03 forbids); leader election with tab open/close, focus/blur, and crashed-tab edge cases is subtle distributed-systems code whose failure mode is users randomly logged out; it duplicates, and risks conflicting with, behavior the chosen library already provides correctly.
+
+## Decision
+
+**Multi-tab token refresh is coordinated by `oidc-spa`'s built-in `BroadcastChannel`; the application adds NO cross-tab coordination of its own.** A hand-rolled `BroadcastChannel`/`localStorage` election is rejected because it is a second refresh mechanism, and a second mechanism reintroduces the refresh storm (Pitfall 5) that REQ-AUTH-03 exists to prevent.
+
+The locked implementation is the 07-04 `auth/oidc.ts`: the single `oidcSpa.createUtils()` instance (ADR-024) handles silent renewal and multi-tab coordination internally; the app's only token touch-point is `getAccessToken()` (auto-refreshing), read per call by the socket auth function and `protectedFetch`. The enforcement is a grep gate: `auth/oidc.ts` contains no `BroadcastChannel`, no `setInterval`, and no `setTimeout` — REQ-AUTH-02 (silent renew) and REQ-AUTH-03 (multi-tab) are satisfied entirely inside the library, with no second path.
+
+The behavior was verified at the 07-02 spike: a two-tab run observed a single refreshing tab (the library's `BroadcastChannel` election in action), confirming the storm does not occur on the installed `oidc-spa@10.2.3`.
+
+### Why NOT hand-rolled coordination (Option B)
+
+The decisive argument is that a second coordinator IS the storm. REQ-AUTH-03's whole point is "exactly one refresh per rotation across all tabs"; the library already guarantees that via its internal `BroadcastChannel`. Adding our own election on top does not improve that guarantee — it competes with it: now two mechanisms (ours and the library's) each independently decide whether to refresh, which is the multi-coordinator race that produces the duplicate refresh-token grants and the re-login thrash (Pitfall 5). The hand-rolled path also takes on the genuinely subtle distributed-systems work of leader election across tab open/close, focus/blur, and crashed-tab scenarios — code whose bugs log users out at random — to re-implement behavior the chosen library provides correctly and that the 07-02 spike already proved works. There is no upside and a real downside. This ADR is the standing guard: any future plan that proposes adding a `BroadcastChannel` or refresh timer to the auth module must re-open this decision first.
+
+## Consequences
+
+- **Locked in (one coordinator)**: multi-tab refresh coordination belongs to `oidc-spa`'s internal `BroadcastChannel`. The app adds none. No hand-rolled `BroadcastChannel`, `setInterval`, or `setTimeout` may appear in `auth/oidc.ts` — a second mechanism reintroduces the refresh storm (Pitfall 5). Code review treats any such addition as a regression and points here.
+- **Locked in (single refresh per rotation)**: across N tabs, exactly one tab refreshes per token rotation and the rotated token propagates to the others, verified by the 07-02 two-tab spike (single refreshing tab observed). Refresh-token rotation (the secure realm default) is therefore safe — no invalidated-mid-flight grants, no re-login loop.
+- **Locked in (app touches only `getAccessToken()`)**: the only token interaction in the app is the per-call `getAccessToken()` (auto-refreshing) used by the socket auth function and `protectedFetch` (ADR-024). Silent renew and multi-tab are entirely below that accessor.
+- **Foreclosed**: Option B hand-rolled `BroadcastChannel`/`localStorage` election (a second refresh mechanism is itself the storm; subtle leader-election edge cases whose failure mode is random logout; duplicates library behavior the spike already proved correct).
+- **Operational cost**: none new — the coordination is library-internal on the dependency ADR-024 already adopted; no extra code, no extra dependency.
+- **Numbering note**: the ROADMAP anticipated this decision under the label "ADR-022", which Phase 6 consumed (30 Hz tick / 60 fps interpolation). The multi-tab decision therefore takes the next-free number (ADR-027); shipped ADRs are never renumbered, and the ROADMAP's stale anticipated labels are reconciled to the actual numbers in the Phase 7 closeout.
+- **Anticipated recruiter question**: "How do you stop a refresh storm across tabs — did you implement cross-tab coordination?" — defended: the storm is prevented by NOT adding a second coordinator; `oidc-spa`'s built-in `BroadcastChannel` already guarantees one refresh per rotation, and the 07-02 two-tab spike verified it (single refreshing tab); hand-rolling a parallel election would *cause* the storm it claims to prevent, because two coordinators racing to refresh is the exact failure mode (Pitfall 5). The defensible move is the single coordinator plus the observation that proves it works.
+
+Cross-references: ADR-024 (TanStack Start + `oidc-spa` — the OIDC flow this multi-tab guarantee is one consequence of; same single `createUtils` instance, same no-hand-rolled-token-code rule); REQ-AUTH-03 (single coordinated refresh across tabs); REQ-AUTH-02 (silent renewal — the other library-internal mechanism); PITFALLS Pitfall 5 (refresh storm); 07-02 spike (two-tab single-refresh observation + the multi-tab-is-library-internal finding); 07-04 (`auth/oidc.ts` with the grep-clean no-`BroadcastChannel`/`setInterval`/`setTimeout` enforcement).
+
+## Alternatives Rejected
+
+- **Option B — hand-rolled `BroadcastChannel` / `localStorage`-event coordination** — a second refresh mechanism layered on the library's own is itself the storm (two coordinators racing to refresh = the Pitfall 5 race); subtle leader-election edge cases (tab open/close, focus/blur, crashed tab) whose failure mode is random logout; duplicates and risks conflicting with behavior `oidc-spa` already provides and the 07-02 spike already verified.

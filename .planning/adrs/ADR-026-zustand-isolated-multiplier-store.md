@@ -1,0 +1,51 @@
+# ADR-026: Zustand slice-per-concern with the rAF multiplier loop isolated to its own store
+
+**Status**: Accepted
+**Date**: 2026-05-29
+**Phase**: 7
+
+## Context
+
+The game page consumes a high-frequency data stream and a set of lower-frequency ones from the same WebSocket. The server emits `round:tick` at 30 Hz (ADR-022) and the client renders the curve at 60 fps (ADR-025), so the *rendered multiplier* — the number plotted on the curve and shown as the live cashout payout — changes up to 60 times per second for the whole RUNNING phase. Around that high-frequency value sit several lower-frequency concerns: the round lifecycle (`BETTING`/`RUNNING`/`CRASHED`/`SETTLED` + `roundStartedAt`/`bettingEndsAt`), the wallet balance, the live bet/cashout feed, the player's own bet, and the last-N crash history. These update on discrete events (a bet placed, a cashout, a crash), not every frame.
+
+The naive design is one global store holding everything. The problem is React's subscription model: any component subscribing to a store re-renders when *any* part it selects changes, and with a single store the high-frequency multiplier write would, frame after frame, churn the store object that the bet panel, the live feed, and the history strip also subscribe to. Even with selector memoization the risk is real and easy to get wrong — a slightly-too-coarse selector, a derived object recreated per render, or a store-shape that co-locates the multiplier with anything a panel reads, and suddenly the entire UI re-renders at 60 fps. That is wasted CPU, dropped frames, and battery drain on mobile, for panels whose content did not change. This is decision D-06 in the Phase 7 CONTEXT and the visual-stability half of REQ-FE-03 (the curve must be smooth, which it cannot be if the whole tree re-renders under it).
+
+The constraint is therefore a re-render-scoping one: the 30 Hz tick + 60 fps rAF writes must be physically incapable of re-rendering the bet panel, feed, or history. The cleanest way to make that *structural* rather than *disciplined-via-selectors* is to put the high-frequency value in a store that only the curve (and the cashout-payout selector) subscribe to, so a write to it has no subscriber outside the pixel pipeline.
+
+## Considered
+
+- **Option A — one shared Zustand store** — all state (round, multiplier, wallet, feed, bet, history) in a single store, with components using fine-grained selectors to subscribe only to their slice. Pros: one store, one import, simplest mental model; Zustand selectors *can* scope re-renders if every selector is precise. Cons: the 60 fps multiplier write churns the one store object every frame, and re-render isolation then depends entirely on every consumer's selector being narrow enough — a fragile, easy-to-regress discipline. One coarse selector or one derived-object-per-render anywhere in the bet panel / feed / history re-renders that panel at 60 fps. The safety property (panels never re-render on a tick) is *asserted by convention*, not enforced by structure.
+- **Option B — slice-per-concern stores with the multiplier rAF loop isolated to its own store (chosen)** — five slice-per-concern stores (`round`, `multiplier`, `wallet`, `feed`, `bet`) plus a small `history` store, with the high-frequency rendered multiplier living in its OWN `multiplier.store` that only the curve and the cashout-payout selector subscribe to. The 30 Hz tick handler writes ONLY the multiplier store (via EWMA clock-offset reconcile, never snapping); the panels subscribe to the other stores and are structurally untouched by tick writes. Pros: the re-render isolation is structural — a write to the multiplier store has no subscriber outside the pixel pipeline, so the panels *cannot* re-render on a tick regardless of selector hygiene; each store is small and single-purpose (slice-per-concern), which also keeps the WS-dispatch routing one-store-per-event-type and testable. Cons: more stores to import and reason about; a cross-cutting read (e.g. the cashout payout, which needs the multiplier *and* the bet) must explicitly subscribe to two stores.
+
+## Decision
+
+**Slice-per-concern Zustand stores, with the rendered multiplier isolated to its own `multiplier.store` that only the curve and the cashout-payout selector subscribe to.** A single shared store is rejected because it makes the "panels never re-render on a tick" safety property depend on per-consumer selector discipline rather than on structure; the isolated store makes it structural.
+
+The locked implementation is the 07-04 store layer + WS dispatch:
+
+- Five slice-per-concern stores (`round`, `multiplier` [isolated, D-06], `wallet`, `feed` [circular buffer], `bet`) plus a small `history` store.
+- `stores/ws-dispatch.ts` is the single mapper: `dispatchWsEvent` `safeParse`s the incoming payload against its `@crash/contracts/ws` schema once at the gate (drop + warn on failure), then routes to exactly ONE slice. `round:tick` runs the EWMA clock-offset reducer (`VITE_EWMA_ALPHA`) updating ONLY the multiplier store — it never snaps and never touches another slice.
+- The curve (07-06 `use-raf-curve`) writes the rendered multiplier via `multiplier.store.setRendered` and the canvas reads it off the React render path (ADR-025); the cashout button (07-05) selects the rendered multiplier from the isolated store to show `bet × current multiplier` live.
+
+The 07-04 dispatch test is the enforcement: the `round:tick` branch references the multiplier store only, and the test asserts the round / feed / bet / wallet stores are referentially untouched after a tick (D-06 verified, not merely intended). Two ticks converge toward the instantaneous offset via EWMA and never snap.
+
+### Why NOT one shared store (Option A)
+
+The decisive argument is that re-render isolation must be a *structural* guarantee, not a *selector-discipline* convention. With one shared store the multiplier write churns the same store object the bet panel, feed, and history subscribe to, and the only thing preventing a 60 fps re-render of those panels is that every one of their selectors is narrow enough — a property that is invisible in review, easy to regress (a coarse selector, a derived object recreated per render), and catastrophic when wrong (the entire UI re-renders at 60 fps under the curve, defeating REQ-FE-03's smoothness). Isolating the high-frequency value in its own store removes the failure mode entirely: a write to the multiplier store has no subscriber outside the curve and the cashout-payout selector, so the panels are physically incapable of re-rendering on a tick. The slice-per-concern split also gives the WS dispatch a clean one-store-per-event-type routing that the dispatch test can assert exactly — `round:tick` touching only `multiplier.store` is a checkable invariant, not a hope.
+
+## Consequences
+
+- **Locked in (high-frequency value is isolated)**: the rendered multiplier lives in its own `multiplier.store`; only the curve and the cashout-payout selector subscribe to it. The tick handler must never write any other slice. A future per-frame consumer must subscribe to the multiplier store explicitly (and accept that it will re-render at frame rate); it must NOT move the multiplier into a shared store.
+- **Locked in (one store per WS event type)**: `dispatchWsEvent` validates once at the gate then routes each event to exactly one slice; `round:tick` → multiplier store only, `round:crashed` → round store (freeze) + history prepend, `bet:my_cashed_out` → bet store (celebration flag) + wallet store (credit), etc. This one-store-per-event routing is what makes the dispatch unit-testable and the D-06 isolation assertable.
+- **Locked in (EWMA, never snap)**: the tick handler reconciles the local clock offset toward the server tick via EWMA (`VITE_EWMA_ALPHA`) and never snaps the rendered value — preserving curve smoothness (REQ-FE-03, ADR-022 client-interpolation half). The alpha is config-driven, never a literal (ADR-004 discipline on the FE).
+- **Locked in (slice-per-concern)**: round / multiplier / wallet / feed / bet / history are separate stores. A cross-cutting read subscribes to the stores it needs explicitly (e.g. the cashout payout reads the multiplier store AND the bet store) — the cost of the isolation, paid once at the two or three cross-cutting selectors.
+- **Verified, not assumed**: the 07-04 dispatch test asserts a `round:tick` leaves round/feed/bet/wallet referentially untouched; the isolation is a checked invariant, not a convention.
+- **Foreclosed**: Option A one shared store (re-render isolation reduced to per-consumer selector discipline — fragile, invisible in review, catastrophic when a selector regresses to 60 fps panel re-renders).
+- **Operational cost**: a few extra store modules and the explicit two-store subscription at the cashout payout selector. No new dependency (Zustand 5 was in the scaffold dep set).
+- **Anticipated recruiter question**: "Why six stores instead of one — isn't that over-fragmented?" — defended: the split is not arbitrary fragmentation, it is targeted isolation of the one value that changes 60×/second from everything that does not, so the panels' freedom from frame-rate re-renders is structural rather than dependent on every selector being perfect; the dispatch test proves a tick touches only the multiplier store.
+
+Cross-references: ADR-022 (30 Hz tick + 60 fps interpolation — the EWMA reconcile the tick handler runs); ADR-025 (Canvas 2D curve — reads the isolated multiplier store and draws off the React render path); REQ-FE-03 (local multiplier + smoothness, which the isolation protects); Phase 7 CONTEXT D-06; 07-04 (the locked store layer + `ws-dispatch.ts` + the dispatch test asserting tick isolation); 07-05 (cashout payout selector reading the isolated store); 07-06 (the rAF loop writing only the multiplier store).
+
+## Alternatives Rejected
+
+- **Option A — one shared Zustand store** — the 60 fps multiplier write churns the single store object the panels subscribe to, reducing re-render isolation to per-consumer selector discipline that is fragile, invisible in review, and catastrophic when a selector regresses (whole-UI 60 fps re-renders defeating curve smoothness).
