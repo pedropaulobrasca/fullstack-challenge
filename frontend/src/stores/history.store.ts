@@ -18,7 +18,7 @@ export const useHistoryStore = create<HistoryState>((set) => ({
     set(() => ({ entries: entries.slice(0, getConfig().historySize) })),
   prependCrash: (entry) =>
     set((state) => {
-      if (state.entries[0]?.roundId === entry.roundId) {
+      if (state.entries.some((existing) => existing.roundId === entry.roundId)) {
         return state;
       }
       return {
