@@ -8,7 +8,8 @@
     ".": "./src/index.ts",
     "./ws": "./src/ws/index.ts",
     "./multiplier": "./src/provably-fair/multiplier.ts",
-    "./formula": "./src/provably-fair/formulas.constants.ts"
+    "./formula": "./src/provably-fair/formulas.constants.ts",
+    "./provably-fair-browser": "./src/provably-fair-browser/index.ts"
   },
   "bin": {
     "verify-crash": "./bin/verify-crash.ts"
