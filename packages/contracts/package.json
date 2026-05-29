@@ -6,7 +6,9 @@
   "types": "src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./ws": "./src/ws/index.ts"
+    "./ws": "./src/ws/index.ts",
+    "./multiplier": "./src/provably-fair/multiplier.ts",
+    "./formula": "./src/provably-fair/formulas.constants.ts"
   },
   "bin": {
     "verify-crash": "./bin/verify-crash.ts"

@@ -34,36 +34,42 @@ services:
           - ~/games/rounds/current$
         methods:
           - GET
+          - OPTIONS
         strip_path: false
       - name: games-history
         paths:
           - ~/games/rounds/history$
         methods:
           - GET
+          - OPTIONS
         strip_path: false
       - name: games-verify
         paths:
           - ~/games/rounds/[^/]+/verify$
         methods:
           - GET
+          - OPTIONS
         strip_path: false
       - name: games-bets-me
         paths:
           - ~/games/bets/me$
         methods:
           - GET
+          - OPTIONS
         strip_path: false
       - name: games-bet-place
         paths:
           - ~/games/bet$
         methods:
           - POST
+          - OPTIONS
         strip_path: false
       - name: games-bet-cashout
         paths:
           - ~/games/bet/cashout$
         methods:
           - POST
+          - OPTIONS
         strip_path: false
 
   - name: wallets-service
@@ -88,10 +94,12 @@ services:
           - ~/wallets$
         methods:
           - POST
+          - OPTIONS
         strip_path: false
       - name: wallets-me
         paths:
           - ~/wallets/me$
         methods:
           - GET
+          - OPTIONS
         strip_path: false
