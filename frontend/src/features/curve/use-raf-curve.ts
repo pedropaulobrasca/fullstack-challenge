@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { getConfig } from "@/lib/config";
-import { useRoundStore } from "@/stores/round.store";
+import { useRoundStore, type RoundStatus } from "@/stores/round.store";
 import { useMultiplierStore } from "@/stores/multiplier.store";
 import { localMultiplier, reconcileOffset } from "@/features/curve/local-multiplier";
 
@@ -10,11 +10,46 @@ export type CurveFrame = {
   multiplier: number;
 };
 
-export function useRafCurve(onFrame?: (frame: CurveFrame) => void) {
+export type RafCurveDriver = {
+  multiplier: () => number;
+  status: () => RoundStatus;
+  crashValue: () => number | null;
+  shouldStop: () => boolean;
+};
+
+export const liveDriver: RafCurveDriver = {
+  multiplier: () => {
+    const round = useRoundStore.getState();
+    if (round.status !== "RUNNING" || round.roundStartedAt === null) {
+      return BASELINE_MULTIPLIER;
+    }
+    const mult = useMultiplierStore.getState();
+    return localMultiplier(round.roundStartedAt, mult.serverOffsetMs ?? 0);
+  },
+  status: () => useRoundStore.getState().status,
+  crashValue: () => useRoundStore.getState().crashValue,
+  shouldStop: () => {
+    const round = useRoundStore.getState();
+    if (round.status === "CRASHED") {
+      return true;
+    }
+    if (round.status !== "RUNNING" || round.roundStartedAt === null) {
+      return true;
+    }
+    return false;
+  },
+};
+
+export function useRafCurve(
+  onFrame?: (frame: CurveFrame) => void,
+  driver: RafCurveDriver = liveDriver,
+) {
   const frameRef = useRef<CurveFrame>({ multiplier: BASELINE_MULTIPLIER });
   const rafIdRef = useRef<number | null>(null);
 
   useEffect(() => {
+    const isLive = driver === liveDriver;
+
     const cancel = () => {
       if (rafIdRef.current !== null) {
         cancelAnimationFrame(rafIdRef.current);
@@ -24,11 +59,13 @@ export function useRafCurve(onFrame?: (frame: CurveFrame) => void) {
 
     const writeFrame = (value: number) => {
       frameRef.current = { multiplier: value };
-      useMultiplierStore.getState().setRendered(value);
+      if (isLive) {
+        useMultiplierStore.getState().setRendered(value);
+      }
       onFrame?.(frameRef.current);
     };
 
-    const tick = () => {
+    const tickLive = () => {
       const round = useRoundStore.getState();
 
       if (round.status === "CRASHED") {
@@ -49,28 +86,50 @@ export function useRafCurve(onFrame?: (frame: CurveFrame) => void) {
       const value = localMultiplier(round.roundStartedAt, baseOffset);
       writeFrame(value);
 
-      rafIdRef.current = requestAnimationFrame(tick);
+      rafIdRef.current = requestAnimationFrame(tickLive);
     };
 
-    const unsubscribe = useRoundStore.subscribe((state, prev) => {
-      if (state.status === prev.status) {
+    const tickDriver = () => {
+      const value = driver.multiplier();
+      writeFrame(value);
+
+      if (driver.shouldStop()) {
+        cancel();
         return;
       }
-      cancel();
-      if (state.status === "RUNNING" && state.roundStartedAt !== null) {
-        rafIdRef.current = requestAnimationFrame(tick);
-      } else {
-        tick();
-      }
-    });
+
+      rafIdRef.current = requestAnimationFrame(tickDriver);
+    };
+
+    const tick = isLive ? tickLive : tickDriver;
+
+    if (isLive) {
+      const unsubscribe = useRoundStore.subscribe((state, prev) => {
+        if (state.status === prev.status) {
+          return;
+        }
+        cancel();
+        if (state.status === "RUNNING" && state.roundStartedAt !== null) {
+          rafIdRef.current = requestAnimationFrame(tick);
+        } else {
+          tick();
+        }
+      });
+
+      tick();
+
+      return () => {
+        unsubscribe();
+        cancel();
+      };
+    }
 
     tick();
 
     return () => {
-      unsubscribe();
       cancel();
     };
-  }, [onFrame]);
+  }, [onFrame, driver]);
 
   return frameRef;
 }
