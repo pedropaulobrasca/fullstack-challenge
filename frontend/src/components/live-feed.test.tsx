@@ -3,6 +3,7 @@ import { render, screen } from "@testing-library/react";
 
 import { LiveFeed } from "@/components/live-feed";
 import { useFeedStore, type FeedEntry } from "@/stores/feed.store";
+import { useBetStore } from "@/stores/bet.store";
 
 const moneySnap = (amount: string) => ({
   amount,
@@ -33,6 +34,7 @@ const foreignPlaced: FeedEntry = {
 
 beforeEach(() => {
   useFeedStore.setState({ entries: [] });
+  useBetStore.setState({ myBet: null, pending: false, celebrate: false });
 });
 
 describe("LiveFeed", () => {
@@ -68,6 +70,56 @@ describe("LiveFeed", () => {
         "Place a bet during the betting window to see the action here.",
       ),
     ).toBeInTheDocument();
+  });
+
+  it("shows the player's real bet amount on their own placed row, not the masked zero", () => {
+    const ownPlacedMasked: FeedEntry = {
+      id: "mine:placed",
+      roundId: "r1",
+      betId: "mine",
+      playerIdMasked: "you",
+      kind: "placed",
+      amount: moneySnap("0"),
+      isOwn: true,
+    };
+    useBetStore.setState({
+      myBet: {
+        betId: "mine",
+        roundId: "r1",
+        amount: moneySnap("2500"),
+        status: "ACTIVE",
+        cashoutMultiplier: null,
+      },
+      pending: false,
+      celebrate: false,
+    });
+    useFeedStore.setState({ entries: [ownPlacedMasked] });
+
+    render(<LiveFeed />);
+
+    const ownRow = screen.getByTestId("feed-row-mine:placed");
+    expect(ownRow).toHaveTextContent("25.00 CRD");
+    expect(ownRow).not.toHaveTextContent("0.00 CRD");
+  });
+
+  it("leaves a foreign placed row showing the masked payload amount", () => {
+    useBetStore.setState({
+      myBet: {
+        betId: "mine",
+        roundId: "r1",
+        amount: moneySnap("2500"),
+        status: "ACTIVE",
+        cashoutMultiplier: null,
+      },
+      pending: false,
+      celebrate: false,
+    });
+    useFeedStore.setState({ entries: [foreignPlaced] });
+
+    render(<LiveFeed />);
+
+    const foreignRow = screen.getByTestId("feed-row-other-1");
+    expect(foreignRow).toHaveTextContent("5.00 CRD");
   });
 
   it("renders rows newest-first matching store order", () => {

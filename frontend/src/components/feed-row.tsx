@@ -1,5 +1,6 @@
 import { Money } from "@crash/shared-kernel";
 import type { FeedEntry } from "@/stores/feed.store";
+import { useBetStore } from "@/stores/bet.store";
 import { cn } from "@/lib/utils";
 
 type FeedRowProps = {
@@ -7,8 +8,14 @@ type FeedRowProps = {
 };
 
 export function FeedRow({ entry }: FeedRowProps) {
-  const amountLabel = entry.amount
-    ? Money.fromSnapshot(entry.amount).toString()
+  const ownAmount = useBetStore((state) =>
+    entry.isOwn && state.myBet?.betId === entry.betId
+      ? state.myBet.amount
+      : null,
+  );
+  const displayAmount = ownAmount ?? entry.amount;
+  const amountLabel = displayAmount
+    ? Money.fromSnapshot(displayAmount).toString()
     : null;
 
   return (
