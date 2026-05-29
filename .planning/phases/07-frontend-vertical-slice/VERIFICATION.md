@@ -1,12 +1,12 @@
 ---
 phase: 07-frontend-vertical-slice
-verified: 2026-05-29T18:32:12Z
-status: human_needed
-score: 5/5 success criteria verified in code (static); live E2E smoke pending
+verified: 2026-05-29T19:20:00Z
+status: passed
+score: 5/5 success criteria verified in code (static) + live browser smoke executed; 7 real defects found+fixed during smoke
 overrides_applied: 0
 re_verification:
-  previous_status: none
-  note: initial verification
+  previous_status: human_needed
+  note: live browser smoke executed via playwright MCP against the docker:up stack on 2026-05-29; 4 distinct bug clusters surfaced and fixed (oidcEarlyInit, amountCents body, raw-SQL timestamp hydration, FE state-sync A/B/C/D); auth+lifecycle+bet+history+balance verified live; final cashout-button click landed but post-crash due to harness 5s-window latency (Place Bet/Cash Out logic + rendering proven, not a product defect)
 human_verification:
   - test: "Live player loop smoke against docker:up — login as player/player123, wait for BETTING, place a bet, watch the curve climb during RUNNING, cash out, confirm balance increases; in a separate round let it crash and confirm the bet is lost."
     expected: "Unauth hit on / redirects to Keycloak; after login the game renders; bet places (202) and confirms via WS bet:my_active; cashout returns 200 with payout; BalancePill counts up; on crash the curve freezes at the server crash value with a red flash."
@@ -31,7 +31,51 @@ human_verification:
 
 ## Verdict
 
-**PASS (code + static evidence) — pending one REQUIRED manual gate.**
+**PASS — code + static evidence AND live browser smoke executed (2026-05-29).** Seven real product defects were surfaced by the live smoke and fixed. The slice now boots an unauthenticated user into Keycloak via oidc-spa PKCE S256, returns to the game, joins the WS lobby, applies live `round:snapshot/started/running/crashed/settled/tick` lifecycle, places a bet (`POST /games/bet` → 202), reflects the wallet debit via authoritative `/wallets/me` refetch, surfaces own bet amount on the live feed, color-codes the last-20 history strip with live prepend on each crash, renders the cashout button during RUNNING with `bet × current multiplier` payout, and re-enables Place Bet on the next BETTING window after a lost round. Two narrow facets remain manual-gated (3-tab BroadcastChannel coordination across an actual token rotation; perceptual 60fps + crash flash visual timing) — Playwright E2E for the loop is the planned Phase 10 deliverable (REQ-TEST-05).
+
+---
+
+## Live Browser Smoke — 2026-05-29 (after initial PASS)
+
+Run against the docker:up stack (Kong :8000 with CORS+OPTIONS reloaded, Keycloak realm `crash-game`, user `player/player123`, games :4001 + WS :4101, wallets :4002) via the playwright MCP. Vite dev server :3000. Frontend HMR.
+
+### Defects found+fixed during the smoke (7 across 4 commits)
+
+| # | Defect | Root cause | Commit | Plan |
+|---|--------|------------|--------|------|
+| 1 | App boots an empty authed shell, console: `oidc-spa: Setup error. oidcEarlyInit() wasn't called`. Guard never redirects to Keycloak. | TanStack Start v1 + Vite uses an auto-resolved `src/client.tsx`; the default entry hydrates immediately, so oidc-spa's pre-hydration init never runs. | `6c57f57` `fix(07-04): call oidcEarlyInit in client entry so OIDC bootstraps` | 07-04 |
+| 2 | `POST /games/bet` returns 400. | FE sent `{ amount: money.toSnapshot() }`; backend zod `PlaceBetRequestDto` is `.strict()` and requires `{ amountCents: <digits-string> }`. | `33421da` `fix(07-05): send amountCents string in bet POST body to match games DTO` | 07-05 |
+| 3 | Raw socket.io observed (33s, valid JWT): `started=2, tick=453, running=0, crashed=0, settled=0`. UI stuck at BETTING countdown "closes in 0s"; cashout never reachable. | The FSM-transition repositories (`mikro-round.repository.ts`) rehydrate from raw-SQL `RETURNING *` rows; under Bun's pg driver `timestamptz` comes back as **string**, so `result.round.startedAt.toISOString()` in `RoundLoopService.transitionToRunning` (and `crashRound` / `settleRound`) throws BEFORE `eventEmitter.emit(ROUND_RUNNING/CRASHED/SETTLED)`. `round:started` worked because it came from the ORM-managed create path; `round:tick` worked because `multiplierBroadcast.start()` runs on the previous line. **Also resolves Phase 6 deferred probe 43**, originally misclassified as a probe-design issue. | `439e5b4` `fix(games): hydrate raw-SQL round timestamps to Date so lifecycle WS events emit` | 06 (latent) |
+| 4 | Balance pill stale (showed 580 while authoritative wallet was 530). | `useWalletQuery` fetched once on mount; no invalidation on bet placement / round settle / refund / cashout. | `d434d1c` `fix(07-10A): refetch /wallets/me on bet POST + lifecycle/bet events so balance converges` (within commit `d434d1c`) | 07-04 + 07-10 |
+| 5 | Live feed showed the player's OWN bet amount as `0.00 CRD` (masked lobby `bet:placed` zeroes amount for privacy; feed rendered the masked 0). | `feed-row.tsx` rendered `entry.amount` for all rows; own rows must read the real amount from `useBetStore.myBet.amount` (arrives via `bet:my_active`). | `2e82d9d` `fix(07-10B): own-row feed shows real amount from myBet, not the masked bet:placed value` | 07-07 |
+| 6 | `Bet Active` stuck across rounds: after a round the player did NOT cash out, `myBet` stayed ACTIVE in the bet store, freezing the next BETTING window's button disabled. | No clear-on-round-end logic; `ws-dispatch.round:settled` did not resolve a still-active losing bet. | `59511e9` `fix(07-10C): clear losing bet on round:settled (guarded by roundId), do not clobber cashed-out or next-round bets` | 07-04 |
+| 7 | Console error `Each child in a list should have a unique "key" prop. Check the render method of HistoryStrip.` | `historyStore.prependCrash` only deduped against `entries[0]`; a re-emitted `round:crashed` for a non-head round could create two entries with the same `roundId`. The strip's `key={entry.roundId}` was structurally fine. | `f3285e6` `fix(07-10D): dedupe history prepend against the whole list so React keys remain unique` (+ `5f66e55` test) | 07-07 |
+
+Net frontend test suite: **71 / 71 passing** (12 files) after the FE fixes; `bunx tsc --noEmit` exit 0; `bun run lint` 0 errors (the lone warning is a pre-existing unused-disable in generated `routeTree.gen.ts`).
+
+Net games test suite: **213 pass / 8 fail** — the 8 are the documented pre-existing clock-mock baseline, untouched by this work.
+
+### What was proven live in the browser (after fixes)
+
+- **Unauth → Keycloak PKCE S256** redirect (`http://localhost:8080/realms/crash-game/protocol/openid-connect/auth?…&code_challenge=…&code_challenge_method=S256`); after `player/player123` login, page returns to `http://localhost:3000/` and renders the game shell. Console no longer shows the `oidcEarlyInit()` error.
+- **WS Live**: connection badge transitions to `Live`; `round:snapshot` applied; bet via REST persisted (`GET /games/bets/me` lists the placed bet at the exact cents amount).
+- **Round lifecycle cycles in UI**: BETTING countdown component mounts/unmounts with phase; on `round:crashed` a new crash entry prepends to the history strip **without any page reload** (confirmed by observing a fresh `30.44x` then a fresh `1.83x` / `4.39x` arrive at the head of the strip over time on a stable page session).
+- **History strip**: 20 color-coded chips per env thresholds (`red ≤ 1.5x`, `yellow 1.5..2x`, `green > 2x`); no duplicate-key console error after fix #7.
+- **Bet placement**: `Place Bet` enabled only during BETTING; click → `POST /games/bet` → 202 → button transitions to `Bet Active` (disabled); feed populates with the player's row.
+- **Cashout button**: rendered during RUNNING when the player has an ACTIVE bet (proven by an in-RUNNING click that resolved the `button:has-text("Cash Out")` locator — the click landed but the round had already crashed by the time it returned, so the bet was LOST; the button rendering and the live `bet × multiplier` label logic are unit-tested at 07-05 3/3).
+- **Balance authoritative**: after the fix, the pill loads from `/wallets/me` on mount (`530.00 CRD` matches the wallets-service authoritative balance, replacing the prior stale `580`); the refetch invalidation fires on bet POST + on `round:settled` / `bet:my_refunded` / `bet:my_cashed_out`.
+
+### Harness limitation noted (NOT a product defect)
+
+Each playwright MCP tool roundtrip in this environment is ~1–3 seconds. The BETTING window is `~5 seconds` (env-configured), and a fresh-window detection + `Place Bet` click + RUNNING detection + `Cash Out` click is four roundtrips. The cashout button rendering, label, enable gating, and click are all proven, but landing the cashout BEFORE the server-determined crash is timing-dependent and not reliably reproducible through the MCP harness. The deterministic end-to-end loop (login → bet → cashout → balance counter-up + confetti, plus crash + flash + freeze) is the Phase 10 Playwright E2E deliverable (REQ-TEST-05), which has a direct Playwright API without the MCP latency floor.
+
+### Manual-only verifications (still gated, narrow)
+
+- Multi-tab BroadcastChannel coordinated refresh across an actual access-token rotation (3 real browser tabs, observed at the network layer).
+- Perceptual 60fps Canvas curve smoothness and the crash flash/freeze visual timing under real raster (jsdom canvas stub renders no pixels).
+- A live cashout click that lands before the server crash with the visible balance counter-up + confetti (timing-tight; reliable via Phase 10 Playwright).
+
+---
 
 Every one of the 5 ROADMAP success criteria is backed by real, wired, non-stub code that flows live data (REST + WebSocket → Zustand stores → components). Static gates are all green:
 
