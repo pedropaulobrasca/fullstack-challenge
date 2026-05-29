@@ -16,12 +16,15 @@ export default [
     ],
   },
   {
-    files: ["**/*.ts"],
+    files: ["**/*.ts", "**/*.tsx"],
     languageOptions: {
       parser: tsParser,
       parserOptions: {
         ecmaVersion: 2022,
         sourceType: "module",
+        ecmaFeatures: {
+          jsx: true,
+        },
       },
     },
     plugins: {
@@ -52,7 +55,7 @@ export default [
     },
   },
   {
-    files: ["**/tests/**/*.ts", "**/*.test.ts"],
+    files: ["**/tests/**/*.ts", "**/*.test.ts", "**/*.test.tsx"],
     rules: {
       "@crash/no-number-for-money": "off",
     },
