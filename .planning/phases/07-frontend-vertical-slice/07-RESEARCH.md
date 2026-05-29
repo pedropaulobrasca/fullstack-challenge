@@ -516,27 +516,31 @@ const label = `Cash Out ${renderedMultiplier.toFixed(2)}x · ${formatMoney(payou
 | A5 | shadcn CLI v4 `init` works against a Bun + TanStack Start + Tailwind v4 project leaving the tailwind config blank in `components.json`. | §shadcn | If the CLI lacks a clean TanStack Start path, fall back to manual component install (STACK.md compat note). |
 | A6 | History color thresholds (`VITE_HISTORY_RED_MAX_X=1.5`, `VITE_HISTORY_YELLOW_MAX_X=2.0`) are FE-only env (no backend equivalent). | §Open Configuration Values | Low — UI-SPEC already specifies these as new FE env vars. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Do `createReactOidc` (react-spa) and `createOidc` (core) share one session?**
    - What we know: docs show both patterns; the core promise pattern is the documented non-React accessor.
    - What's unclear: whether instantiating both against the same issuer/client double-initializes or shares storage.
    - Recommendation: Wave-0 auth spike — verify token parity; if they conflict, export a single `getOidc()` from the react-spa instance instead of a second `createOidc`.
+   - **RESOLVED:** gated by the 07-02 Wave-0 spike checkpoint (`autonomous:false`, blocking) before the 07-03 scaffold — the spike ratifies single-vs-dual instance and the 07-04 socket accessor consumes that decision. No work proceeds on an unverified assumption.
 
 2. **SPA mode vs selective `ssr:false` — which boots on Bun 1.3.11 + Vite 8?**
    - What we know: #5171 reports SPA-mode hang on Bun + Vite 7/8.
    - What's unclear: whether the pinned versions are affected or already fixed (PR #5262).
    - Recommendation: Wave-0 spike both; default to selective `ssr:false` if SPA mode hangs.
+   - **RESOLVED:** gated by the same 07-02 Wave-0 spike checkpoint; the boot-mode decision is recorded in `frontend/spike/SPIKE-NOTES.md` and consumed by the 07-03 scaffold (`vite.config.ts`). Default to selective `ssr:false` if SPA mode hangs.
 
 3. **Promote WS payload schemas to `@crash/contracts`?**
    - What we know: schemas + types live in `services/games` only; FE needs them.
    - What's unclear: appetite for touching a shared package vs re-declaring in FE.
    - Recommendation: promote to `@crash/contracts/ws` (one new subpath export) — eliminates contract drift; small, additive change. Also surface the EWMA alpha + history-threshold + bet-bound env defaults during planning.
+   - **RESOLVED:** resolved-into-task by 07-01 (promote schemas to `@crash/contracts/ws`, re-export from `services/games`); env defaults surfaced via the 07-03 typed config module.
 
 4. **Kong CORS — global plugin or per-route?**
    - What we know: no CORS plugin exists; browser REST will fail without it.
    - What's unclear: preferred scope.
    - Recommendation: add a global Kong `cors` plugin allowing `http://localhost:3000`, credentials, the FE's methods/headers; document in the FE bring-up. Plan must include this infra task.
+   - **RESOLVED:** resolved-into-task by 07-01 (scoped CORS plugin allowing the SPA origin with credentials, not `*`); 07-02 spike verifies a real browser fetch from :3000 reaches a REST route.
 
 ## Environment Availability
 
