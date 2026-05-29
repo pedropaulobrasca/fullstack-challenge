@@ -14,6 +14,20 @@ services:
 
   - name: games-service
     url: http://games:4001
+    plugins:
+      - name: cors
+        config:
+          origins:
+            - http://localhost:3000
+          methods:
+            - GET
+            - POST
+            - OPTIONS
+          headers:
+            - Authorization
+            - Content-Type
+          credentials: true
+          max_age: 3600
     routes:
       - name: games-current
         paths:
@@ -54,6 +68,20 @@ services:
 
   - name: wallets-service
     url: http://wallets:4002
+    plugins:
+      - name: cors
+        config:
+          origins:
+            - http://localhost:3000
+          methods:
+            - GET
+            - POST
+            - OPTIONS
+          headers:
+            - Authorization
+            - Content-Type
+          credentials: true
+          max_age: 3600
     routes:
       - name: wallets-provision
         paths:
