@@ -1,7 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { enforceLogin } from "@/auth/oidc";
 
 export const Route = createFileRoute("/")({
   ssr: false,
+  beforeLoad: enforceLogin,
   component: GameRoute,
 });
 
