@@ -143,6 +143,68 @@ describe("invalid payload handling", () => {
   });
 });
 
+describe("round:settled clears a lost bet", () => {
+  const settledPayload = {
+    roundId: "r1",
+    serverSeed: "seed-r1",
+    settledAt: "2026-05-28T00:00:00.000Z",
+  };
+
+  it("clears an ACTIVE bet belonging to the settled round so Place Bet re-enables", () => {
+    useBetStore.setState({
+      myBet: {
+        betId: "mine",
+        roundId: "r1",
+        amount: moneySnap("100"),
+        status: "ACTIVE",
+        cashoutMultiplier: null,
+      },
+      pending: false,
+      celebrate: false,
+    });
+
+    dispatchWsEvent("round:settled", settledPayload);
+
+    expect(useBetStore.getState().myBet).toBeNull();
+  });
+
+  it("does not clobber a bet that was already cashed out", () => {
+    useBetStore.setState({
+      myBet: {
+        betId: "mine",
+        roundId: "r1",
+        amount: moneySnap("100"),
+        status: "CASHED_OUT",
+        cashoutMultiplier: 2.5,
+      },
+      pending: false,
+      celebrate: false,
+    });
+
+    dispatchWsEvent("round:settled", settledPayload);
+
+    expect(useBetStore.getState().myBet?.status).toBe("CASHED_OUT");
+  });
+
+  it("does not clear a freshly-placed bet for a different (next) round", () => {
+    useBetStore.setState({
+      myBet: {
+        betId: "next",
+        roundId: "r2",
+        amount: moneySnap("100"),
+        status: "ACTIVE",
+        cashoutMultiplier: null,
+      },
+      pending: false,
+      celebrate: false,
+    });
+
+    dispatchWsEvent("round:settled", settledPayload);
+
+    expect(useBetStore.getState().myBet?.betId).toBe("next");
+  });
+});
+
 describe("bet:my_cashed_out", () => {
   it("flags a celebration and credits the wallet from the payout snapshot", () => {
     useWalletStore.setState({ balance: moneySnap("60000") });

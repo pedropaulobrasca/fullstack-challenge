@@ -125,6 +125,7 @@ const handlers: { [E in WsEvent]: (payload: unknown) => void } = {
   "round:settled": (raw) => {
     const payload = roundSettledPayloadSchema.parse(raw);
     useRoundStore.getState().setSettled({ roundId: payload.roundId });
+    useBetStore.getState().resolveLostForRound(payload.roundId);
   },
   "round:tick": (raw) => {
     const payload = roundTickPayloadSchema.parse(raw);

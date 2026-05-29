@@ -23,6 +23,7 @@ type BetState = {
   setMyBet: (bet: MyBet | null) => void;
   setStatus: (status: MyBetStatus) => void;
   setCashedOut: (params: { multiplier: number }) => void;
+  resolveLostForRound: (roundId: string) => void;
   setPending: (pending: boolean) => void;
   clearCelebration: () => void;
 };
@@ -51,6 +52,17 @@ export const useBetStore = create<BetState>((set) => ({
             celebrate: true,
           },
     ),
+  resolveLostForRound: (roundId) =>
+    set((state) => {
+      if (
+        state.myBet === null ||
+        state.myBet.roundId !== roundId ||
+        state.myBet.status !== "ACTIVE"
+      ) {
+        return state;
+      }
+      return { myBet: null };
+    }),
   setPending: (pending) => set({ pending }),
   clearCelebration: () => set({ celebrate: false }),
 }));
