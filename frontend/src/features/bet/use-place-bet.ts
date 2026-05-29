@@ -26,7 +26,7 @@ async function placeBet(money: Money): Promise<void> {
     response = await protectedFetch("/games/bet", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ amount: money.toSnapshot() }),
+      body: JSON.stringify({ amountCents: money.toSnapshot().amount }),
     });
   } catch {
     throw new PlaceBetError("network");
