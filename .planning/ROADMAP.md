@@ -299,7 +299,7 @@ These are not numbered phases. Pull from this list during Phase 10 if time permi
 | 4. Game Core (domain only) | 12/12 | Complete | 2026-05-26 |
 | 5. Saga Integration | 11/11 | Complete | 2026-05-27 |
 | 6. WebSocket Gateway & Multiplier Sync | 10/10 | Complete | 2026-05-28 |
-| 7. Frontend Vertical Slice | 3/9 | In progress | - |
+| 7. Frontend Vertical Slice | 4/9 | In progress | - |
 | 8. Provably-Fair UX, History & Replay | 0/0 | Not started | - |
 | 9. Auto Features & Leaderboard | 0/0 | Not started | - |
 | 10. Quality Hardening & Docs | 0/0 | Not started | - |

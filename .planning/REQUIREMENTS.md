@@ -28,9 +28,9 @@
 
 ### Authentication (AUTH)
 
-- [ ] **REQ-AUTH-01**: System redirects unauthenticated users to Keycloak via OIDC Authorization Code + PKCE (S256) flow using `oidc-spa` adapter for TanStack Start.
-- [ ] **REQ-AUTH-02**: System persists access + refresh tokens client-side and silently renews via the OIDC iframe before expiry.
-- [ ] **REQ-AUTH-03**: System coordinates token refresh across multiple browser tabs via `BroadcastChannel` so all tabs renew once per token rotation.
+- [x] **REQ-AUTH-01**: System redirects unauthenticated users to Keycloak via OIDC Authorization Code + PKCE (S256) flow using `oidc-spa` adapter for TanStack Start.
+- [x] **REQ-AUTH-02**: System persists access + refresh tokens client-side and silently renews via the OIDC iframe before expiry.
+- [x] **REQ-AUTH-03**: System coordinates token refresh across multiple browser tabs via `BroadcastChannel` so all tabs renew once per token rotation.
 - [x] **REQ-AUTH-04**: Each backend service validates incoming JWTs via cached JWKS (issuer + audience + signature + expiry checks); JWKS cache respects Keycloak `Cache-Control` headers.
 - [x] **REQ-AUTH-05**: System uses Keycloak's pre-seeded `player / player123` for the demo user with the Keycloak realm/client imported automatically during `docker:up`.
 
@@ -91,8 +91,8 @@
 - [ ] **REQ-FE-04**: Frontend renders a bet input with Money-VO validation (min/max bounds, no scientific notation, no negative); the Bet button is enabled only during BETTING phase and disabled when player already has an active bet.
 - [ ] **REQ-FE-05**: Frontend renders a Cashout button with live potential-payout display (`bet × current multiplier`) — enabled only while the player has an ACTIVE bet during RUNNING phase.
 - [ ] **REQ-FE-06**: Frontend renders a countdown timer for the BETTING window.
-- [ ] **REQ-FE-07**: Frontend renders a live feed of all bets and cashouts for the current round in real time; player's own actions highlighted.
-- [ ] **REQ-FE-08**: Frontend renders a history strip of the last 20 crash points, color-coded (red ≤ 1.5x, yellow 1.5-2x, green > 2x — thresholds env-tunable).
+- [x] **REQ-FE-07**: Frontend renders a live feed of all bets and cashouts for the current round in real time; player's own actions highlighted.
+- [x] **REQ-FE-08**: Frontend renders a history strip of the last 20 crash points, color-coded (red ≤ 1.5x, yellow 1.5-2x, green > 2x — thresholds env-tunable).
 - [ ] **REQ-FE-09**: Frontend renders the pre-round hash commitment in a always-visible badge; a click opens a verification drawer.
 - [ ] **REQ-FE-10**: Frontend has a `/verify/:roundId` route that fetches the verify endpoint and runs the provably-fair algorithm in-browser via `crypto.subtle` — no server recomputation; result is `MATCH ✓` / `MISMATCH ✗`.
 - [x] **REQ-FE-11**: Frontend has a dark casino aesthetic (deep blacks, neon accents, smooth transitions) — see UI-SPEC.md (Phase 7 produces it). (P07-03 @theme tokens live)
@@ -216,7 +216,7 @@ Each v1 REQ-ID maps to exactly one phase in `ROADMAP.md`. v2 (REQ-STRETCH-*) liv
 ### Coverage summary
 
 - **v1 mapped**: 95 / 95 (100%)
-- **v1 complete**: 46 / 95 (Phase 1: REQ-AUTH-05 + REQ-DOC-03; Phase 2: REQ-WALL-05 + REQ-WALL-06 + REQ-SAGA-05 + REQ-SAGA-06; Phase 3: REQ-DOM-03 + REQ-AUTH-04 + REQ-WALL-01 + REQ-WALL-02 + REQ-WALL-03 + REQ-WALL-04 + REQ-WALL-07; Phase 4: REQ-DOM-01 + REQ-DOM-02 + REQ-DOM-04 + REQ-DOM-07 + REQ-DOM-08 + REQ-GAME-01 + REQ-GAME-02 + REQ-GAME-03 + REQ-GAME-04 + REQ-GAME-05 + REQ-GAME-08 + REQ-GAME-09 + REQ-FAIR-01 + REQ-FAIR-02 + REQ-FAIR-03 + REQ-FAIR-04 + REQ-FAIR-05 + REQ-TEST-01 + REQ-TEST-02; Phase 5: REQ-GAME-06 + REQ-GAME-07 + REQ-SAGA-01 + REQ-SAGA-02 + REQ-SAGA-03 + REQ-SAGA-04 + REQ-TEST-03 + REQ-TEST-04; Phase 6: REQ-WS-01 + REQ-WS-02 + REQ-WS-03 + REQ-WS-04 + REQ-WS-05 + REQ-WS-06 + REQ-WS-07 — REQ-AUTH-01/02/03 remain Pending, frontend OIDC deferred to Phase 7)
+- **v1 complete**: 54 / 95 (Phase 1: REQ-AUTH-05 + REQ-DOC-03; Phase 2: REQ-WALL-05 + REQ-WALL-06 + REQ-SAGA-05 + REQ-SAGA-06; Phase 3: REQ-DOM-03 + REQ-AUTH-04 + REQ-WALL-01 + REQ-WALL-02 + REQ-WALL-03 + REQ-WALL-04 + REQ-WALL-07; Phase 4: REQ-DOM-01 + REQ-DOM-02 + REQ-DOM-04 + REQ-DOM-07 + REQ-DOM-08 + REQ-GAME-01 + REQ-GAME-02 + REQ-GAME-03 + REQ-GAME-04 + REQ-GAME-05 + REQ-GAME-08 + REQ-GAME-09 + REQ-FAIR-01 + REQ-FAIR-02 + REQ-FAIR-03 + REQ-FAIR-04 + REQ-FAIR-05 + REQ-TEST-01 + REQ-TEST-02; Phase 5: REQ-GAME-06 + REQ-GAME-07 + REQ-SAGA-01 + REQ-SAGA-02 + REQ-SAGA-03 + REQ-SAGA-04 + REQ-TEST-03 + REQ-TEST-04; Phase 6: REQ-WS-01 + REQ-WS-02 + REQ-WS-03 + REQ-WS-04 + REQ-WS-05 + REQ-WS-06 + REQ-WS-07; Phase 7: REQ-FE-01 + REQ-FE-11 + REQ-FE-12 [P07-03] + REQ-AUTH-01 + REQ-AUTH-02 + REQ-AUTH-03 + REQ-FE-07 + REQ-FE-08 [P07-04])
 - **Orphans**: 0
 - **Duplicates**: 0
 - **Stretch (v2) deferred**: 8
@@ -293,9 +293,9 @@ Each v1 REQ-ID maps to exactly one phase in `ROADMAP.md`. v2 (REQ-STRETCH-*) liv
 #### Phase 6 — WebSocket Gateway & Multiplier Sync (10 reqs)
 | REQ-ID | Title | Status |
 |--------|-------|--------|
-| REQ-AUTH-01 | OIDC Authorization Code + PKCE (S256) via oidc-spa | Pending (frontend OIDC deferred to Phase 7 per Phase 6 RESEARCH Deferred Ideas; backend JWT-at-WS-handshake validated via REQ-WS-01) |
-| REQ-AUTH-02 | Token persistence + silent renewal | Pending (Phase 7 silent renewal — frontend scope) |
-| REQ-AUTH-03 | `BroadcastChannel`-coordinated multi-tab refresh | Pending (Phase 7 BroadcastChannel — frontend scope) |
+| REQ-AUTH-01 | OIDC Authorization Code + PKCE (S256) via oidc-spa | Done (P07-04 — one `oidcSpa.createUtils()` instance + `beforeLoad: enforceLogin` guard on the game route; PKCE-S256 is the library default; guard test asserts the unauth path redirects) |
+| REQ-AUTH-02 | Token persistence + silent renewal | Done (P07-04 — silent renewal is oidc-spa-internal via `getAccessToken()`; `grep` confirms zero hand-rolled `setInterval`/`setTimeout` in `auth/oidc.ts`) |
+| REQ-AUTH-03 | `BroadcastChannel`-coordinated multi-tab refresh | Done (P07-04 — multi-tab BroadcastChannel is oidc-spa-internal; `grep` confirms zero hand-rolled `BroadcastChannel` in `auth/oidc.ts`, no second refresh path) |
 | REQ-WS-01 | JWT-at-handshake via custom Socket.IO IoAdapter | Done (P6.01 — JwtVerifierService extracted from JwtGuard for shared cached-JWKS validation; P6.03 — JwtIoAdapter installs io.use() handshake middleware rejecting any token that does not verify against the Keycloak JWKS, sets socket.data.playerId from the verified sub claim; smoke probe 40 no-token → UNAUTHORIZED PASS live; ADR-021 + ADR-022 lock the standalone WS_PORT=4101 surface) |
 | REQ-WS-02 | Sockets joined to `lobby` + `user:{playerId}` | Done (P6.03 — handleConnection auto-joins lobby + user:{playerId} before snapshot emit; user-room name derived solely from verified-JWT sub claim — T-06-07 mitigation; integration ws-rooms.test.ts; ADR-021 locks single-lobby-over-per-round-rooms) |
 | REQ-WS-03 | Round + bet + cashout server→client events | Done (P6.03 round:snapshot payload schemas + P6.05 EventEmitter2 lifecycle @OnEvent fan-out to lobby for round:started/running/crashed/settled + P6.06 WsBridgeConsumer dual-emit bet:placed/cashed_out masked to lobby + bet:my_active/refunded/cashed_out raw to user:{playerId}; integration ws-event-catalog.test.ts) |
@@ -313,8 +313,8 @@ Each v1 REQ-ID maps to exactly one phase in `ROADMAP.md`. v2 (REQ-STRETCH-*) liv
 | REQ-FE-04 | Bet input with Money-VO validation + state-aware enable | In progress (P07-01: shared WS payload contract `@crash/contracts/ws` + `.tsx` money-rule enforcement groundwork; bet input UI lands in later Phase 7 plans) |
 | REQ-FE-05 | Cashout button with live potential payout | Pending |
 | REQ-FE-06 | BETTING countdown timer | Pending |
-| REQ-FE-07 | Live bet/cashout feed with own-action highlight | Pending |
-| REQ-FE-08 | History strip last 20 color-coded | Pending |
+| REQ-FE-07 | Live bet/cashout feed with own-action highlight | Done (data side — P07-04 feed circular-buffer store hydrated by `bet:placed`/`bet:cashed_out` dispatch with `isOwn` flag; visual `LiveFeed` rendering in 07-06) |
+| REQ-FE-08 | History strip last 20 color-coded | Done (data side — P07-04 history store seeded by `use-history` Query [last N] + `round:crashed` prepend; visual color-coded strip rendering in 07-05/07-06) |
 | REQ-FE-11 | Dark casino aesthetic | Done (P07-03: UI-SPEC dark-casino @theme tokens live via CSS variables — background #0A0F14, card #111827, accent #00FF85→#22D3EE, destructive #EF4444; Fira Code/Fira Sans self-hosted; dark-by-default shell renders) |
 | REQ-FE-12 | Responsive desktop + mobile + touch | Done (P07-03: D-01 responsive layout skeleton — two-rail grid at lg+, single stacked column below; the live touch bet/cashout controls land in 07-06 but the responsive shell + breakpoints are in place) |
 | REQ-FE-13 | Loading skeletons + deduped toast errors | Pending |
@@ -382,4 +382,4 @@ A v1 requirement is done when:
 
 ---
 
-*Last updated: 2026-05-28 by gsd-executor (P6.10 closeout — Phase 6 traceability marked Done for all 7 WS REQ-IDs with plan citations: REQ-WS-01 → P6.01+P6.03, REQ-WS-02 → P6.03, REQ-WS-03 → P6.03+P6.05+P6.06, REQ-WS-04 → P6.03, REQ-WS-05 → Phase 5 P5.06 + codified in P6.10 ADR-023 + P6.08 property test, REQ-WS-06 → P6.04, REQ-WS-07 → Socket.IO client default backoff + P6.03 snapshot-on-reconnect; REQ-AUTH-01/02/03 kept Pending — frontend OIDC deferred to Phase 7 per Phase 6 RESEARCH Deferred Ideas, backend JWT-at-WS-handshake done via REQ-WS-01; v1-complete count incremented from 39/95 to 46/95).*
+*Last updated: 2026-05-29 by gsd-executor (P07-04 — REQ-AUTH-01/02/03 marked Done [one `oidcSpa.createUtils()` instance + `enforceLogin` guard; silent renew + multi-tab BroadcastChannel library-internal, grep confirms no hand-rolled refresh/broadcast in `auth/oidc.ts`] + REQ-FE-07/08 marked Done [data side — feed circular-buffer + history store hydrated by ws-dispatch + TanStack Query; visual rendering in 07-05/07-06]; v1-complete count incremented from 46/95 to 54/95 [also folds in P07-03's REQ-FE-01/11/12 not previously summed in this footer's list]). Prior: P6.10 closeout — Phase 6 traceability marked Done for all 7 WS REQ-IDs with plan citations: REQ-WS-01 → P6.01+P6.03, REQ-WS-02 → P6.03, REQ-WS-03 → P6.03+P6.05+P6.06, REQ-WS-04 → P6.03, REQ-WS-05 → Phase 5 P5.06 + codified in P6.10 ADR-023 + P6.08 property test, REQ-WS-06 → P6.04, REQ-WS-07 → Socket.IO client default backoff + P6.03 snapshot-on-reconnect.*
