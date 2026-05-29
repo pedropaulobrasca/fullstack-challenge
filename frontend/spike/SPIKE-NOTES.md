@@ -55,6 +55,12 @@ expresses that intent explicitly while not depending on the SPA-mode build path 
 historically broke. SPA mode is a valid alternative now that the hang is disproven — this is
 the call to ratify at the checkpoint.
 
+**DECISION RATIFIED (2026-05-28, user): `selective-ssr`.** 07-03 scaffolds default SSR
+(`tanstackStart()` with no `spa` block) and marks the game route `ssr: false` so the
+game page renders client-only (auth + WS + Canvas + `window`). Static/non-game routes may
+SSR (harmless). This survives any future SPA-mode regression of #5171 because the scaffold
+never depends on the SPA-mode code path.
+
 ---
 
 ## DECISION: workspace-TS transpile
@@ -116,6 +122,14 @@ consume its built-in `getOidc()` accessor for the socket singleton. Do NOT creat
 `createOidc` from `oidc-spa/core`. There is no dual-instance parity concern because the
 v10.2.3 react-spa API returns both the React hook AND the non-React accessor from the same
 underlying instance.**
+
+**DECISION RATIFIED (2026-05-28, user): `single-getOidc` on `oidc-spa@10.2.3`
+`createUtils`.** 07-04 wires ONE `oidcSpa.createUtils({...})` instance (the real v10.2.3
+API — NOT the RESEARCH-assumed `createReactOidc`/`beforeLoadFn`). Components consume
+`useOidc`; the socket.io singleton consumes the same instance's built-in `getOidc()`
+(`getAccessToken()` + `subscribeToAccessTokenRotation`). No second `createOidc` from
+`oidc-spa/core`, and no second refresh mechanism — multi-tab single-refresh is the
+library's built-in core `BroadcastChannel` (REQ-AUTH-03 / Pitfall 5).
 
 ### Evidence (resolved from installed `oidc-spa@10.2.3` type surface + live discovery)
 

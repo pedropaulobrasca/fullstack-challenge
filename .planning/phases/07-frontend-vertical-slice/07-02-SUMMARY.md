@@ -37,9 +37,9 @@ key-files:
     - bun.lock
 
 key-decisions:
-  - "boot mode: both modes boot; #5171 hang disproven; recommended selective-ssr (game route ssr:false), spa-mode is a valid alternative — RATIFY AT CHECKPOINT"
+  - "boot mode: RATIFIED selective-ssr (default SSR + ssr:false on the game route); #5171 hang disproven so spa-mode was a valid alternative, but selective-ssr survives any future SPA-mode regression"
   - "workspace-TS: transpiles with zero config; add a browser-safe @crash/contracts/multiplier subpath in 07-03 (root barrel pulls node:crypto)"
-  - "oidc: single-getOidc from the one react-spa instance; no second createOidc(core)"
+  - "oidc: RATIFIED single-getOidc from the one oidc-spa@10.2.3 createUtils instance; no second createOidc(core); socket consumes the built-in getOidc()"
   - "CORS: 07-03 must add OPTIONS to every Kong route methods: list so preflights stop 404ing"
 
 patterns-established:
@@ -48,7 +48,7 @@ patterns-established:
 requirements-completed: []  # REQ-FE-01/REQ-AUTH-01/02/03 are DE-RISKED here but COMPLETED by 07-03/07-04, not this spike
 
 # Metrics
-duration: ~40min
+duration: ~50min
 completed: 2026-05-28
 ---
 
@@ -58,10 +58,10 @@ completed: 2026-05-28
 
 ## Performance
 
-- **Duration:** ~40 min
+- **Duration:** ~50 min
 - **Started:** 2026-05-28
-- **Completed:** 2026-05-28 (two auto-tasks done; ends at a blocking checkpoint:decision)
-- **Tasks:** 2 of 2 auto-tasks complete; Task 3 is the checkpoint:decision (pending user ratification)
+- **Completed:** 2026-05-28 (all three tasks done; checkpoint:decision ratified by the user)
+- **Tasks:** 3 of 3 complete — two auto-tasks + the checkpoint:decision (boot mode + oidc strategy ratified)
 - **Files modified:** 11 (9 created, 2 modified)
 
 ## Accomplishments
@@ -74,8 +74,9 @@ completed: 2026-05-28
 
 1. **Task 1: SPA-vs-SSR boot + workspace-TS import spike** - `2bd7283` (chore)
 2. **Task 2: oidc instance parity + Kong CORS reachability spike** - `15bf124` (chore)
+3. **Task 3: checkpoint:decision ratification** - recorded in the closeout `docs(07-02)` commit (no code; ratified DECISION lines appended to `SPIKE-NOTES.md`)
 
-_Task 3 is the `checkpoint:decision` gate — no commit; awaiting user ratification of boot mode + oidc strategy._
+_Task 3 (the `checkpoint:decision` gate) is RESOLVED — the user ratified `selective-ssr` (boot mode) and `single-getOidc` (oidc strategy). Both are written as final `DECISION RATIFIED` lines in `SPIKE-NOTES.md`._
 
 ## Files Created/Modified
 - `frontend/spike/vite.config.spa.ts` - SPA-mode (`spa:{enabled:true}`) boot config
@@ -87,10 +88,20 @@ _Task 3 is the `checkpoint:decision` gate — no commit; awaiting user ratificat
 - `frontend/package.json` + `bun.lock` - pinned FE scaffold deps installed for the spike (reused by 07-03)
 
 ## Decisions Made
-- **boot mode:** both modes boot; #5171 disproven; **recommended `selective-ssr`** (game route `ssr:false`) with `spa-mode` a valid alternative — to be ratified at the checkpoint.
+- **boot mode (RATIFIED):** `selective-ssr` — default SSR (`tanstackStart()`, no `spa` block) + `ssr: false` on the game route. Both modes boot and #5171 was disproven, but selective-ssr survives any future SPA-mode regression and matches CLAUDE.md §Frontend (game page needs `window` + WS + Canvas + OIDC, must be client-only). `spa-mode` was the documented alternative; not chosen.
+- **oidc (RATIFIED):** `single-getOidc` — ONE `oidc-spa@10.2.3` `createUtils` instance; components use `useOidc`, the socket consumes the same instance's built-in `getOidc()`. No second `createOidc(core)`, no second refresh mechanism (core `BroadcastChannel` handles multi-tab).
 - **workspace-TS:** zero Vite config needed; 07-03 must add a browser-safe `@crash/contracts/multiplier` subpath (root barrel pulls `node:crypto`).
-- **oidc:** `single-getOidc` — one `oidc-spa/react-spa` instance; the socket consumes its built-in `getOidc()`.
 - **CORS:** 07-03 must add `OPTIONS` to every Kong route's `methods:` list.
+
+## Mandatory 07-03 Carry-Forwards
+
+1. **Browser-safe `@crash/contracts/multiplier` subpath** — the `@crash/contracts` root barrel re-exports the provably-fair seed-chain/derive code which imports `node:crypto`, breaking the browser bundle. Add a granular `./multiplier` export (and `./formula` for the constants) to `packages/contracts/package.json` so the FE imports `multiplierAt` from `@crash/contracts/multiplier`, NOT the root barrel. `multiplier.ts` is pure (`Math.exp` only) — granular export, not a code change.
+2. **`OPTIONS` on every Kong route's `methods:` list** — every browser-reachable route (`games-current`, `games-history`, `games-verify`, `games-bets-me`, `games-bet-place`, `games-bet-cashout`, `wallets-provision`, `wallets-me`) currently 404s on the CORS preflight because the `methods:` filter omits `OPTIONS`. Add `OPTIONS` to each; keep origins scoped to `http://localhost:3000` with `credentials: true` (never `*`). Re-probe each `OPTIONS` expecting `204`/`200` with scoped ACAO.
+
+Plus the two Rule-3 scaffold facts (see Deviations): export `getRouter` (not `createRouter`) from `src/router.tsx`; `frontend/package.json` must declare `"type": "module"`.
+
+## oidc-spa v10.2.3 API Note (for 07-04)
+RESEARCH Pattern 7 assumed `createReactOidc` / `beforeLoadFn` named exports. The installed v10.2.3 real API is `oidcSpa` builder from `oidc-spa/react-spa` → `.createUtils({...})` → `{ useOidc, getOidc, enforceLogin, bootstrapOidc, OidcInitializationGate }`, plus a dedicated `oidc-spa/react-tanstack-start` entry point. 07-04 must wire against `oidcSpa.createUtils`, NOT `createReactOidc`/`beforeLoadFn`.
 
 ## Deviations from Plan
 
@@ -124,14 +135,15 @@ _Task 3 is the `checkpoint:decision` gate — no commit; awaiting user ratificat
 None - no external service configuration required for the spike.
 
 ## Next Phase Readiness
-- The 07-03 scaffold has unambiguous inputs: boot-mode evidence (pending ratification), a required `@crash/contracts/multiplier` browser-safe subpath, the real oidc-spa v10.2.3 API + single-instance wiring, and the Kong `OPTIONS` fix.
+- The 07-03 scaffold has unambiguous inputs: boot mode RATIFIED `selective-ssr` (default SSR + game route `ssr:false`), the two mandatory carry-forwards above (`@crash/contracts/multiplier` subpath + Kong `OPTIONS`), the real oidc-spa v10.2.3 API + single-instance wiring (RATIFIED `single-getOidc`, consumed in 07-04), and the two Rule-3 scaffold facts (`getRouter` export + `"type":"module"`).
 - The throwaway `frontend/spike/` directory is to be deleted by 07-03.
-- **BLOCKING:** this plan ends at a `checkpoint:decision`. The user must ratify (a) boot mode — `spa-mode` OR `selective-ssr`, and (b) oidc strategy — `single-getOidc` (recommended, per the v10.2.3 API) before 07-03 proceeds.
+- **CHECKPOINT RESOLVED:** the user ratified (a) boot mode = `selective-ssr` and (b) oidc strategy = `single-getOidc`. Plan complete; 07-03 may proceed.
 
 ## Self-Check: PASSED
 
-- Created files verified present: `frontend/spike/SPIKE-NOTES.md` (4 DECISION sections), `vite.config.spa.ts`, `vite.config.ssr.ts`, `oidc-spike.ts`, `workspace-import-spike.ts`, `07-02-SUMMARY.md`
-- Commits verified in git history: `2bd7283`, `15bf124`
+- Created files verified present: `frontend/spike/SPIKE-NOTES.md` (4 DECISION headers + 2 `DECISION RATIFIED` lines — `grep -c DECISION` = 8), `vite.config.spa.ts`, `vite.config.ssr.ts`, `oidc-spike.ts`, `workspace-import-spike.ts`, `07-02-SUMMARY.md`
+- `DECISION RATIFIED` lines present in SPIKE-NOTES.md at boot-mode (`selective-ssr`) and oidc (`single-getOidc`) sections
+- Commits verified in git history: `2bd7283`, `15bf124` (closeout `docs(07-02)` commit added by this finalization)
 
 ---
 *Phase: 07-frontend-vertical-slice*
