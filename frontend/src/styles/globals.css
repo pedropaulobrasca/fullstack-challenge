@@ -1,0 +1,53 @@
+@import "tailwindcss";
+@import "@fontsource/fira-code/400.css";
+@import "@fontsource/fira-code/600.css";
+@import "@fontsource/fira-sans/400.css";
+@import "@fontsource/fira-sans/600.css";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-background: #0a0f14;
+  --color-foreground: #f8fafc;
+  --color-card: #111827;
+  --color-card-foreground: #f8fafc;
+  --color-popover: #1f2937;
+  --color-popover-foreground: #f8fafc;
+  --color-primary: #f8fafc;
+  --color-primary-foreground: #0a0f14;
+  --color-secondary: #1f2937;
+  --color-secondary-foreground: #f8fafc;
+  --color-muted: #1f2937;
+  --color-muted-foreground: #94a3b8;
+  --color-accent: #00ff85;
+  --color-accent-foreground: #0a0f14;
+  --color-accent-cyan: #22d3ee;
+  --color-destructive: #ef4444;
+  --color-destructive-foreground: #f8fafc;
+  --color-warning: #f59e0b;
+  --color-border: #1e3a5f;
+  --color-input: #1e3a5f;
+  --color-ring: #00ff85;
+
+  --font-mono: "Fira Code", ui-monospace, monospace;
+  --font-sans: "Fira Sans", ui-sans-serif, system-ui, sans-serif;
+
+  --radius: 0.5rem;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-feature-settings: "tnum";
+  }
+}
