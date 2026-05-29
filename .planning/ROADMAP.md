@@ -249,6 +249,19 @@ Plans:
   - ADR-023: Client-seed derivation (deterministic from previous round close vs player-contributed)
   - ADR-024: Replay reuses production canvas renderer (over separate playback code path)
 
+**Plans:** 10 plans
+Plans:
+- [x] 08-01-PLAN.md — Browser-safe @crash/contracts/provably-fair-browser subpath (crypto.subtle HMAC + SHA-256) + Phase 4 2.94 oracle test
+- [ ] 08-02-PLAN.md — Extend VerifyRoundDto with bets[] + growthRate; BetRepository.findByRound (no status filter)
+- [ ] 08-03-PLAN.md — Refactor use-raf-curve.ts to accept optional RafCurveDriver (Phase 7 callers zero-diff)
+- [ ] 08-04-PLAN.md — VITE_REPLAY_SPEEDS/AUTOSTART/DRAWER_SLIDE_MS env + shadcn sheet/toggle-group/alert + fairness.store + replay.store
+- [ ] 08-05-PLAN.md — FairnessBadge + HashBlock + VerdictChip + VerificationDrawer (Sheet, mount at __root.tsx) + useVerifyPrevious
+- [ ] 08-06-PLAN.md — /verify/$roundId route (ssr:false) + useRecomputeCrashpoint (ignores server matches field)
+- [ ] 08-07-PLAN.md — ReplayModal (Dialog) + replay driver + Play/Pause + 1x/2x/4x ToggleGroup + history-chip wiring
+- [ ] 08-08-PLAN.md — Determinism E2E byte-match test (REQ-REPLAY-01)
+- [ ] 08-09-PLAN.md — README "Provably Fair: Verify Outside the App" recruiter example
+- [ ] 08-10-PLAN.md — ADR-028..031 + STATE/ROADMAP/REQUIREMENTS closeout
+
 ### Phase 9: Auto Features & Leaderboard
 **Goal**: A player can set an auto-cashout target and run server-enforced auto-bet strategies (fixed + Martingale) with stop-loss / stop-win guardrails, while a live 24h leaderboard surfaces top players via a CQRS read-model projection.
 **Depends on**: Phase 7 (FE) + Phase 5 (saga for the projector)
