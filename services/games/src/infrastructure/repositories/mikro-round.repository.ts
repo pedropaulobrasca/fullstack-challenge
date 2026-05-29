@@ -16,11 +16,11 @@ type RoundDbRow = {
   server_seed: string | null;
   crash_point_centi_x: number | null;
   formula_version: number;
-  betting_ends_at: Date;
-  started_at: Date | null;
-  crashed_at: Date | null;
-  settled_at: Date | null;
-  created_at: Date;
+  betting_ends_at: Date | string;
+  started_at: Date | string | null;
+  crashed_at: Date | string | null;
+  settled_at: Date | string | null;
+  created_at: Date | string;
 };
 
 @Injectable()
@@ -195,13 +195,18 @@ export class MikroRoundRepository implements RoundRepository {
           ? null
           : CrashPoint.fromCentiX(row.crash_point_centi_x),
       formulaVersion: row.formula_version,
-      bettingEndsAt: row.betting_ends_at,
-      startedAt: row.started_at,
-      crashedAt: row.crashed_at,
-      settledAt: row.settled_at,
-      createdAt: row.created_at,
+      bettingEndsAt: this.toDate(row.betting_ends_at)!,
+      startedAt: this.toDate(row.started_at),
+      crashedAt: this.toDate(row.crashed_at),
+      settledAt: this.toDate(row.settled_at),
+      createdAt: this.toDate(row.created_at)!,
     };
     return Round.rehydrate(props);
+  }
+
+  private toDate(value: Date | string | null): Date | null {
+    if (value === null) return null;
+    return value instanceof Date ? value : new Date(value);
   }
 
   private narrowRoundStatus(raw: string): RoundStatus {
