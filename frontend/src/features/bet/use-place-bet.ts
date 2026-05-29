@@ -1,7 +1,8 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { Money } from "@crash/shared-kernel";
 import { protectedFetch } from "@/lib/api";
 import { useBetStore } from "@/stores/bet.store";
+import { walletQueryKey } from "@/features/wallet/use-wallet";
 import {
   toastInsufficientBalance,
   toastBetWindowClosed,
@@ -46,11 +47,15 @@ async function placeBet(money: Money): Promise<void> {
 
 export function usePlaceBet() {
   const setPending = useBetStore((state) => state.setPending);
+  const queryClient = useQueryClient();
 
   return useMutation<void, PlaceBetError, Money>({
     mutationFn: placeBet,
     onMutate: () => {
       setPending(true);
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: walletQueryKey });
     },
     onError: (error) => {
       if (error.key === "insufficient-balance") {

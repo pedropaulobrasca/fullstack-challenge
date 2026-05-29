@@ -19,6 +19,7 @@ import { useWalletStore } from "@/stores/wallet.store";
 import { useFeedStore } from "@/stores/feed.store";
 import { useBetStore } from "@/stores/bet.store";
 import { useHistoryStore } from "@/stores/history.store";
+import { requestWalletRefetch } from "@/lib/wallet-refetch";
 
 export const WS_EVENTS = [
   "round:snapshot",
@@ -126,6 +127,7 @@ const handlers: { [E in WsEvent]: (payload: unknown) => void } = {
     const payload = roundSettledPayloadSchema.parse(raw);
     useRoundStore.getState().setSettled({ roundId: payload.roundId });
     useBetStore.getState().resolveLostForRound(payload.roundId);
+    requestWalletRefetch();
   },
   "round:tick": (raw) => {
     const payload = roundTickPayloadSchema.parse(raw);
@@ -182,6 +184,7 @@ const handlers: { [E in WsEvent]: (payload: unknown) => void } = {
     if (bet.myBet?.betId === payload.betId) {
       bet.setStatus("REFUNDED");
     }
+    requestWalletRefetch();
   },
   "bet:my_cashed_out": (raw) => {
     const payload = betMyCashedOutPayloadSchema.parse(raw);
@@ -192,6 +195,7 @@ const handlers: { [E in WsEvent]: (payload: unknown) => void } = {
       scale: payload.payout.scale,
     });
     useWalletStore.getState().credit(payout.toSnapshot());
+    requestWalletRefetch();
   },
 };
 

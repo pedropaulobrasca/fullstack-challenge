@@ -1,9 +1,12 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { Money } from "@crash/shared-kernel";
 import type { MoneySnapshot } from "@crash/shared-kernel";
 import { protectedFetch } from "@/lib/api";
 import { useWalletStore } from "@/stores/wallet.store";
+import { registerWalletRefetch } from "@/lib/wallet-refetch";
+
+export const walletQueryKey = ["wallet", "me"] as const;
 
 type WalletResponse = {
   balance: { amount: string; currency: string; scale: number };
@@ -19,8 +22,9 @@ async function fetchWallet(): Promise<MoneySnapshot> {
 }
 
 export function useWallet() {
+  const queryClient = useQueryClient();
   const query = useQuery({
-    queryKey: ["wallet", "me"],
+    queryKey: walletQueryKey,
     queryFn: fetchWallet,
   });
 
@@ -31,6 +35,12 @@ export function useWallet() {
       setBalance(query.data);
     }
   }, [query.data, setBalance]);
+
+  useEffect(() => {
+    return registerWalletRefetch(() => {
+      void queryClient.invalidateQueries({ queryKey: walletQueryKey });
+    });
+  }, [queryClient]);
 
   return query;
 }
