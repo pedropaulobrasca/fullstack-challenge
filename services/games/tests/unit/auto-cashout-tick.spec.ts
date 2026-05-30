@@ -43,7 +43,7 @@ function makeBet(args: {
     BetId("00000000-0000-0000-0000-000000000001"),
     RoundId("00000000-0000-0000-0000-000000000010"),
     player,
-    Money.fromCents(1000n, "CRD"),
+    Money.of(1000n),
     new Date(),
     target,
   );
@@ -78,7 +78,7 @@ function makeUseCase(behavior?: () => Promise<void>): FakeUseCase {
       }
       return {
         multiplier: Multiplier.of(2),
-        payout: Money.fromCents(2000n, "CRD"),
+        payout: Money.of(2000n),
       };
     }),
   };
@@ -128,11 +128,11 @@ describe("AutoCashoutTickService — unit (Phase 9 Plan 05)", () => {
     const useCase = makeUseCase();
     const svc = new AutoCashoutTickService(repo, useCase as never);
 
-    await svc.onTick(makePayload(2.05));
+    await svc.onTick(makePayload(2.5));
 
     expect(repo.findAutoCashoutCandidates.mock.calls.length).toBe(1);
     const [, ceiling] = repo.findAutoCashoutCandidates.mock.calls[0];
-    expect(ceiling).toBe(205);
+    expect(ceiling).toBe(250);
   });
 
   test("swallows RoundNotRunningError thrown by CashOutUseCase (race — Pitfall 11)", async () => {
