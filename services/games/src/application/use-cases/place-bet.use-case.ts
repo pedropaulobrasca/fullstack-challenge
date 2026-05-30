@@ -12,6 +12,7 @@ import type { BetRepository } from "../../domain/bet.repository";
 import type { BetSagaStateRepository } from "../../domain/bet-saga-state.repository";
 import type { RoundRepository } from "../../domain/round.repository";
 import { BetAlreadyActiveError, RoundNotInBettingPhaseError } from "../../domain/errors";
+import { Multiplier } from "../../domain/value-objects/multiplier";
 import { env } from "../../config/defaults";
 import {
   BET_REPOSITORY,
@@ -23,6 +24,7 @@ export type PlaceBetInput = {
   playerId: PlayerId;
   amount: Money;
   now: Date;
+  autoCashoutTarget?: number | undefined;
 };
 
 export type PlaceBetResult = {
@@ -56,7 +58,20 @@ export class PlaceBetUseCase {
 
       const betId = BetId(randomUUID());
       const correlationId = randomUUID();
-      const bet = Bet.place(betId, open.id, input.playerId, input.amount, input.now);
+      const autoCashoutTarget =
+        input.autoCashoutTarget === undefined
+          ? null
+          : Multiplier.fromTenThousandths(
+              BigInt(Math.round(input.autoCashoutTarget * 100)) * 100n,
+            );
+      const bet = Bet.place(
+        betId,
+        open.id,
+        input.playerId,
+        input.amount,
+        input.now,
+        autoCashoutTarget,
+      );
       await this.bets.save(bet, txEm);
 
       const deadlineAt = new Date(input.now.getTime() + env.SAGA_TIMEOUT_MS);

@@ -53,6 +53,7 @@ export class BetCommandController {
         playerId,
         amount,
         now: new Date(),
+        autoCashoutTarget: body.autoCashoutTarget,
       });
       return {
         betId: result.betId as unknown as string,

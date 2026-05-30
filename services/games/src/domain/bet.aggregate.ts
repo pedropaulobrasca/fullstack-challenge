@@ -14,6 +14,7 @@ export type BetProps = {
   payout: Money | null;
   refundReason: string | null;
   createdAt: Date;
+  autoCashoutTarget: Multiplier | null;
 };
 
 export type BetCashOutResult = {
@@ -30,6 +31,7 @@ export class Bet {
     playerId: PlayerId,
     amount: Money,
     now: Date,
+    autoCashoutTarget: Multiplier | null = null,
   ): Bet {
     return new Bet({
       id,
@@ -42,6 +44,7 @@ export class Bet {
       payout: null,
       refundReason: null,
       createdAt: now,
+      autoCashoutTarget,
     });
   }
 
@@ -87,6 +90,10 @@ export class Bet {
 
   get createdAt(): Date {
     return this.props.createdAt;
+  }
+
+  get autoCashoutTarget(): Multiplier | null {
+    return this.props.autoCashoutTarget;
   }
 
   confirm(): Bet {

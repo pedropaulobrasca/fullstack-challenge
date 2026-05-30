@@ -12,6 +12,12 @@ export interface BetRepository {
    * are all rendered so the replay reproduces the full live experience.
    */
   findByRound(roundId: RoundId): Promise<Bet[]>;
+  /**
+   * Returns ACTIVE bets in the given round whose autoCashoutTarget is non-null
+   * and <= ceilingCentiX. Consumed at 30Hz by Phase 9 Plan 05 AutoCashoutTickService
+   * — backed by the partial index `idx_bets_auto_cashout_candidates`.
+   */
+  findAutoCashoutCandidates(roundId: RoundId, ceilingCentiX: number): Promise<Bet[]>;
   countByRoundId(roundId: RoundId): Promise<number>;
   listByPlayer(playerId: PlayerId, limit: number, offset: number): Promise<Bet[]>;
   save(bet: Bet, txEm?: unknown): Promise<void>;

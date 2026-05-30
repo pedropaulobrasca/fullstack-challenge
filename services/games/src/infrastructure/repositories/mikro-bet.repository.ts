@@ -20,6 +20,7 @@ type BetDbRow = {
   payout_cents: string | null;
   refund_reason: string | null;
   created_at: Date;
+  auto_cashout_target_centi_x: number | null;
 };
 
 @Injectable()
@@ -93,9 +94,22 @@ export class MikroBetRepository implements BetRepository {
       payoutCents: bet.payout?.toCents() ?? null,
       refundReason: bet.refundReason,
       createdAt: bet.createdAt,
+      autoCashoutTargetCentiX: bet.autoCashoutTarget?.toCentiX() ?? null,
     };
     await em.upsert(BetEntitySchema, row);
     await em.flush();
+  }
+
+  async findAutoCashoutCandidates(
+    roundId: RoundId,
+    ceilingCentiX: number,
+  ): Promise<Bet[]> {
+    const rows = await this.em.find(BetEntitySchema, {
+      roundId,
+      status: "ACTIVE",
+      autoCashoutTargetCentiX: { $ne: null, $lte: ceilingCentiX },
+    });
+    return rows.map((row) => this.mapRowToAggregate(row));
   }
 
   async tryTransition(
@@ -161,6 +175,10 @@ export class MikroBetRepository implements BetRepository {
       payout: row.payoutCents === null ? null : Money.of(BigInt(row.payoutCents)),
       refundReason: row.refundReason,
       createdAt: row.createdAt,
+      autoCashoutTarget:
+        row.autoCashoutTargetCentiX === null
+          ? null
+          : Multiplier.fromTenThousandths(BigInt(row.autoCashoutTargetCentiX) * 100n),
     };
     return Bet.rehydrate(props);
   }
@@ -172,7 +190,7 @@ export class MikroBetRepository implements BetRepository {
       playerId: PlayerId(row.player_id),
       amount: Money.of(BigInt(row.amount_cents)),
       status: this.narrowBetStatus(row.status),
-      cashedOutAt: row.cashed_out_at,
+      cashedOutAt: this.toDate(row.cashed_out_at),
       cashedOutMultiplier:
         row.cashed_out_multiplier_centi_x === null
           ? null
@@ -181,9 +199,20 @@ export class MikroBetRepository implements BetRepository {
             ),
       payout: row.payout_cents === null ? null : Money.of(BigInt(row.payout_cents)),
       refundReason: row.refund_reason,
-      createdAt: row.created_at,
+      createdAt: this.toDate(row.created_at)!,
+      autoCashoutTarget:
+        row.auto_cashout_target_centi_x === null
+          ? null
+          : Multiplier.fromTenThousandths(
+              BigInt(row.auto_cashout_target_centi_x) * 100n,
+            ),
     };
     return Bet.rehydrate(props);
+  }
+
+  private toDate(value: Date | string | null): Date | null {
+    if (value === null) return null;
+    return value instanceof Date ? value : new Date(value);
   }
 
   private narrowBetStatus(raw: string): BetStatus {

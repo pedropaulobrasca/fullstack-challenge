@@ -12,6 +12,7 @@ export class BetRow {
   payoutCents!: bigint | null;
   refundReason!: string | null;
   createdAt!: Date;
+  autoCashoutTargetCentiX!: number | null;
 }
 
 export const BetEntitySchema = new EntitySchema<BetRow>({
@@ -28,6 +29,11 @@ export const BetEntitySchema = new EntitySchema<BetRow>({
     cashedOutMultiplierCentiX: {
       type: "integer",
       fieldName: "cashed_out_multiplier_centi_x",
+      nullable: true,
+    },
+    autoCashoutTargetCentiX: {
+      type: "integer",
+      fieldName: "auto_cashout_target_centi_x",
       nullable: true,
     },
     payoutCents: {
