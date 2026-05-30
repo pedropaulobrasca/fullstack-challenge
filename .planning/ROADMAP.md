@@ -15,7 +15,7 @@
 - [x] **Phase 5: Saga Integration** — End-to-end bet + cashout sagas, persistent saga state, kill-9 recovery, timeout compensation
 - [x] **Phase 6: WebSocket Gateway & Multiplier Sync** — JWT-at-handshake, lobby + user rooms, 30Hz volatile tick broadcast, server-authoritative cashout timestamping
 - [x] **Phase 7: Frontend Vertical Slice** — TanStack Start + Keycloak, Canvas curve renderer, bet panel, dark casino theme, full table-stakes UX
-- [ ] **Phase 8: Provably-Fair UX, History & Replay** — Commitment badge, client-side verifier (crypto.subtle), `/verify` route, deterministic replay reusing canvas renderer
+- [x] **Phase 8: Provably-Fair UX, History & Replay** — Commitment badge, client-side verifier (crypto.subtle), `/verify` route, deterministic replay reusing canvas renderer
 - [ ] **Phase 9: Auto Features & Leaderboard** — Server-enforced auto-cashout, auto-bet (fixed + Martingale), stop-loss/stop-win, 24h leaderboard projection (light CQRS)
 - [ ] **Phase 10: Quality Hardening & Docs** — Playwright E2E, GitHub Actions CI, OpenTelemetry + Prometheus + Grafana, ADR audit, README with architecture diagrams
 
@@ -249,6 +249,8 @@ Plans:
   - ADR-023: Client-seed derivation (deterministic from previous round close vs player-contributed)
   - ADR-024: Replay reuses production canvas renderer (over separate playback code path)
 
+  > **ADR-renumber note**: these four were anticipated under the labels ADR-023/024, but Phase 5/6/7 ADRs consumed 019..027 before Phase 8 closed. Shipped ADRs are never renumbered; the Phase 8 decisions took the next-free range ADR-028..031: ADR-028 (D-04 client-seed-deterministic Phase 4 reaffirmation), ADR-029 (D-05 driver-injection seam over separate playback code path), ADR-030 (D-06 browser-safe `@crash/contracts/provably-fair-browser` subpath + `crypto.subtle` with two byte-encoding contracts locked: HMAC key = UTF-8 of hex string, chain proof = hex-decoded bytes), ADR-031 (D-02+D-03 ReplayModal over live game + 1x/2x/4x speed selector with `VITE_REPLAY_SPEEDS` env-tunable). Phase 9/10 anticipated-ADR labels below will likewise resolve to the next-free numbers when those phases ship.
+
 **Plans:** 10 plans
 Plans:
 - [x] 08-01-PLAN.md — Browser-safe @crash/contracts/provably-fair-browser subpath (crypto.subtle HMAC + SHA-256) + Phase 4 2.94 oracle test
@@ -260,7 +262,7 @@ Plans:
 - [x] 08-07-PLAN.md — ReplayModal (Dialog) + replay driver + Play/Pause + 1x/2x/4x ToggleGroup + history-chip wiring
 - [x] 08-08-PLAN.md — Determinism E2E byte-match test (REQ-REPLAY-01)
 - [x] 08-09-PLAN.md — README "Provably Fair: Verify Outside the App" recruiter example
-- [ ] 08-10-PLAN.md — ADR-028..031 + STATE/ROADMAP/REQUIREMENTS closeout
+- [x] 08-10-PLAN.md — ADR-028..031 + STATE/ROADMAP/REQUIREMENTS closeout
 
 ### Phase 9: Auto Features & Leaderboard
 **Goal**: A player can set an auto-cashout target and run server-enforced auto-bet strategies (fixed + Martingale) with stop-loss / stop-win guardrails, while a live 24h leaderboard surfaces top players via a CQRS read-model projection.
@@ -328,7 +330,7 @@ These are not numbered phases. Pull from this list during Phase 10 if time permi
 | 5. Saga Integration | 11/11 | Complete | 2026-05-27 |
 | 6. WebSocket Gateway & Multiplier Sync | 10/10 | Complete | 2026-05-28 |
 | 7. Frontend Vertical Slice | 9/9 | Complete | 2026-05-29 |
-| 8. Provably-Fair UX, History & Replay | 9/10 | In progress | - |
+| 8. Provably-Fair UX, History & Replay | 10/10 | Complete | 2026-05-30 |
 | 9. Auto Features & Leaderboard | 0/0 | Not started | - |
 | 10. Quality Hardening & Docs | 0/0 | Not started | - |
 
@@ -359,4 +361,4 @@ No structural deviations. The 10 phases map 1:1 to the SUMMARY clusters. Refinem
 
 ---
 
-*Last updated: 2026-05-29 by gsd-executor (P07-09 — Phase 7 COMPLETE (9/9 plans, 7/10 phases). Closeout landed the four frontend ADRs (ADR-024 TanStack Start + oidc-spa PKCE-S256, ADR-025 Canvas 2D curve, ADR-026 Zustand isolated multiplier store, ADR-027 oidc-spa BroadcastChannel multi-tab refresh) at next-free numbers — the anticipated ADR-019..022 labels were reconciled to 024..027 (collided with shipped Phase 5/6 ADRs) with a renumber note; all 15 Phase 7 REQ-IDs confirmed delivered; the `config.ts` env-parsed bet-cents money-rule flag resolved with a justified narrow eslint-disable (rule not weakened, lint clean, 65/65 FE tests green). Next: `/gsd:verify-phase 7` + `/gsd:ui-review` then `/gsd:plan-phase 8`. Previous: P07-08 — responsive game page assembly + cross-cutting UX complete, Phase 7 at 8/9; index.tsx assembles the D-01 layout [history strip top, bet/cashout/countdown rail + center CrashCurve + LiveFeed rail at lg+, single stacked column with sticky-bottom controls below], CurveSkeleton/HistorySkeleton for the snapshot/history waits, dedupedToast keyed by message [one active toast per key, cleared on close, amber warnings] wired into the place-bet/cashout hook onError paths with cashout-too-late silent, and the four sanctioned juice moments [useCountUp balance tween, celebrate() single canvas-confetti burst, CrashFlash red flash+freeze overlay, 07-06 rising-curve glow] all honoring prefers-reduced-motion; BalancePill + ConnectionBadge mounted in the __root header; tsc clean, 65/65 tests green, no hex in index.tsx, no setInterval in celebrate.ts; REQ-FE-12/13/14 closed; commits e661ceb/9b19938. Previous: P07-07 live feed + history strip UI, ea3cc0e/2562fdb).*
+*Last updated: 2026-05-30 by gsd-executor (P08-10 — Phase 8 COMPLETE (10/10 plans, 8/10 phases). Closeout landed the four Phase 8 ADRs at next-free numbers: ADR-028 (D-04 client-seed-deterministic Phase 4 reaffirmation), ADR-029 (D-05 driver-injection seam — one `drawCurve` paints live and replay), ADR-030 (D-06 browser-safe `@crash/contracts/provably-fair-browser` subpath + `crypto.subtle` HMAC + SHA-256 with two byte-encoding contracts locked), ADR-031 (D-02+D-03 ReplayModal over live game + 1x/2x/4x speed selector with `VITE_REPLAY_SPEEDS` env-tunable). The anticipated "ADR-023/024" Phase 8 labels were stale (Phase 5/6/7 ADRs consumed 019..027 before Phase 8 closed); reconciled with a renumber note. All 5 Phase 8 REQ-IDs confirmed Done (REQ-FE-09 + REQ-FE-10 + REQ-REPLAY-01/02/03); v1-complete 62/95 → 67/95; ADRs landed 27 → 31. Deferred drawer `<a href>` → typed TanStack `<Link>` migration from 08-06 closed; dual-rAF smoke check passed at the vitest layer. All gates green: 169/169 FE tests + 30/30 contracts tests + tsc clean across all three workspaces + lint clean. Phase 8 is parallelizable with Phase 9 per the parallelization map; next `/gsd:verify-phase 8` + `/gsd:ui-review` then `/gsd:plan-phase 9`. Previous: P07-09 — Phase 7 COMPLETE (9/9 plans, 7/10 phases). Closeout landed the four frontend ADRs (ADR-024 TanStack Start + oidc-spa PKCE-S256, ADR-025 Canvas 2D curve, ADR-026 Zustand isolated multiplier store, ADR-027 oidc-spa BroadcastChannel multi-tab refresh) at next-free numbers — the anticipated ADR-019..022 labels were reconciled to 024..027 (collided with shipped Phase 5/6 ADRs) with a renumber note; all 15 Phase 7 REQ-IDs confirmed delivered; the `config.ts` env-parsed bet-cents money-rule flag resolved with a justified narrow eslint-disable (rule not weakened, lint clean, 65/65 FE tests green). Next: `/gsd:verify-phase 7` + `/gsd:ui-review` then `/gsd:plan-phase 8`. Previous: P07-08 — responsive game page assembly + cross-cutting UX complete, Phase 7 at 8/9; index.tsx assembles the D-01 layout [history strip top, bet/cashout/countdown rail + center CrashCurve + LiveFeed rail at lg+, single stacked column with sticky-bottom controls below], CurveSkeleton/HistorySkeleton for the snapshot/history waits, dedupedToast keyed by message [one active toast per key, cleared on close, amber warnings] wired into the place-bet/cashout hook onError paths with cashout-too-late silent, and the four sanctioned juice moments [useCountUp balance tween, celebrate() single canvas-confetti burst, CrashFlash red flash+freeze overlay, 07-06 rising-curve glow] all honoring prefers-reduced-motion; BalancePill + ConnectionBadge mounted in the __root header; tsc clean, 65/65 tests green, no hex in index.tsx, no setInterval in celebrate.ts; REQ-FE-12/13/14 closed; commits e661ceb/9b19938. Previous: P07-07 live feed + history strip UI, ea3cc0e/2562fdb).*
