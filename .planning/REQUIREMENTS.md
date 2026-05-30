@@ -93,7 +93,7 @@
 - [x] **REQ-FE-06**: Frontend renders a countdown timer for the BETTING window.
 - [x] **REQ-FE-07**: Frontend renders a live feed of all bets and cashouts for the current round in real time; player's own actions highlighted.
 - [x] **REQ-FE-08**: Frontend renders a history strip of the last 20 crash points, color-coded (red ≤ 1.5x, yellow 1.5-2x, green > 2x — thresholds env-tunable).
-- [ ] **REQ-FE-09**: Frontend renders the pre-round hash commitment in a always-visible badge; a click opens a verification drawer.
+- [x] **REQ-FE-09**: Frontend renders the pre-round hash commitment in a always-visible badge; a click opens a verification drawer. (P08-05: FairnessBadge in __root.tsx header opens VerificationDrawer; in-browser SHA-256 via @crash/contracts/provably-fair-browser; Pitfall 4 fallback locked)
 - [ ] **REQ-FE-10**: Frontend has a `/verify/:roundId` route that fetches the verify endpoint and runs the provably-fair algorithm in-browser via `crypto.subtle` — no server recomputation; result is `MATCH ✓` / `MISMATCH ✗`.
 - [x] **REQ-FE-11**: Frontend has a dark casino aesthetic (deep blacks, neon accents, smooth transitions) — see UI-SPEC.md (Phase 7 produces it). (P07-03 @theme tokens live)
 - [x] **REQ-FE-12**: Frontend is responsive (desktop + mobile breakpoints from Tailwind defaults); touch interactions work for bet/cashout. (P07-03 D-01 responsive shell; live touch controls in 07-06)
@@ -323,7 +323,7 @@ Each v1 REQ-ID maps to exactly one phase in `ROADMAP.md`. v2 (REQ-STRETCH-*) liv
 #### Phase 8 — Provably-Fair UX, History & Replay (5 reqs)
 | REQ-ID | Title | Status |
 |--------|-------|--------|
-| REQ-FE-09 | Pre-round hash commitment badge + verification drawer | Pending |
+| REQ-FE-09 | Pre-round hash commitment badge + verification drawer | Done (P08-05: FairnessBadge fills the Phase 7 reserved header slot; clicking opens shadcn Sheet side='right' mounted at __root.tsx as sibling of <Outlet /> so route changes don't unmount it; useVerifyPrevious fetches `/games/rounds/{prev}/verify` then runs sha256OfHexEncodedSeed via crypto.subtle; MATCH/MISMATCH/Pending verdict chip with icon + text + theme color [never color-only]; cache-first via fairness.store.verdicts; Pitfall 4 TypeError catch surfaces locked Alert "Browser cryptography unavailable. Open the app via http://localhost or HTTPS.") |
 | REQ-FE-10 | `/verify/:roundId` runs algorithm via `crypto.subtle` | Pending |
 | REQ-REPLAY-01 | Byte-for-byte reproduction from `serverSeed + clientSeed + bets[]` | Pending |
 | REQ-REPLAY-02 | Replay modal on each history entry | Pending |
