@@ -22,6 +22,7 @@ import {
 import { SeedChainBootstrap } from "./seed-chain-bootstrap.service";
 import { GetCurrentRoundUseCase } from "./use-cases/get-current-round.use-case";
 import { GetPlayerBetsUseCase } from "./use-cases/get-player-bets.use-case";
+import { GetLeaderboardUseCase } from "./use-cases/get-leaderboard.use-case";
 import { GetWsSnapshotUseCase } from "./use-cases/get-ws-snapshot.use-case";
 import { GetRoundHistoryUseCase } from "./use-cases/get-round-history.use-case";
 import { VerifyRoundUseCase } from "./use-cases/verify-round.use-case";
@@ -59,6 +60,7 @@ import { WalletDebitRejectedHandler } from "./handlers/wallet-debit-rejected.han
     GetRoundHistoryUseCase,
     VerifyRoundUseCase,
     GetPlayerBetsUseCase,
+    GetLeaderboardUseCase,
     GetWsSnapshotUseCase,
     StartNewRoundUseCase,
     TransitionToRunningUseCase,
@@ -85,6 +87,7 @@ import { WalletDebitRejectedHandler } from "./handlers/wallet-debit-rejected.han
     GetRoundHistoryUseCase,
     VerifyRoundUseCase,
     GetPlayerBetsUseCase,
+    GetLeaderboardUseCase,
     GetWsSnapshotUseCase,
     PlaceBetUseCase,
     CashOutUseCase,

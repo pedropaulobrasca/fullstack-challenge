@@ -15,6 +15,7 @@ import { HealthController } from "./presentation/controllers/health.controller";
 import { RoundsController } from "./presentation/controllers/rounds.controller";
 import { BetsController } from "./presentation/controllers/bets.controller";
 import { BetCommandController } from "./presentation/controllers/bet-command.controller";
+import { LeaderboardController } from "./presentation/controllers/leaderboard.controller";
 import { GamesDeadLetterConsumer } from "./infrastructure/messaging/games-dead-letter.consumer";
 import { WsBridgeConsumer } from "./infrastructure/messaging/ws-bridge.consumer";
 import { JwtGuard } from "./presentation/guards/jwt.guard";
@@ -85,6 +86,7 @@ import { GameCoreModule } from "./application/game-core.module";
     RoundsController,
     BetsController,
     BetCommandController,
+    LeaderboardController,
   ],
   providers: [
     GamesDeadLetterConsumer,
