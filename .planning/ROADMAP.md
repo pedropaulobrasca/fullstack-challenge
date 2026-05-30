@@ -258,7 +258,7 @@ Plans:
 - [x] 08-05-PLAN.md — FairnessBadge + HashBlock + VerdictChip + VerificationDrawer (Sheet, mount at __root.tsx) + useVerifyPrevious
 - [x] 08-06-PLAN.md — /verify/$roundId route (ssr:false) + useRecomputeCrashpoint (ignores server matches field)
 - [x] 08-07-PLAN.md — ReplayModal (Dialog) + replay driver + Play/Pause + 1x/2x/4x ToggleGroup + history-chip wiring
-- [ ] 08-08-PLAN.md — Determinism E2E byte-match test (REQ-REPLAY-01)
+- [x] 08-08-PLAN.md — Determinism E2E byte-match test (REQ-REPLAY-01)
 - [ ] 08-09-PLAN.md — README "Provably Fair: Verify Outside the App" recruiter example
 - [ ] 08-10-PLAN.md — ADR-028..031 + STATE/ROADMAP/REQUIREMENTS closeout
 

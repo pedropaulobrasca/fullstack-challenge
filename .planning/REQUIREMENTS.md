@@ -117,7 +117,7 @@
 
 ### Deterministic Replay (REPLAY)
 
-- [ ] **REQ-REPLAY-01**: System reproduces any past round byte-for-byte from `serverSeed + clientSeed + bets[]` — same multiplier curve, same crash point, same per-tick values.
+- [x] **REQ-REPLAY-01**: System reproduces any past round byte-for-byte from `serverSeed + clientSeed + bets[]` — same multiplier curve, same crash point, same per-tick values.
 - [x] **REQ-REPLAY-02**: Frontend has a "Replay" button on each history entry that opens a modal showing the curve animating at real-time speed plus the bet/cashout overlays.
 - [x] **REQ-REPLAY-03**: Replay reuses the production canvas renderer — no separate code path — proving the fairness algorithm and renderer are deterministic.
 
@@ -325,7 +325,7 @@ Each v1 REQ-ID maps to exactly one phase in `ROADMAP.md`. v2 (REQ-STRETCH-*) liv
 |--------|-------|--------|
 | REQ-FE-09 | Pre-round hash commitment badge + verification drawer | Done (P08-05: FairnessBadge fills the Phase 7 reserved header slot; clicking opens shadcn Sheet side='right' mounted at __root.tsx as sibling of <Outlet /> so route changes don't unmount it; useVerifyPrevious fetches `/games/rounds/{prev}/verify` then runs sha256OfHexEncodedSeed via crypto.subtle; MATCH/MISMATCH/Pending verdict chip with icon + text + theme color [never color-only]; cache-first via fairness.store.verdicts; Pitfall 4 TypeError catch surfaces locked Alert "Browser cryptography unavailable. Open the app via http://localhost or HTTPS.") |
 | REQ-FE-10 | `/verify/:roundId` runs algorithm via `crypto.subtle` | Done (P08-06: useRecomputeCrashpoint + /verify/$roundId route, ignores server matches/recomputedCrashPoint) |
-| REQ-REPLAY-01 | Byte-for-byte reproduction from `serverSeed + clientSeed + bets[]` | Pending |
+| REQ-REPLAY-01 | Byte-for-byte reproduction from `serverSeed + clientSeed + bets[]` | Done (P08-08: `frontend/src/features/replay/determinism.test.ts` deep-equals live `multiplierAt(t, growthRate)` vs `sampleReplayMultiplier(state, t)` across a fixed 60-step × 16.6ms grid anchored to the Phase 4 oracle [seed `0000...0001`, client `test`, nonce `0n`, bucket `101` → crashPoint `2.94`]; Test 1 anchors the 2.94 seed-to-crashpoint unconditionally with a `node:crypto.createHmac` sync fallback when `crypto.subtle` is unavailable [NO `skipIf`]; Test 3 locks D-03 `sample(speed=k, t) === sample(speed=1, k*t)` for k in {2,4}; Test 5 enforces the freeze cap past `crashTimeMs(growthRate, crashPoint)`; 5/5 PASS, 168/168 FE suite green) |
 | REQ-REPLAY-02 | Replay modal on each history entry | Done (P08-07: ReplayModal at __root, HistoryStrip chip openReplay wiring, lucide History icon + tooltip Replay copy) |
 | REQ-REPLAY-03 | Replay reuses production canvas renderer | Done (P08-07: ReplayModal mounts `<CrashCurve />` with `makeReplayDriver` via the Plan 08-03 RafCurveDriver seam — draw-curve.ts byte-unchanged) |
 
