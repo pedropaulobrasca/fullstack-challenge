@@ -1,4 +1,5 @@
 import { ExternalLink, ShieldAlert } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import {
   Sheet,
   SheetContent,
@@ -166,13 +167,14 @@ export function VerificationDrawer({
         <VerificationExplainer />
 
         {previousRoundId !== null ? (
-          <a
-            href={`/verify/${previousRoundId}`}
+          <Link
+            to="/verify/$roundId"
+            params={{ roundId: previousRoundId }}
             className="inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-accent hover:bg-accent/10"
           >
             <span>Open full verification</span>
             <ExternalLink aria-hidden="true" className="size-4" />
-          </a>
+          </Link>
         ) : null}
       </SheetContent>
     </Sheet>
