@@ -5,7 +5,7 @@ import { getConfig } from "@/lib/config";
 import { useHistoryStore, type HistoryEntry } from "@/stores/history.store";
 
 type HistoryRound = {
-  id: string;
+  roundId: string;
   crashPoint: number | null;
 };
 
@@ -22,7 +22,7 @@ async function fetchHistory(): Promise<HistoryEntry[]> {
   return body.rounds
     .filter((round): round is HistoryRound & { crashPoint: number } => round.crashPoint !== null)
     .slice(0, getConfig().historySize)
-    .map((round) => ({ roundId: round.id, crashPoint: round.crashPoint }));
+    .map((round) => ({ roundId: round.roundId, crashPoint: round.crashPoint }));
 }
 
 export function useHistory() {
