@@ -138,6 +138,122 @@ fullstack-challenge/
 
 Every significant decision is captured in `.planning/adrs/`. See the [ADR catalogue](.planning/adrs/README.md) for the index. Phase 1 ships ADR-001 through ADR-006 covering ORM choice, Money representation, Bun pinning, configuration source-of-truth, the first-login wallet seed strategy, and the ESLint plugin location. Subsequent phases append ADR-007+ as decisions land — outbox topology, saga orchestration, WebSocket room granularity, the canvas renderer lifecycle, the leaderboard projection shape, and the observability stack.
 
+## Provably Fair: Verify Outside the App
+
+Every settled round can be independently verified from any shell using `curl` + `jq` + `openssl` + `python3` — no app context, no server trust, no Node runtime. The walkthrough below uses the canonical locked-byte fixture (`serverSeed = 0x0...01`, `clientSeed = "test"`, `nonce = 0`, `instantCrashBucket = 101`) so you can confirm the toolchain produces the expected `2.94` before pointing it at a live round. The in-app verifier at `GET /verify/:roundId` (Fairness drawer → "Open verifier" link) runs the same algorithm in the browser via `crypto.subtle`; this section is the third-party-tool re-derivation that proves nobody is reading a number off the server.
+
+### Why this matters
+
+The server commits to a SHA-256 hash chain *before* any round runs (`serverSeedHash` is the next round's commitment, revealed once the round settles). The crash multiplier is `HMAC_SHA-256(serverSeed, "${clientSeed}:${nonce}")` reduced through the Bustabit 52-bit formula with a 1-in-101 instant-crash bucket. Independent verification with off-the-shelf tools is the difference between *trust me* and *verify me*.
+
+### Verify any settled round
+
+Pick a round id from the History strip (or the `/api/games/rounds` listing once the round is `SETTLED`) and run:
+
+```bash
+ROUND_ID="<paste-round-id-from-history-strip>"
+BASE="http://localhost:8000"
+
+curl -s "$BASE/games/rounds/$ROUND_ID/verify" > round.json
+
+SERVER_SEED=$(jq -r .serverSeed round.json)
+SEED_HASH=$(jq -r .serverSeedHash round.json)
+CLIENT_SEED=$(jq -r .clientSeed round.json)
+NONCE=$(jq -r .nonce round.json)
+CRASH_POINT=$(jq -r .crashPoint round.json)
+
+echo "--- Step A: reproduce the seedHash commitment ---"
+echo -n "$SERVER_SEED" | xxd -r -p | openssl dgst -sha256
+echo "Reported seedHash: $SEED_HASH"
+
+echo "--- Step B: reproduce the crashPoint ---"
+HMAC=$(echo -n "$CLIENT_SEED:$NONCE" \
+  | openssl dgst -sha256 -hmac "$SERVER_SEED" -hex \
+  | awk '{print $NF}')
+HEX13=${HMAC:0:13}
+INT_H=$(printf '%d' "0x$HEX13")
+python3 -c "
+H=$INT_H
+E=2**52
+if H % 101 == 0:
+    print('crashPoint = 1.00')
+else:
+    print('crashPoint =', max(1.0, ((100*E - H)//(E - H))/100))
+"
+echo "Reported crashPoint: $CRASH_POINT"
+```
+
+Step A must print a hex digest identical to `$SEED_HASH`. Step B must print a crashpoint identical to `$CRASH_POINT`. Any mismatch is either a bug in the server or a byte-encoding mistake in your shell pipeline — read "Why two encodings of the same hex string?" below.
+
+### Worked example (no live stack required)
+
+This block hardcodes the Phase 4 oracle tuple, so you can paste and run it on any machine with `openssl` and `python3` — no docker, no curl, no live round needed. The same fixture is locked in source by `packages/contracts/tests/unit/provably-fair.test.ts` (server) and `packages/contracts/src/provably-fair-browser/derive-crash-point.async.test.ts` (browser).
+
+```bash
+SERVER_SEED="0000000000000000000000000000000000000000000000000000000000000001"
+CLIENT_SEED="test"
+NONCE="0"
+
+echo "--- Step A: seedHash commitment (hex-decoded server seed) ---"
+echo -n "$SERVER_SEED" | xxd -r -p | openssl dgst -sha256
+
+echo "--- Step B: HMAC with the hex string as the UTF-8 key ---"
+HMAC=$(echo -n "$CLIENT_SEED:$NONCE" \
+  | openssl dgst -sha256 -hmac "$SERVER_SEED" -hex \
+  | awk '{print $NF}')
+echo "HMAC      = $HMAC"
+HEX13=${HMAC:0:13}
+INT_H=$(printf '%d' "0x$HEX13")
+echo "first13   = $HEX13"
+echo "intH      = $INT_H"
+python3 -c "
+H=$INT_H
+E=2**52
+if H % 101 == 0:
+    print('crashPoint = 1.00')
+else:
+    print('crashPoint =', max(1.0, ((100*E - H)//(E - H))/100))
+"
+```
+
+Expected output (reproduced verbatim on macOS with LibreSSL 3.x):
+
+```
+--- Step A: seedHash commitment (hex-decoded server seed) ---
+SHA2-256(stdin)= ec4916dd28fc4c10d78e287ca5d9cc51ee1ae73cbfde08c6b37324cbfaac8bc5
+--- Step B: HMAC with the hex string as the UTF-8 key ---
+HMAC      = a9aa7f591433757689bc898f5167109490f954c4d895901f65042c332b8c050b
+first13   = a9aa7f5914337
+intH      = 2984795937260343
+crashPoint = 2.94
+```
+
+The `2.94` on the last line is the same number the server emits for the same `(serverSeed, clientSeed, nonce, instantCrashBucket)` tuple — verified by `packages/contracts/tests/unit/provably-fair.test.ts` and the determinism E2E in `frontend/src/features/replay/determinism.test.ts`.
+
+### Why two encodings of the same hex string?
+
+This trips up almost every first-time implementer of a Bustabit-style chain. The same 64-character `serverSeed` hex string is fed into SHA-256 **two different ways** depending on which proof you are computing:
+
+- **Seed-hash commitment (Step A)** — the server runs `createHash("sha256").update(seed, "hex")`, which **hex-decodes** the string into 32 raw bytes before hashing. That is why Step A pipes the seed through `xxd -r -p` (or the python3 fallback below) before `openssl dgst -sha256`. Hashing the 64-char ASCII string directly yields a different digest and the commitment will not match.
+- **Crash-point HMAC (Step B)** — the server runs `createHmac("sha256", serverSeed)`, where a *string* key is consumed by Node as its **UTF-8 bytes** — all 64 ASCII characters, *not* the 32 hex-decoded bytes. That is why Step B passes the seed straight into `openssl dgst -sha256 -hmac "$SERVER_SEED"` with no decoding. Decoding it first (e.g. `openssl ... -mac HMAC -macopt hexkey:$SERVER_SEED`) silently produces a different HMAC and a different crashpoint — for this exact fixture, `3.02` instead of `2.94`.
+
+Reversing these two encodings is the #1 cause of `matches: false` on an otherwise correct implementation. The browser-safe subpath in `packages/contracts/src/provably-fair-browser/` documents the same contract in `CRITICAL` JSDoc headers; the determinism test suite asserts both digests byte-for-byte.
+
+### Portability notes
+
+- **macOS**: `brew install jq`. The system ships LibreSSL 3.x which prints `SHA2-256(stdin)= <hex>` — the `awk '{print $NF}'` filter in the curl walkthrough extracts the digest field regardless of prefix. OpenSSL 3.x prints `SHA256(stdin)= <hex>` (no `2-`); both forms are handled identically.
+- **Linux (Debian/Ubuntu)**: `apt-get install -y jq openssl xxd`. The `xxd` binary is in the `xxd` package on recent releases and inside `vim-common` on older ones.
+- **Linux (Fedora/RHEL)**: `dnf install jq openssl vim-common` (or `vim` for the full bundle).
+- **Busybox / minimal containers** where `xxd` is unavailable, swap the Step A pipeline for the Python fallback — it produces the same digest:
+
+  ```bash
+  echo -n "$SERVER_SEED" \
+    | python3 -c "import sys, binascii; sys.stdout.buffer.write(binascii.unhexlify(sys.stdin.read().strip()))" \
+    | openssl dgst -sha256
+  ```
+
+- The `openssl dgst -sha256 -hmac "$KEY"` form interprets `$KEY` as the raw UTF-8 string (matching Node's `createHmac` string-key semantics). Do **not** hex-decode the seed before passing it to `-hmac`, and do **not** swap to `-macopt hexkey:` — that path treats the argument as a hex-encoded key and silently mismatches.
+
 ## Roadmap
 
 This is a ten-phase build. Phase 1 (Foundation & Infra) ships the bootstrap surface and shared kernel. Subsequent phases land the outbox/inbox spine, the wallet service, the game core with the provably-fair hash chain, end-to-end saga integration, the WebSocket gateway, the frontend vertical slice, the provably-fair UX and replay, auto features plus the leaderboard, and quality hardening with CI, observability, and full architecture documentation. See `.planning/ROADMAP.md` for the full plan and `.planning/REQUIREMENTS.md` for the requirement-to-phase traceability matrix.
