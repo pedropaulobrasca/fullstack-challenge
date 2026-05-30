@@ -10,7 +10,11 @@ import type { Server, Socket } from "socket.io";
 import { PlayerId } from "@crash/shared-kernel";
 import { env } from "../../config/defaults";
 import { GetWsSnapshotUseCase } from "../../application/use-cases/get-ws-snapshot.use-case";
-import { GAME_EVENTS } from "../../application/game-events";
+import {
+  GAME_EVENTS,
+  type LeaderboardUpdatedPayload,
+} from "../../application/game-events";
+import { maskPlayerId } from "../../application/use-cases/mask-player-id";
 import type {
   RoundStartedPayload,
   RoundRunningPayload,
@@ -82,5 +86,18 @@ export class GameWsGateway
   @OnEvent(GAME_EVENTS.ROUND_SETTLED)
   onRoundSettled(payload: RoundSettledPayload): void {
     this.server.to("lobby").emit("round:settled", payload);
+  }
+
+  @OnEvent(GAME_EVENTS.LEADERBOARD_UPDATED)
+  onLeaderboardUpdated(payload: LeaderboardUpdatedPayload): void {
+    const entries = payload.entries.map((entry) => ({
+      playerIdMasked: maskPlayerId(PlayerId(entry.playerId)),
+      rank: entry.rank,
+      netProfitCents: entry.netProfitCents.toString(),
+    }));
+    this.server.to("lobby").emit("leaderboard:updated", {
+      entries,
+      updatedAt: payload.updatedAt,
+    });
   }
 }

@@ -35,6 +35,7 @@ import { CashOutUseCase } from "./use-cases/cash-out.use-case";
 import { RoundLoopService } from "./round-loop.service";
 import { MultiplierBroadcastService } from "./multiplier-broadcast.service";
 import { AutoCashoutTickService } from "./auto-cashout-tick.service";
+import { LeaderboardProjectorService } from "./leaderboard-projector.service";
 import { SagaTimeoutSweeper } from "./saga-timeout-sweeper.service";
 import { WalletDebitedHandler } from "./handlers/wallet-debited.handler";
 import { WalletDebitRejectedHandler } from "./handlers/wallet-debit-rejected.handler";
@@ -73,6 +74,7 @@ import { WalletDebitRejectedHandler } from "./handlers/wallet-debit-rejected.han
     MultiplierBroadcastService,
     { provide: MULTIPLIER_BROADCAST_SERVICE, useExisting: MultiplierBroadcastService },
     AutoCashoutTickService,
+    LeaderboardProjectorService,
     SagaTimeoutSweeper,
     WalletDebitedHandler,
     WalletDebitRejectedHandler,

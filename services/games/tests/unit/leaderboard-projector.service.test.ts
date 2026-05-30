@@ -83,7 +83,7 @@ function buildHarness(
 describe("LeaderboardProjectorService — unit", () => {
   test("bet.cashed_out envelope applies positive delta and increments win count", async () => {
     const { service, leaderboard } = buildHarness();
-    await service.handle(
+    await service.handleEnvelope(
       {
         type: "bet.cashed_out",
         version: 1,
@@ -115,7 +115,7 @@ describe("LeaderboardProjectorService — unit", () => {
 
   test("bet.refunded envelope calls applyRefunded (no-op repository)", async () => {
     const { service, leaderboard } = buildHarness();
-    await service.handle(
+    await service.handleEnvelope(
       {
         type: "bet.refunded",
         version: 1,
@@ -140,7 +140,7 @@ describe("LeaderboardProjectorService — unit", () => {
 
   test("bet.lost envelope applies negative delta and increments total_bet_count", async () => {
     const { service, leaderboard } = buildHarness();
-    await service.handle(
+    await service.handleEnvelope(
       {
         type: "bet.lost",
         version: 1,
@@ -168,7 +168,7 @@ describe("LeaderboardProjectorService — unit", () => {
 
   test("unknown envelope type is dropped (no apply call, no emit)", async () => {
     const { service, leaderboard, emitMock } = buildHarness();
-    await service.handle(
+    await service.handleEnvelope(
       {
         type: "bet.unexpected",
         version: 1,
@@ -198,7 +198,7 @@ describe("LeaderboardProjectorService — unit", () => {
     ];
     const { service, emitMock } = buildHarness([before, after]);
 
-    await service.handle(
+    await service.handleEnvelope(
       {
         type: "bet.cashed_out",
         version: 1,
@@ -240,7 +240,7 @@ describe("LeaderboardProjectorService — unit", () => {
     ];
     const { service, emitMock } = buildHarness([same, same]);
 
-    await service.handle(
+    await service.handleEnvelope(
       {
         type: "bet.cashed_out",
         version: 1,
