@@ -15,6 +15,10 @@ const validEnv = {
   VITE_CURRENCY_CODE: "CRD",
   VITE_FEED_BUFFER_SIZE: "50",
   VITE_HISTORY_SIZE: "20",
+  VITE_REPLAY_SPEEDS: "1,2,4",
+  VITE_REPLAY_AUTOSTART: "true",
+  VITE_DRAWER_SLIDE_MS: "220",
+  VITE_INSTANT_CRASH_BUCKET: "101",
 };
 
 describe("config schema", () => {
@@ -60,5 +64,67 @@ describe("buildConfig", () => {
   it("buildConfig accepts an already-parsed object", () => {
     const cfg = buildConfig(configSchema.parse(validEnv));
     expect(cfg.growthRate).toBe(0.06);
+  });
+});
+
+describe("replay / drawer / fairness sections", () => {
+  it("parses VITE_REPLAY_SPEEDS into a numeric array", () => {
+    const cfg = parseConfig(validEnv);
+    expect(cfg.replay.speeds).toEqual([1, 2, 4]);
+  });
+
+  it("parses VITE_REPLAY_AUTOSTART into a boolean true", () => {
+    const cfg = parseConfig(validEnv);
+    expect(cfg.replay.autostart).toBe(true);
+  });
+
+  it("parses VITE_DRAWER_SLIDE_MS into a positive integer", () => {
+    const cfg = parseConfig(validEnv);
+    expect(cfg.drawer.slideMs).toBe(220);
+  });
+
+  it("exposes the default instant-crash bucket on fairness", () => {
+    const cfg = parseConfig(validEnv);
+    expect(cfg.fairness.instantCrashBucket).toBe(101);
+  });
+
+  it("honors an explicit VITE_INSTANT_CRASH_BUCKET override", () => {
+    const cfg = parseConfig({ ...validEnv, VITE_INSTANT_CRASH_BUCKET: "77" });
+    expect(cfg.fairness.instantCrashBucket).toBe(77);
+  });
+
+  it("rejects malformed VITE_REPLAY_SPEEDS at parse time", () => {
+    expect(() =>
+      parseConfig({ ...validEnv, VITE_REPLAY_SPEEDS: "1,abc,4" }),
+    ).toThrow();
+  });
+
+  it("rejects a VITE_REPLAY_SPEEDS list missing 1", () => {
+    expect(() =>
+      parseConfig({ ...validEnv, VITE_REPLAY_SPEEDS: "2,4" }),
+    ).toThrow(/must include 1/i);
+  });
+
+  it("applies defaults when replay/drawer/fairness env vars are absent", () => {
+    const {
+      VITE_REPLAY_SPEEDS: _s,
+      VITE_REPLAY_AUTOSTART: _a,
+      VITE_DRAWER_SLIDE_MS: _d,
+      VITE_INSTANT_CRASH_BUCKET: _b,
+      ...withoutOptionals
+    } = validEnv;
+    const cfg = parseConfig(withoutOptionals);
+    expect(cfg.replay.speeds).toEqual([1, 2, 4]);
+    expect(cfg.replay.autostart).toBe(true);
+    expect(cfg.drawer.slideMs).toBe(220);
+    expect(cfg.fairness.instantCrashBucket).toBe(101);
+  });
+
+  it("freezes the speeds array so consumers cannot mutate it", () => {
+    const cfg = parseConfig(validEnv);
+    expect(Object.isFrozen(cfg.replay)).toBe(true);
+    expect(Object.isFrozen(cfg.replay.speeds)).toBe(true);
+    expect(Object.isFrozen(cfg.drawer)).toBe(true);
+    expect(Object.isFrozen(cfg.fairness)).toBe(true);
   });
 });

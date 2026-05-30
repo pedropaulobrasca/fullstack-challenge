@@ -1,5 +1,19 @@
 import { z } from "zod";
 
+const replaySpeedsSchema = z
+  .string()
+  .optional()
+  .default("1,2,4")
+  .transform((raw) => raw.split(",").map((token) => Number(token.trim())))
+  .pipe(z.array(z.number().positive().finite()).nonempty());
+
+const replayAutostartSchema = z
+  .string()
+  .optional()
+  .default("true")
+  .transform((raw) => raw === "true")
+  .pipe(z.boolean());
+
 export const configSchema = z.object({
   VITE_KEYCLOAK_ISSUER: z.string().url(),
   VITE_KEYCLOAK_CLIENT_ID: z.string().min(1),
@@ -14,6 +28,10 @@ export const configSchema = z.object({
   VITE_CURRENCY_CODE: z.string().min(1),
   VITE_FEED_BUFFER_SIZE: z.coerce.number().int().positive(),
   VITE_HISTORY_SIZE: z.coerce.number().int().positive(),
+  VITE_REPLAY_SPEEDS: replaySpeedsSchema,
+  VITE_REPLAY_AUTOSTART: replayAutostartSchema,
+  VITE_DRAWER_SLIDE_MS: z.coerce.number().int().positive().default(220),
+  VITE_INSTANT_CRASH_BUCKET: z.coerce.number().int().positive().default(101),
 });
 
 export type RawConfig = z.input<typeof configSchema>;
@@ -32,9 +50,17 @@ export type AppConfig = Readonly<{
   currencyCode: string;
   feedBufferSize: number;
   historySize: number;
+  replay: Readonly<{ speeds: readonly number[]; autostart: boolean }>;
+  drawer: Readonly<{ slideMs: number }>;
+  fairness: Readonly<{ instantCrashBucket: number }>;
 }>;
 
 export function buildConfig(env: ParsedConfig): AppConfig {
+  if (!env.VITE_REPLAY_SPEEDS.includes(1)) {
+    throw new Error(
+      "VITE_REPLAY_SPEEDS must include 1 (default 1x speed per D-03 / UI-SPEC)",
+    );
+  }
   return Object.freeze({
     keycloak: Object.freeze({
       issuer: env.VITE_KEYCLOAK_ISSUER,
@@ -55,6 +81,12 @@ export function buildConfig(env: ParsedConfig): AppConfig {
     currencyCode: env.VITE_CURRENCY_CODE,
     feedBufferSize: env.VITE_FEED_BUFFER_SIZE,
     historySize: env.VITE_HISTORY_SIZE,
+    replay: Object.freeze({
+      speeds: Object.freeze([...env.VITE_REPLAY_SPEEDS]),
+      autostart: env.VITE_REPLAY_AUTOSTART,
+    }),
+    drawer: Object.freeze({ slideMs: env.VITE_DRAWER_SLIDE_MS }),
+    fairness: Object.freeze({ instantCrashBucket: env.VITE_INSTANT_CRASH_BUCKET }),
   });
 }
 
