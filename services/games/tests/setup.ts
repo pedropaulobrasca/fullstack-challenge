@@ -23,6 +23,10 @@ function applyDefaults(): void {
   process.env.AUTO_CASHOUT_MAX_X ??= "100";
   process.env.LEADERBOARD_WINDOW_HOURS ??= "24";
   process.env.LEADERBOARD_TOP_N ??= "10";
+  process.env.LEADERBOARD_UPDATE_THROTTLE_MS ??= "0";
+  process.env.STOP_LOSS_CENTS_MAX ??= "100000";
+  process.env.STOP_WIN_CENTS_MAX ??= "100000";
+  process.env.AUTO_BET_MIN_TARGET_CENTI_X ??= "101";
   process.env.KEYCLOAK_ISSUER ??= "http://localhost:8080/realms/crash-game-test";
   process.env.KEYCLOAK_JWKS_URI ??=
     "http://localhost:8080/realms/crash-game-test/protocol/openid-connect/certs";
