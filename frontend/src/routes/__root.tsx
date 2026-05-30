@@ -6,6 +6,8 @@ import { OidcProvider } from "@/auth/oidc-provider";
 import { useGameSocket } from "@/ws/use-game-socket";
 import { BalancePill } from "@/components/balance-pill";
 import { ConnectionBadge } from "@/components/connection-badge";
+import { FairnessBadge } from "@/components/fairness-badge";
+import { VerificationDrawer } from "@/components/verification-drawer";
 import appCss from "@/styles/globals.css?url";
 
 export const Route = createRootRoute({
@@ -38,6 +40,7 @@ function RootComponent() {
               <Outlet />
             </main>
           </div>
+          <VerificationDrawer />
         </QueryClientProvider>
         <Toaster position="top-center" richColors />
         <Scripts />
@@ -56,7 +59,7 @@ function AppHeader() {
     <header className="flex items-center justify-between border-b border-border bg-card px-6 py-4">
       <div className="flex items-center gap-3">
         <span className="font-mono text-lg font-semibold tracking-tight text-foreground">CRASH</span>
-        <div data-slot="fairness-badge" aria-hidden className="h-6" />
+        <FairnessBadge />
       </div>
       <div className="flex items-center gap-4">
         <ConnectionBadge />
