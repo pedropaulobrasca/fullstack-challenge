@@ -4,13 +4,16 @@ import { SeedChainEntitySchema } from "../infrastructure/persistence/seed-chain.
 import { RoundEntitySchema } from "../infrastructure/persistence/round.entity";
 import { BetEntitySchema } from "../infrastructure/persistence/bet.entity";
 import { BetSagaStateEntitySchema } from "../infrastructure/persistence/bet-saga-state.entity";
+import { Leaderboard24hEntitySchema } from "../infrastructure/persistence/leaderboard-24h.entity";
 import { MikroSeedChainRepository } from "../infrastructure/repositories/mikro-seed-chain.repository";
 import { MikroRoundRepository } from "../infrastructure/repositories/mikro-round.repository";
 import { MikroBetRepository } from "../infrastructure/repositories/mikro-bet.repository";
 import { MikroBetSagaStateRepository } from "../infrastructure/repositories/mikro-bet-saga-state.repository";
+import { MikroLeaderboardRepository } from "../infrastructure/repositories/mikro-leaderboard.repository";
 import {
   BET_REPOSITORY,
   BET_SAGA_REPOSITORY,
+  LEADERBOARD_REPOSITORY,
   MULTIPLIER_BROADCAST_SERVICE,
   ROUND_LOOP_SERVICE,
   ROUND_REPOSITORY,
@@ -41,6 +44,7 @@ import { WalletDebitRejectedHandler } from "./handlers/wallet-debit-rejected.han
       RoundEntitySchema,
       BetEntitySchema,
       BetSagaStateEntitySchema,
+      Leaderboard24hEntitySchema,
     ]),
   ],
   providers: [
@@ -48,6 +52,7 @@ import { WalletDebitRejectedHandler } from "./handlers/wallet-debit-rejected.han
     { provide: ROUND_REPOSITORY, useClass: MikroRoundRepository },
     { provide: BET_REPOSITORY, useClass: MikroBetRepository },
     { provide: BET_SAGA_REPOSITORY, useClass: MikroBetSagaStateRepository },
+    { provide: LEADERBOARD_REPOSITORY, useClass: MikroLeaderboardRepository },
     SeedChainBootstrap,
     GetCurrentRoundUseCase,
     GetRoundHistoryUseCase,
@@ -73,6 +78,7 @@ import { WalletDebitRejectedHandler } from "./handlers/wallet-debit-rejected.han
     ROUND_REPOSITORY,
     BET_REPOSITORY,
     BET_SAGA_REPOSITORY,
+    LEADERBOARD_REPOSITORY,
     GetCurrentRoundUseCase,
     GetRoundHistoryUseCase,
     VerifyRoundUseCase,
