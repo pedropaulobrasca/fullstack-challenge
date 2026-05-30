@@ -872,35 +872,37 @@ Framework install: none needed (Bun test + Vitest both already in place).
 | A11 | Auto-bet halt on `insufficient-balance` is the correct semantic when wallet balance < next bet amount, NOT a continuous retry | § "FE Auto-Bet Driver" + UI-SPEC Copywriting | Per UI-SPEC: `Auto-bet halted: insufficient balance for next round.` — explicit halt. CONFIRMED. |
 | A12 | `LeaderboardSnapshot.diff(before, after)` compares ordered `playerId` arrays for top-N; a `playerId` swap at any rank → "changed" | § "Leaderboard Projector" | This is the obvious implementation; planner confirms whether reordering within ranks 1-3 is treated identically to reordering ranks 8-9. Recommendation: yes — any change in the ordered list is "changed". |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Should `bet.refunded` increment `total_bet_count` on the leaderboard?**
    - What we know: A refund means the player attempted a bet but it was rejected (insufficient funds or saga timeout). Money never moved or was returned. Win count is clearly 0. Net profit delta is 0.
    - What's unclear: Is a refunded bet a "placed bet" for stats purposes? It happened in time, but it wasn't a played round for that player.
-   - Recommendation: **Do NOT increment `total_bet_count` on refund.** A refunded bet didn't reach ACTIVE → didn't actually play. This keeps `total_bet_count` semantically equal to "rounds played" (matches the UI-SPEC "win count" intuition where the denominator is "rounds played"). Planner asks the user.
+   - **RESOLVED:** Do NOT increment `total_bet_count` on refund. Implemented in Plan 09-04 (`LeaderboardRepository.applyRefunded` is a no-op).
 
 2. **Are LOST bets published as individual events or only inside `round.settled`?**
    - What we know: Phase 5's `SettleRoundUseCase` (file: `services/games/src/application/use-cases/settle-round.use-case.ts`) transitions LOST bets in batch and emits `round.settled`. The current outbox publishing pattern per-bet for cashed-out events is via `cash-out.use-case.ts`.
    - What's unclear: Without per-bet `bet.lost` events, the projector cannot subtract individual losing bet amounts from `net_profit`. The `round.settled` payload may not carry per-bet info.
-   - Recommendation: If `bet.lost` is NOT published per-bet, ADD that publish inside `SettleRoundUseCase`'s TX (same TX as the FSM transition; single outbox row per LOST bet). The CashOutUseCase already shows the same-TX outbox pattern. This is a small, contained delta. Planner verifies `settle-round.use-case.ts` and decides between (a) add `bet.lost` per-bet outbox events, or (b) include `losingBets: BetSummary[]` in the `round.settled` outbox payload and have the projector loop. Option (a) is cleaner (one outbox row per side-effect; matches Phase 5 idiom).
+   - **RESOLVED:** Add per-bet `bet.lost` outbox events inside `SettleRoundUseCase`'s TX (Option a — single outbox row per side-effect; Phase 5 idiom). Implemented in Plan 09-03 (Task 1: contract event in `@crash/contracts`; Task 2: per-LOST-bet outbox publish in `SettleRoundUseCase`).
 
 3. **Auto-bet driver: when does the driver POST the NEXT bet — on `round:settled` or on the next `round:started`?**
    - What we know: A bet must be placed during BETTING. `round:settled` fires after CRASHED → before the next BETTING starts (within ~`COOLDOWN_MS=2000`). `round:started` fires when the next BETTING begins.
    - What's unclear: POST timing — posting on `round:settled` may race the cooldown; posting on `round:started` is unambiguously inside BETTING but adds one event-loop turn of latency.
-   - Recommendation: **POST on `round:started`** — the BETTING window is provably open at that point. The driver caches the next-bet decision computed on `round:settled` (so the math runs early) and fires the POST on `round:started`. This avoids the `409 ROUND_NOT_IN_BETTING_PHASE` race entirely.
+   - **RESOLVED:** POST on `round:started`. Implemented in Plan 09-08 (Task 2: `useAutoBetDriver` subscribes to `round:started` and fires the POST inside the BETTING window).
 
 4. **Should `leaderboard:updated` payload include the full top-N snapshot or just a "stale" pulse?**
    - What we know: Top-N is ~10 rows × ~50 bytes = ~500 bytes. Trivial.
    - What's unclear: Inline payload vs FE refetch on signal.
-   - Recommendation: **Inline payload** (per CONTEXT canonical-refs guidance and UI-SPEC). Saves a roundtrip, FE updates the TanStack Query cache directly, no separate HTTP burst around round-settle.
+   - **RESOLVED:** Inline payload. Implemented in Plan 09-09 (Task 1: `useLeaderboard` subscribes to `leaderboard:updated` and inline-replaces the TanStack Query cache via `setQueryData` — no refetch).
 
 5. **Should the auto-cashout candidate query lock the bet rows (`FOR UPDATE`)?**
    - What we know: `findAutoCashoutCandidates` returns rows. `CashOutUseCase.tryTransition('ACTIVE', 'CASHED_OUT', ...)` is the FSM-guarded UPDATE that actually transitions. Without `FOR UPDATE` in the candidate query, two consecutive tick handlers could both fetch the same candidate; both invoke `CashOutUseCase`; the second's `tryTransition` returns `null` (status is no longer ACTIVE), error swallowed. No double-cashout possible.
    - What's unclear: Performance — `FOR UPDATE SKIP LOCKED` may be slightly nicer at 30Hz scale.
-   - Recommendation: **No `FOR UPDATE` on the candidate query.** The existing FSM-guarded `tryTransition` handles the race. Adding `FOR UPDATE` would lock-and-release at 30Hz which is wasteful. Planner verifies via integration test that double-fetched candidates do not cause errors visible to the player.
+   - **RESOLVED:** No `FOR UPDATE` on the candidate query — existing FSM-guarded `tryTransition` handles the race. Implemented in Plan 09-02 (`findAutoCashoutCandidates` raw-SQL query) + Plan 09-05 (`AutoCashoutTickService` invokes `CashOutUseCase` with FSM guard relied upon for double-fetch tolerance).
 
 6. **Does the Auto tab need to be visible to unauthenticated users (preview/discoverability) or only after login?**
-   - What we know: UI-SPEC §Surface A says "Auto tab is only shown to authenticated users (the Phase 7 `enforceLogin` guard already covers the game route)" — the game route as a whole requires login, so the question is moot. CONFIRMED.
+   - What we know: UI-SPEC §Surface A says "Auto tab is only shown to authenticated users (the Phase 7 `enforceLogin` guard already covers the game route)" — the game route as a whole requires login, so the question is moot.
+   - **RESOLVED:** Implemented in 09-UI-SPEC §Surface A — Auto tab gated by the existing route-level `enforceLogin` guard from Phase 7; no Phase 9 code change required.
+
 
 ## State of the Art
 

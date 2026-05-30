@@ -282,6 +282,21 @@ Plans:
   - ADR-026: Server-enforced auto-cashout (over client-driven; disconnect safety rationale)
   - ADR-027: Per-session auto-bet config (over persisted; safety/UX rationale)
 
+  > **ADR-renumber note (anticipated, to be reconciled at Phase 9 closeout per P09-10)**: these three were anticipated under the labels ADR-025/026/027, but Phase 5/6/7/8 ADRs consumed 019..031 before Phase 9 closed. Shipped ADRs are never renumbered; the Phase 9 decisions will take the next-free range ADR-032..034 when P09-10 lands.
+
+**Plans:** 10 plans
+Plans:
+- [ ] 09-01-PLAN.md — Env vars + getConfig (4 backend + 6 frontend keys; gates every downstream Phase 9 plan)
+- [ ] 09-02-PLAN.md — autoCashoutTarget field on Bet (domain + entity + migration + DTO + use case + findAutoCashoutCandidates repo method)
+- [ ] 09-03-PLAN.md — Per-bet bet.lost outbox events in SettleRoundUseCase (closes RESEARCH Open Q2)
+- [ ] 09-04-PLAN.md — leaderboard_24h table + EntitySchema + LeaderboardRepository + LeaderboardSnapshot.diff pure VO
+- [ ] 09-05-PLAN.md — MultiplierBroadcastService ROUND_TICK emit + AutoCashoutTickService + SC1 disconnect-safety E2E
+- [ ] 09-06-PLAN.md — LeaderboardProjectorService (@IdempotentSubscribe) + WS leaderboard:updated @OnEvent + SC5 chaos test
+- [ ] 09-07-PLAN.md — LeaderboardController GET /games/leaderboard + @crash/contracts/ws leaderboardUpdatedPayloadSchema
+- [ ] 09-08-PLAN.md — FE auto-bet store + driver + strategy + AutoBetForm + tabbed BetPanel (shadcn radio-group install)
+- [ ] 09-09-PLAN.md — FE LeaderboardPanel + useLeaderboard + tabbed right rail (Live Feed | Leaderboard)
+- [ ] 09-10-PLAN.md — ADR-032 + ADR-033 + ADR-034 + STATE/ROADMAP/REQUIREMENTS rotation
+
 ### Phase 10: Quality Hardening & Docs
 **Goal**: Every claim made in the submission is provable by automation — CI runs the full stack end-to-end on every push, Playwright covers the player flow, OpenTelemetry traces ride every saga, and the README + ADR catalogue let a reviewer reconstruct every decision without asking.
 **Depends on**: Phase 9 (instrument when shape is stable)
