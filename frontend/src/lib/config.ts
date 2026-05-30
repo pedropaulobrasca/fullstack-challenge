@@ -32,6 +32,16 @@ export const configSchema = z.object({
   VITE_REPLAY_AUTOSTART: replayAutostartSchema,
   VITE_DRAWER_SLIDE_MS: z.coerce.number().int().positive().default(220),
   VITE_INSTANT_CRASH_BUCKET: z.coerce.number().int().positive().default(101),
+  VITE_AUTO_BET_MIN_TARGET: z.coerce.number().gt(1).default(1.01),
+  VITE_AUTO_BET_MAX_TARGET: z.coerce.number().positive().default(100),
+  VITE_LEADERBOARD_SIZE: z.coerce.number().int().positive().default(10),
+  VITE_LEADERBOARD_WINDOW_HOURS: z.coerce.number().int().positive().default(24),
+  VITE_LEADERBOARD_RELATIVE_REFRESH_MS: z.coerce
+    .number()
+    .int()
+    .nonnegative()
+    .default(5000),
+  VITE_RANK_UP_TRANSITION_MS: z.coerce.number().int().nonnegative().default(200),
 });
 
 export type RawConfig = z.input<typeof configSchema>;
@@ -53,6 +63,13 @@ export type AppConfig = Readonly<{
   replay: Readonly<{ speeds: readonly number[]; autostart: boolean }>;
   drawer: Readonly<{ slideMs: number }>;
   fairness: Readonly<{ instantCrashBucket: number }>;
+  autoBet: Readonly<{ minTarget: number; maxTarget: number }>;
+  leaderboard: Readonly<{
+    sizeN: number;
+    windowHours: number;
+    relativeRefreshMs: number;
+    rankUpTransitionMs: number;
+  }>;
 }>;
 
 export function buildConfig(env: ParsedConfig): AppConfig {
@@ -87,6 +104,16 @@ export function buildConfig(env: ParsedConfig): AppConfig {
     }),
     drawer: Object.freeze({ slideMs: env.VITE_DRAWER_SLIDE_MS }),
     fairness: Object.freeze({ instantCrashBucket: env.VITE_INSTANT_CRASH_BUCKET }),
+    autoBet: Object.freeze({
+      minTarget: env.VITE_AUTO_BET_MIN_TARGET,
+      maxTarget: env.VITE_AUTO_BET_MAX_TARGET,
+    }),
+    leaderboard: Object.freeze({
+      sizeN: env.VITE_LEADERBOARD_SIZE,
+      windowHours: env.VITE_LEADERBOARD_WINDOW_HOURS,
+      relativeRefreshMs: env.VITE_LEADERBOARD_RELATIVE_REFRESH_MS,
+      rankUpTransitionMs: env.VITE_RANK_UP_TRANSITION_MS,
+    }),
   });
 }
 
