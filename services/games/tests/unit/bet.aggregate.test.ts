@@ -203,6 +203,63 @@ describe("Bet immutability and rehydrate", () => {
   });
 });
 
+describe("Bet.place — autoCashoutTarget (Phase 9 Plan 02)", () => {
+  test("place without autoCashoutTarget defaults to null (backwards-compat)", () => {
+    const bet = makePending();
+    expect(bet.autoCashoutTarget).toBeNull();
+  });
+
+  test("place with autoCashoutTarget = null returns a Bet exposing null", () => {
+    const bet = Bet.place(
+      BetId("bet-1"),
+      RoundId("round-1"),
+      PlayerId("player-1"),
+      Money.of(1000n),
+      baseDate,
+      null,
+    );
+    expect(bet.autoCashoutTarget).toBeNull();
+  });
+
+  test("place with Multiplier.fromCentiX(200) exposes target with toCentiX() === 200", () => {
+    const bet = Bet.place(
+      BetId("bet-1"),
+      RoundId("round-1"),
+      PlayerId("player-1"),
+      Money.of(1000n),
+      baseDate,
+      Multiplier.fromTenThousandths(20_000n),
+    );
+    expect(bet.autoCashoutTarget).not.toBeNull();
+    expect(bet.autoCashoutTarget!.toCentiX()).toBe(200);
+  });
+
+  test("autoCashoutTarget is preserved across rehydrate", () => {
+    const original = Bet.place(
+      BetId("bet-1"),
+      RoundId("round-1"),
+      PlayerId("player-1"),
+      Money.of(1000n),
+      baseDate,
+      Multiplier.fromTenThousandths(20_000n),
+    );
+    const rehydrated = Bet.rehydrate({
+      id: original.id,
+      roundId: original.roundId,
+      playerId: original.playerId,
+      amount: original.amount,
+      status: original.status,
+      cashedOutAt: original.cashedOutAt,
+      cashedOutMultiplier: original.cashedOutMultiplier,
+      payout: original.payout,
+      refundReason: original.refundReason,
+      createdAt: original.createdAt,
+      autoCashoutTarget: original.autoCashoutTarget,
+    });
+    expect(rehydrated.autoCashoutTarget?.toCentiX()).toBe(200);
+  });
+});
+
 describe("Bet — happy paths from place → terminal", () => {
   test("place → confirm → cashOut yields CASHED_OUT", () => {
     const result = makePending(2000n)
