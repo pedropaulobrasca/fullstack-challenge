@@ -256,7 +256,7 @@ Plans:
 - [x] 08-03-PLAN.md — Refactor use-raf-curve.ts to accept optional RafCurveDriver (Phase 7 callers zero-diff)
 - [x] 08-04-PLAN.md — VITE_REPLAY_SPEEDS/AUTOSTART/DRAWER_SLIDE_MS env + shadcn sheet/toggle-group/alert + fairness.store + replay.store
 - [x] 08-05-PLAN.md — FairnessBadge + HashBlock + VerdictChip + VerificationDrawer (Sheet, mount at __root.tsx) + useVerifyPrevious
-- [ ] 08-06-PLAN.md — /verify/$roundId route (ssr:false) + useRecomputeCrashpoint (ignores server matches field)
+- [x] 08-06-PLAN.md — /verify/$roundId route (ssr:false) + useRecomputeCrashpoint (ignores server matches field)
 - [ ] 08-07-PLAN.md — ReplayModal (Dialog) + replay driver + Play/Pause + 1x/2x/4x ToggleGroup + history-chip wiring
 - [ ] 08-08-PLAN.md — Determinism E2E byte-match test (REQ-REPLAY-01)
 - [ ] 08-09-PLAN.md — README "Provably Fair: Verify Outside the App" recruiter example
