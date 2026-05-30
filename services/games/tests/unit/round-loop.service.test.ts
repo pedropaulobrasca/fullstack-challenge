@@ -189,7 +189,20 @@ function buildHarness(): Harness {
   }
   const startUC = new StartNewRoundUseCase(rounds, chain);
   const runUC = new TransitionToRunningUseCase(rounds, chain);
-  const crashUC = new CrashRoundUseCase(rounds, bets);
+  const em = {
+    async transactional<T>(cb: (em: unknown) => Promise<T>): Promise<T> {
+      return cb(em);
+    },
+  };
+  const outbox = {
+    async add(): Promise<void> {},
+  };
+  const crashUC = new CrashRoundUseCase(
+    em as unknown as never,
+    outbox as unknown as never,
+    rounds,
+    bets,
+  );
   const settleUC = new SettleRoundUseCase(rounds, chain);
   const emitter = new EventEmitter2();
   const emitSpy = mock((..._args: unknown[]) => true);
