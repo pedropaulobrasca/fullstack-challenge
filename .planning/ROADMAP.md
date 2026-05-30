@@ -259,7 +259,7 @@ Plans:
 - [x] 08-06-PLAN.md — /verify/$roundId route (ssr:false) + useRecomputeCrashpoint (ignores server matches field)
 - [x] 08-07-PLAN.md — ReplayModal (Dialog) + replay driver + Play/Pause + 1x/2x/4x ToggleGroup + history-chip wiring
 - [x] 08-08-PLAN.md — Determinism E2E byte-match test (REQ-REPLAY-01)
-- [ ] 08-09-PLAN.md — README "Provably Fair: Verify Outside the App" recruiter example
+- [x] 08-09-PLAN.md — README "Provably Fair: Verify Outside the App" recruiter example
 - [ ] 08-10-PLAN.md — ADR-028..031 + STATE/ROADMAP/REQUIREMENTS closeout
 
 ### Phase 9: Auto Features & Leaderboard
@@ -328,7 +328,7 @@ These are not numbered phases. Pull from this list during Phase 10 if time permi
 | 5. Saga Integration | 11/11 | Complete | 2026-05-27 |
 | 6. WebSocket Gateway & Multiplier Sync | 10/10 | Complete | 2026-05-28 |
 | 7. Frontend Vertical Slice | 9/9 | Complete | 2026-05-29 |
-| 8. Provably-Fair UX, History & Replay | 0/0 | Not started | - |
+| 8. Provably-Fair UX, History & Replay | 9/10 | In progress | - |
 | 9. Auto Features & Leaderboard | 0/0 | Not started | - |
 | 10. Quality Hardening & Docs | 0/0 | Not started | - |
 
