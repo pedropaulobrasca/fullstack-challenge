@@ -211,7 +211,7 @@ describe("CashOutUseCase", () => {
 
     expect(h.em.transactionalCalls).toBe(1);
     expect(h.bets.transitionCalls).toHaveLength(1);
-    expect(h.outbox.calls).toHaveLength(1);
+    expect(h.outbox.calls).toHaveLength(2);
 
     const tc = h.bets.transitionCalls[0]!;
     expect(tc.id).toBe(active.id);
@@ -234,6 +234,32 @@ describe("CashOutUseCase", () => {
     expect(route.routingKey).toBe("wallet.credit");
     expect(route.aggregateType).toBe("Bet");
     expect(route.aggregateId).toBe(active.id as unknown as string);
+
+    const cashedEnvelope = h.outbox.calls[1]!.envelope;
+    expect(cashedEnvelope.type).toBe("bet.cashed_out");
+    expect(cashedEnvelope.correlationId).toBe(envelope.correlationId);
+    const cashedPayload = cashedEnvelope.payload as {
+      betId: string;
+      playerId: string;
+      roundId: string;
+      amount: { amount: string };
+      payout: { amount: string };
+      multiplier: number;
+      cashedOutAt: string;
+    };
+    expect(cashedPayload.betId).toBe(active.id as unknown as string);
+    expect(cashedPayload.playerId).toBe(playerId as unknown as string);
+    expect(cashedPayload.roundId).toBe(running.id as unknown as string);
+    expect(cashedPayload.amount.amount).toBe("500");
+    expect(cashedPayload.payout.amount).toBe("1000");
+    expect(cashedPayload.multiplier).toBe(2);
+    expect(cashedPayload.cashedOutAt).toBe(acceptedAt.toISOString());
+
+    const cashedRoute = h.outbox.calls[1]!.route;
+    expect(cashedRoute.exchange).toBe("game.events");
+    expect(cashedRoute.routingKey).toBe("bet.cashed_out");
+    expect(cashedRoute.aggregateType).toBe("Bet");
+    expect(cashedRoute.aggregateId).toBe(active.id as unknown as string);
 
     expect(result.multiplier.toNumber()).toBe(2);
     expect(result.payout.toCents()).toBe(1000n);

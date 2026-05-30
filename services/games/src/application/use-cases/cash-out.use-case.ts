@@ -7,6 +7,10 @@ import {
   OutboxRepository,
 } from "@crash/messaging-spine";
 import type { Money, PlayerId } from "@crash/shared-kernel";
+import {
+  BET_CASHED_OUT_EVENT_TYPE,
+  type BetCashedOutEventV1,
+} from "@crash/contracts";
 import type { Multiplier } from "../../domain/value-objects/multiplier";
 import type { BetRepository } from "../../domain/bet.repository";
 import type { RoundRepository } from "../../domain/round.repository";
@@ -87,6 +91,32 @@ export class CashOutUseCase {
         {
           exchange: EXCHANGES.WALLET_COMMANDS,
           routingKey: "wallet.credit",
+          aggregateType: "Bet",
+          aggregateId: active.id as unknown as string,
+        },
+        txEm,
+      );
+
+      const cashedOutPayload: BetCashedOutEventV1 = {
+        betId: active.id as unknown as string,
+        playerId: input.playerId as unknown as string,
+        roundId: active.roundId as unknown as string,
+        amount: active.amount.toSnapshot(),
+        payout: payout.toSnapshot(),
+        multiplier: input.multiplier.toNumber(),
+        cashedOutAt: input.acceptedAt.toISOString(),
+      };
+      await this.outbox.add(
+        buildEnvelope({
+          type: BET_CASHED_OUT_EVENT_TYPE,
+          version: 1,
+          correlationId,
+          causationId: correlationId,
+          payload: cashedOutPayload,
+        }),
+        {
+          exchange: EXCHANGES.GAME_EVENTS,
+          routingKey: BET_CASHED_OUT_EVENT_TYPE,
           aggregateType: "Bet",
           aggregateId: active.id as unknown as string,
         },
