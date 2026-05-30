@@ -5,6 +5,7 @@ import type {
   RoundCrashedPayload,
   RoundSettledPayload,
 } from "../presentation/dtos/ws-event.payloads";
+import type { LeaderboardSnapshotEntry } from "../domain/leaderboard.repository";
 
 export const GAME_EVENTS = {
   ROUND_STARTED: "round.started",
@@ -12,6 +13,7 @@ export const GAME_EVENTS = {
   ROUND_CRASHED: "round.crashed",
   ROUND_SETTLED: "round.settled",
   ROUND_TICK: "round.tick",
+  LEADERBOARD_UPDATED: "game.leaderboard.updated",
 } as const;
 
 export type GameEventName = (typeof GAME_EVENTS)[keyof typeof GAME_EVENTS];
@@ -25,4 +27,9 @@ export interface RoundTickPayload {
   roundId: RoundId;
   multiplier: number;
   t: number;
+}
+
+export interface LeaderboardUpdatedPayload {
+  entries: LeaderboardSnapshotEntry[];
+  updatedAt: string;
 }
