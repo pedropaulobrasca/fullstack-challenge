@@ -289,7 +289,7 @@ Plans:
 - [x] 09-01-PLAN.md — Env vars + getConfig (4 backend + 6 frontend keys; gates every downstream Phase 9 plan)
 - [x] 09-02-PLAN.md — autoCashoutTarget field on Bet (domain + entity + migration + DTO + use case + findAutoCashoutCandidates repo method)
 - [x] 09-03-PLAN.md — Per-bet bet.lost outbox events on crash sweep (CrashRoundUseCase, path-corrected from SettleRoundUseCase; closes RESEARCH Open Q2)
-- [ ] 09-04-PLAN.md — leaderboard_24h table + EntitySchema + LeaderboardRepository + LeaderboardSnapshot.diff pure VO
+- [x] 09-04-PLAN.md — leaderboard_24h table + EntitySchema + LeaderboardRepository + LeaderboardSnapshot.diff pure VO
 - [ ] 09-05-PLAN.md — MultiplierBroadcastService ROUND_TICK emit + AutoCashoutTickService + SC1 disconnect-safety E2E
 - [ ] 09-06-PLAN.md — LeaderboardProjectorService (@IdempotentSubscribe) + WS leaderboard:updated @OnEvent + SC5 chaos test
 - [ ] 09-07-PLAN.md — LeaderboardController GET /games/leaderboard + @crash/contracts/ws leaderboardUpdatedPayloadSchema
