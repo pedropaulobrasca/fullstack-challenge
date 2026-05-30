@@ -19,7 +19,7 @@ import type { InboxRepository } from "./inbox-repository";
 export interface IdempotentSubscribeOptions {
   consumerName: string;
   exchange: string;
-  routingKey: string;
+  routingKey: string | string[];
   queue: string;
   deliveryLimit?: number;
 }
