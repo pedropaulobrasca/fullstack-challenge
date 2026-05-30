@@ -102,7 +102,7 @@
 
 ### Auto Features (AUTO)
 
-- [ ] **REQ-AUTO-01**: Player can set an auto-cashout target multiplier; the server enforces it (compares each tick's multiplier to the target; auto-issues cashout when reached). Server-enforced (not client-driven) so disconnects don't cost the player.
+- [x] **REQ-AUTO-01**: Player can set an auto-cashout target multiplier; the server enforces it (compares each tick's multiplier to the target; auto-issues cashout when reached). Server-enforced (not client-driven) so disconnects don't cost the player. (Phase 9 Plan 05)
 - [ ] **REQ-AUTO-02**: Player can configure auto-bet with strategy `fixed` (same amount every round) or `martingale` (double on loss, reset on win).
 - [ ] **REQ-AUTO-03**: Player can configure stop-loss (`STOP_LOSS_CENTS`) and stop-win (`STOP_WIN_CENTS`) thresholds; auto-bet halts when either is breached.
 - [ ] **REQ-AUTO-04**: Auto-bet configuration is per-session (client-side store) — does not survive page reload by default (UX explicit choice).
@@ -332,7 +332,7 @@ Each v1 REQ-ID maps to exactly one phase in `ROADMAP.md`. v2 (REQ-STRETCH-*) liv
 #### Phase 9 — Auto Features & Leaderboard (9 reqs)
 | REQ-ID | Title | Status |
 |--------|-------|--------|
-| REQ-AUTO-01 | Server-enforced auto-cashout target | Pending |
+| REQ-AUTO-01 | Server-enforced auto-cashout target | Done (P09-05) |
 | REQ-AUTO-02 | Auto-bet strategies: fixed + Martingale | Pending |
 | REQ-AUTO-03 | Stop-loss / stop-win thresholds halt auto-bet | Pending |
 | REQ-AUTO-04 | Auto-bet config per-session (no persist) | Pending |

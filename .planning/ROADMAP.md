@@ -290,7 +290,7 @@ Plans:
 - [x] 09-02-PLAN.md — autoCashoutTarget field on Bet (domain + entity + migration + DTO + use case + findAutoCashoutCandidates repo method)
 - [x] 09-03-PLAN.md — Per-bet bet.lost outbox events on crash sweep (CrashRoundUseCase, path-corrected from SettleRoundUseCase; closes RESEARCH Open Q2)
 - [x] 09-04-PLAN.md — leaderboard_24h table + EntitySchema + LeaderboardRepository + LeaderboardSnapshot.diff pure VO
-- [ ] 09-05-PLAN.md — MultiplierBroadcastService ROUND_TICK emit + AutoCashoutTickService + SC1 disconnect-safety E2E
+- [x] 09-05-PLAN.md — MultiplierBroadcastService ROUND_TICK emit + AutoCashoutTickService + SC1 disconnect-safety E2E
 - [ ] 09-06-PLAN.md — LeaderboardProjectorService (@IdempotentSubscribe) + WS leaderboard:updated @OnEvent + SC5 chaos test
 - [ ] 09-07-PLAN.md — LeaderboardController GET /games/leaderboard + @crash/contracts/ws leaderboardUpdatedPayloadSchema
 - [ ] 09-08-PLAN.md — FE auto-bet store + driver + strategy + AutoBetForm + tabbed BetPanel (shadcn radio-group install)
@@ -346,7 +346,7 @@ These are not numbered phases. Pull from this list during Phase 10 if time permi
 | 6. WebSocket Gateway & Multiplier Sync | 10/10 | Complete | 2026-05-28 |
 | 7. Frontend Vertical Slice | 9/9 | Complete | 2026-05-29 |
 | 8. Provably-Fair UX, History & Replay | 10/10 | Complete | 2026-05-30 |
-| 9. Auto Features & Leaderboard | 3/10 | In progress | 2026-05-30 (P09-03 bet.lost outbox events on crash sweep) |
+| 9. Auto Features & Leaderboard | 5/10 | In progress | 2026-05-30 (P09-05 AutoCashoutTickService + SC1 disconnect E2E) |
 | 10. Quality Hardening & Docs | 0/0 | Not started | - |
 
 ---
