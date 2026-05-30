@@ -286,7 +286,7 @@ Plans:
 
 **Plans:** 10 plans
 Plans:
-- [ ] 09-01-PLAN.md — Env vars + getConfig (4 backend + 6 frontend keys; gates every downstream Phase 9 plan)
+- [x] 09-01-PLAN.md — Env vars + getConfig (4 backend + 6 frontend keys; gates every downstream Phase 9 plan)
 - [ ] 09-02-PLAN.md — autoCashoutTarget field on Bet (domain + entity + migration + DTO + use case + findAutoCashoutCandidates repo method)
 - [ ] 09-03-PLAN.md — Per-bet bet.lost outbox events in SettleRoundUseCase (closes RESEARCH Open Q2)
 - [ ] 09-04-PLAN.md — leaderboard_24h table + EntitySchema + LeaderboardRepository + LeaderboardSnapshot.diff pure VO
@@ -346,7 +346,7 @@ These are not numbered phases. Pull from this list during Phase 10 if time permi
 | 6. WebSocket Gateway & Multiplier Sync | 10/10 | Complete | 2026-05-28 |
 | 7. Frontend Vertical Slice | 9/9 | Complete | 2026-05-29 |
 | 8. Provably-Fair UX, History & Replay | 10/10 | Complete | 2026-05-30 |
-| 9. Auto Features & Leaderboard | 0/0 | Not started | - |
+| 9. Auto Features & Leaderboard | 1/10 | In progress | 2026-05-30 (P09-01 env layer) |
 | 10. Quality Hardening & Docs | 0/0 | Not started | - |
 
 ---
