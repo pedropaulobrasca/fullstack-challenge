@@ -1,3 +1,4 @@
+import { History } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -6,7 +7,14 @@ import {
 } from "@/components/ui/tooltip";
 import { bandChipClass, classifyBand } from "@/features/history/history-band";
 import { useHistoryStore } from "@/stores/history.store";
+import { useReplayStore } from "@/features/replay/replay.store";
+import { getConfig } from "@/lib/config";
 import { cn } from "@/lib/utils";
+
+function shortRoundId(roundId: string): string {
+  const tail = roundId.slice(-8);
+  return tail.length > 0 ? tail : roundId;
+}
 
 export function HistoryStrip() {
   const points = useHistoryStore((state) => state.entries);
@@ -25,6 +33,13 @@ export function HistoryStrip() {
     );
   }
 
+  const openReplay = (roundId: string) => {
+    const config = getConfig();
+    useReplayStore
+      .getState()
+      .openReplay(roundId, config.replay.autostart, config.replay.speeds[0] ?? 1);
+  };
+
   return (
     <TooltipProvider>
       <div
@@ -40,16 +55,25 @@ export function HistoryStrip() {
                   type="button"
                   data-slot="history-chip"
                   data-band={band}
+                  aria-label={`Replay Round #${shortRoundId(entry.roundId)}, crashed at ${entry.crashPoint.toFixed(2)}x`}
+                  onClick={() => openReplay(entry.roundId)}
                   className={cn(
-                    "inline-flex min-h-11 shrink-0 items-center justify-center rounded-md border px-3 font-mono text-sm font-semibold tabular-nums",
+                    "inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-2 rounded-md border px-3 font-mono text-sm font-semibold tabular-nums",
                     bandChipClass[band],
                   )}
                 >
-                  {entry.crashPoint.toFixed(2)}x
+                  <span>{entry.crashPoint.toFixed(2)}x</span>
+                  <History
+                    aria-hidden="true"
+                    className="size-3 text-muted-foreground"
+                  />
                 </button>
               </TooltipTrigger>
               <TooltipContent>
-                Crashed @ {entry.crashPoint.toFixed(2)}x
+                <div className="flex flex-col gap-0.5">
+                  <span>Crashed @ {entry.crashPoint.toFixed(2)}x</span>
+                  <span className="text-muted-foreground">Click to replay</span>
+                </div>
               </TooltipContent>
             </Tooltip>
           );

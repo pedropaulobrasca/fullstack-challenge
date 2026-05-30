@@ -8,6 +8,7 @@ import { BalancePill } from "@/components/balance-pill";
 import { ConnectionBadge } from "@/components/connection-badge";
 import { FairnessBadge } from "@/components/fairness-badge";
 import { VerificationDrawer } from "@/components/verification-drawer";
+import { ReplayModal } from "@/components/replay-modal";
 import appCss from "@/styles/globals.css?url";
 
 export const Route = createRootRoute({
@@ -41,6 +42,7 @@ function RootComponent() {
             </main>
           </div>
           <VerificationDrawer />
+          <ReplayModal />
         </QueryClientProvider>
         <Toaster position="top-center" richColors />
         <Scripts />
