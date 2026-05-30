@@ -66,7 +66,10 @@ describe("driver — round:started while running", () => {
     const deps = buildDeps();
     await handleAutoBetEvent("round:started", { roundId: "r1" }, deps);
     expect(deps.placeBet).toHaveBeenCalledTimes(1);
-    const call = (deps.placeBet as ReturnType<typeof vi.fn>).mock.calls[0][0];
+    const mockFn = deps.placeBet as ReturnType<typeof vi.fn>;
+    const firstCall = mockFn.mock.calls[0];
+    expect(firstCall).toBeDefined();
+    const call = firstCall![0] as { money: Money; autoCashoutTarget: number };
     expect(call.money.toCents()).toBe(1000n);
     expect(call.autoCashoutTarget).toBe(2);
   });

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { OidcProvider } from "@/auth/oidc-provider";
 import { useGameSocket } from "@/ws/use-game-socket";
+import { useAutoBetDriver } from "@/features/auto-bet/auto-bet-driver";
 import { BalancePill } from "@/components/balance-pill";
 import { ConnectionBadge } from "@/components/connection-badge";
 import { FairnessBadge } from "@/components/fairness-badge";
@@ -53,6 +54,7 @@ function RootComponent() {
 
 function GameSession() {
   useGameSocket();
+  useAutoBetDriver();
   return null;
 }
 

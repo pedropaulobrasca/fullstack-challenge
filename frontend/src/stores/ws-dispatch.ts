@@ -199,6 +199,32 @@ const handlers: { [E in WsEvent]: (payload: unknown) => void } = {
   },
 };
 
+type WsSubscriber = (payload: unknown) => void;
+
+const subscribers: { [E in WsEvent]: Set<WsSubscriber> } = {
+  "round:snapshot": new Set(),
+  "round:started": new Set(),
+  "round:running": new Set(),
+  "round:crashed": new Set(),
+  "round:settled": new Set(),
+  "round:tick": new Set(),
+  "bet:placed": new Set(),
+  "bet:cashed_out": new Set(),
+  "bet:my_active": new Set(),
+  "bet:my_refunded": new Set(),
+  "bet:my_cashed_out": new Set(),
+};
+
+export function subscribeWsEvent(
+  event: WsEvent,
+  handler: WsSubscriber,
+): () => void {
+  subscribers[event].add(handler);
+  return () => {
+    subscribers[event].delete(handler);
+  };
+}
+
 export function dispatchWsEvent(event: WsEvent, payload: unknown): void {
   const schema = schemaByEvent[event];
   const result = schema.safeParse(payload);
@@ -207,4 +233,11 @@ export function dispatchWsEvent(event: WsEvent, payload: unknown): void {
     return;
   }
   handlers[event](payload);
+  for (const subscriber of subscribers[event]) {
+    try {
+      subscriber(payload);
+    } catch (err) {
+      console.warn(`WS subscriber for "${event}" threw`, err);
+    }
+  }
 }

@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { Money } from "@crash/shared-kernel";
+import { Money } from "@crash/shared-kernel";
 import { protectedFetch } from "@/lib/api";
 import { useBetStore } from "@/stores/bet.store";
 import { walletQueryKey } from "@/features/wallet/use-wallet";
@@ -21,13 +21,32 @@ export class PlaceBetError extends Error {
   }
 }
 
-async function placeBet(money: Money): Promise<void> {
+export type PlaceBetInput = Money | { money: Money; autoCashoutTarget?: number };
+
+function normalizeInput(input: PlaceBetInput): {
+  money: Money;
+  autoCashoutTarget?: number;
+} {
+  if (input instanceof Money) {
+    return { money: input };
+  }
+  return input;
+}
+
+async function placeBet(input: PlaceBetInput): Promise<void> {
+  const { money, autoCashoutTarget } = normalizeInput(input);
   let response: Response;
   try {
+    const body: Record<string, unknown> = {
+      amountCents: money.toSnapshot().amount,
+    };
+    if (autoCashoutTarget !== undefined) {
+      body.autoCashoutTarget = autoCashoutTarget;
+    }
     response = await protectedFetch("/games/bet", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ amountCents: money.toSnapshot().amount }),
+      body: JSON.stringify(body),
     });
   } catch {
     throw new PlaceBetError("network");
@@ -49,7 +68,7 @@ export function usePlaceBet() {
   const setPending = useBetStore((state) => state.setPending);
   const queryClient = useQueryClient();
 
-  return useMutation<void, PlaceBetError, Money>({
+  return useMutation<void, PlaceBetError, PlaceBetInput>({
     mutationFn: placeBet,
     onMutate: () => {
       setPending(true);
