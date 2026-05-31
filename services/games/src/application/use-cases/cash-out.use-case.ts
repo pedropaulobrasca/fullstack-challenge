@@ -6,6 +6,8 @@ import {
   EXCHANGES,
   OutboxRepository,
 } from "@crash/messaging-spine";
+import { InjectMetric } from "@willsoto/nestjs-prometheus";
+import type { Counter } from "prom-client";
 import type { Money, PlayerId } from "@crash/shared-kernel";
 import {
   BET_CASHED_OUT_EVENT_TYPE,
@@ -20,6 +22,7 @@ import {
   RoundNotRunningError,
 } from "../../domain/errors";
 import { BET_REPOSITORY, ROUND_REPOSITORY } from "../tokens";
+import { BET_VOLUME_TOTAL } from "../../observability/metrics/bet-volume.metric";
 
 export type CashOutInput = {
   playerId: PlayerId;
@@ -39,6 +42,7 @@ export class CashOutUseCase {
     private readonly outbox: OutboxRepository,
     @Inject(ROUND_REPOSITORY) private readonly rounds: RoundRepository,
     @Inject(BET_REPOSITORY) private readonly bets: BetRepository,
+    @InjectMetric(BET_VOLUME_TOTAL) private readonly betVolume: Counter<string>,
   ) {}
 
   async execute(input: CashOutInput): Promise<CashOutResult> {
@@ -122,6 +126,8 @@ export class CashOutUseCase {
         },
         txEm,
       );
+
+      this.betVolume.inc({ status: "cashed_out" }, Number(active.amount.toCents()));
 
       return { multiplier: input.multiplier, payout };
     });

@@ -6,6 +6,8 @@ import {
   EXCHANGES,
   OutboxRepository,
 } from "@crash/messaging-spine";
+import { InjectMetric } from "@willsoto/nestjs-prometheus";
+import type { Counter } from "prom-client";
 import { BET_LOST_EVENT_TYPE, type BetLostEventV1 } from "@crash/contracts";
 import { Round } from "../../domain/round.aggregate";
 import { CrashPoint } from "../../domain/value-objects/crash-point";
@@ -13,6 +15,7 @@ import type { RoundRepository } from "../../domain/round.repository";
 import type { BetRepository } from "../../domain/bet.repository";
 import type { Bet } from "../../domain/bet.aggregate";
 import { BET_REPOSITORY, ROUND_REPOSITORY } from "../tokens";
+import { BET_VOLUME_TOTAL } from "../../observability/metrics/bet-volume.metric";
 
 @Injectable()
 export class CrashRoundUseCase {
@@ -23,6 +26,7 @@ export class CrashRoundUseCase {
     private readonly outbox: OutboxRepository,
     @Inject(ROUND_REPOSITORY) private readonly rounds: RoundRepository,
     @Inject(BET_REPOSITORY) private readonly bets: BetRepository,
+    @InjectMetric(BET_VOLUME_TOTAL) private readonly betVolume: Counter<string>,
   ) {}
 
   async execute(
@@ -103,6 +107,8 @@ export class CrashRoundUseCase {
         },
         txEm,
       );
+
+      this.betVolume.inc({ status: "lost" }, Number(bet.amount.toCents()));
     });
   }
 }

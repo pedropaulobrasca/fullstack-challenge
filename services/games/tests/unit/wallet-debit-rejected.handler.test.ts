@@ -133,6 +133,7 @@ function buildHarness(): Harness {
   const bets = new FakeBetRepo();
   const sagas = new FakeSagaRepo();
   const outbox = new FakeOutboxRepository();
+  const noopCounter = { inc: () => undefined };
   const handler = new WalletDebitRejectedHandler(
     {} as never,
     {} as never,
@@ -140,6 +141,7 @@ function buildHarness(): Harness {
     outbox as unknown as never,
     bets as unknown as BetRepository,
     sagas as unknown as BetSagaStateRepository,
+    noopCounter as unknown as never,
   );
   return { handler, bets, sagas, outbox, txEm: { __tag: "txEm" } };
 }

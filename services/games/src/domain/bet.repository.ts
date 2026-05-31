@@ -21,6 +21,16 @@ export interface BetRepository {
   countByRoundId(roundId: RoundId): Promise<number>;
   listByPlayer(playerId: PlayerId, limit: number, offset: number): Promise<Bet[]>;
   save(bet: Bet, txEm?: unknown): Promise<void>;
+  /**
+   * Returns aggregated bet/payout totals across all bets attached to the most
+   * recent `windowRounds` SETTLED rounds. Used by Phase 10 plan 05 to expose
+   * the `crash_rtp_window` Prometheus gauge — rolling RTP = payout / bet.
+   * Returns zero totals when no settled rounds exist yet.
+   */
+  getRollingRtp(windowRounds: number, txEm?: unknown): Promise<{
+    payoutTotalCents: bigint;
+    betTotalCents: bigint;
+  }>;
   tryTransition(
     id: BetId,
     fromStatus: BetStatus,

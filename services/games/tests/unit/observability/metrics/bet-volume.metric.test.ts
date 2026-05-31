@@ -270,6 +270,7 @@ describe("bet_volume_total counter — observation sites", () => {
       payload: {
         playerId: playerId as unknown as string,
         reason: "INSUFFICIENT_FUNDS",
+        requested: { amount: "4200", currency: "CRD", scale: 2 },
       },
     };
 

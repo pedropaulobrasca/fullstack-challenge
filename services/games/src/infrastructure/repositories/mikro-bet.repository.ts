@@ -100,6 +100,41 @@ export class MikroBetRepository implements BetRepository {
     await em.flush();
   }
 
+  async getRollingRtp(
+    windowRounds: number,
+    txEm?: unknown,
+  ): Promise<{ payoutTotalCents: bigint; betTotalCents: bigint }> {
+    const em = this.resolveEm(txEm);
+    const rows = await em
+      .getConnection()
+      .execute<Array<{ payout_total: string | null; bet_total: string | null }>>(
+        `WITH recent_rounds AS (
+           SELECT id FROM rounds
+           WHERE status = 'SETTLED'
+           ORDER BY settled_at DESC NULLS LAST
+           LIMIT ?
+         )
+         SELECT
+           COALESCE(SUM(CASE WHEN b.status = 'CASHED_OUT' THEN b.payout_cents ELSE 0 END), 0)::text AS payout_total,
+           COALESCE(SUM(b.amount_cents), 0)::text AS bet_total
+         FROM bets b
+         JOIN recent_rounds r ON r.id = b.round_id
+         WHERE b.status IN ('CASHED_OUT', 'LOST', 'REFUNDED')`,
+        [windowRounds],
+        "all",
+        em.getTransactionContext(),
+      );
+
+    const row = rows[0];
+    if (!row) {
+      return { payoutTotalCents: 0n, betTotalCents: 0n };
+    }
+    return {
+      payoutTotalCents: BigInt(row.payout_total ?? "0"),
+      betTotalCents: BigInt(row.bet_total ?? "0"),
+    };
+  }
+
   async findAutoCashoutCandidates(
     roundId: RoundId,
     ceilingCentiX: number,

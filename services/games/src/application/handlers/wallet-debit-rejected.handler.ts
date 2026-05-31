@@ -11,9 +11,12 @@ import {
   OutboxRepository,
   QUEUES,
 } from "@crash/messaging-spine";
+import { InjectMetric } from "@willsoto/nestjs-prometheus";
+import type { Counter } from "prom-client";
 import type { BetRepository } from "../../domain/bet.repository";
 import type { BetSagaStateRepository } from "../../domain/bet-saga-state.repository";
 import { BET_REPOSITORY, BET_SAGA_REPOSITORY } from "../tokens";
+import { BET_VOLUME_TOTAL } from "../../observability/metrics/bet-volume.metric";
 import type { WalletDebitRejectedEnvelope } from "./envelope-types";
 
 @Injectable()
@@ -27,6 +30,7 @@ export class WalletDebitRejectedHandler {
     private readonly outbox: OutboxRepository,
     @Inject(BET_REPOSITORY) private readonly bets: BetRepository,
     @Inject(BET_SAGA_REPOSITORY) private readonly sagas: BetSagaStateRepository,
+    @InjectMetric(BET_VOLUME_TOTAL) private readonly betVolume: Counter<string>,
   ) {}
 
   @IdempotentSubscribe({
@@ -101,5 +105,7 @@ export class WalletDebitRejectedHandler {
       },
       txEm,
     );
+
+    this.betVolume.inc({ status: "refunded" }, Number(refunded.amount.toCents()));
   }
 }

@@ -184,11 +184,13 @@ function buildHarness(open: Round | null): Harness {
   const bets = new FakeBetRepo(nextOrder);
   const rounds = new FakeRoundRepo(open);
 
+  const noopCounter = { inc: () => undefined };
   const useCase = new CashOutUseCase(
     em as unknown as never,
     outbox as unknown as never,
     rounds as unknown as RoundRepository,
     bets as unknown as BetRepository,
+    noopCounter as unknown as never,
   );
 
   return { useCase, em, outbox, bets };

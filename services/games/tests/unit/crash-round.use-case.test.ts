@@ -152,11 +152,13 @@ function buildHarness(): Harness {
   const outbox = new FakeOutboxRepository();
   const bets = new FakeBetRepo();
   const rounds = new FakeRoundRepo();
+  const noopCounter = { inc: () => undefined };
   const useCase = new CrashRoundUseCase(
     em as unknown as never,
     outbox as unknown as never,
     rounds as unknown as RoundRepository,
     bets as unknown as BetRepository,
+    noopCounter as unknown as never,
   );
   return { useCase, em, outbox, bets, rounds };
 }

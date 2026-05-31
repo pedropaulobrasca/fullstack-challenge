@@ -7,6 +7,8 @@ import {
   type OnGatewayDisconnect,
 } from "@nestjs/websockets";
 import type { Server, Socket } from "socket.io";
+import { InjectMetric } from "@willsoto/nestjs-prometheus";
+import type { Gauge } from "prom-client";
 import { PlayerId } from "@crash/shared-kernel";
 import { env } from "../../config/defaults";
 import { GetWsSnapshotUseCase } from "../../application/use-cases/get-ws-snapshot.use-case";
@@ -15,6 +17,7 @@ import {
   type LeaderboardUpdatedPayload,
 } from "../../application/game-events";
 import { leaderboardSnapshotEntryToWire } from "../../application/use-cases/get-leaderboard.use-case";
+import { ACTIVE_WS_CONNECTIONS } from "../../observability/metrics/active-ws-connections.metric";
 import type {
   RoundStartedPayload,
   RoundRunningPayload,
@@ -33,7 +36,11 @@ export class GameWsGateway
 
   @WebSocketServer() server!: Server;
 
-  constructor(private readonly snapshot: GetWsSnapshotUseCase) {}
+  constructor(
+    private readonly snapshot: GetWsSnapshotUseCase,
+    @InjectMetric(ACTIVE_WS_CONNECTIONS)
+    private readonly wsConnections: Gauge<string>,
+  ) {}
 
   async handleConnection(socket: Socket): Promise<void> {
     const playerId = socket.data?.playerId;
@@ -45,6 +52,7 @@ export class GameWsGateway
 
     socket.join("lobby");
     socket.join(`user:${playerId}`);
+    this.wsConnections.inc();
 
     try {
       const payload = await this.snapshot.execute(PlayerId(playerId));
@@ -58,7 +66,9 @@ export class GameWsGateway
     }
   }
 
-  handleDisconnect(_socket: Socket): void {}
+  handleDisconnect(_socket: Socket): void {
+    this.wsConnections.dec();
+  }
 
   emitToLobby(event: string, payload: unknown): void {
     this.server.to("lobby").emit(event, payload);

@@ -11,11 +11,14 @@ import {
   EXCHANGES,
   OutboxRepository,
 } from "@crash/messaging-spine";
+import { InjectMetric } from "@willsoto/nestjs-prometheus";
+import type { Counter } from "prom-client";
 import { randomUUID } from "node:crypto";
 import { env } from "../config/defaults";
 import type { BetRepository } from "../domain/bet.repository";
 import type { BetSagaStateRepository } from "../domain/bet-saga-state.repository";
 import { BET_REPOSITORY, BET_SAGA_REPOSITORY } from "./tokens";
+import { BET_VOLUME_TOTAL } from "../observability/metrics/bet-volume.metric";
 
 const CLAIM_LIMIT = 100;
 
@@ -32,6 +35,7 @@ export class SagaTimeoutSweeper
     private readonly outbox: OutboxRepository,
     @Inject(BET_SAGA_REPOSITORY) private readonly sagas: BetSagaStateRepository,
     @Inject(BET_REPOSITORY) private readonly bets: BetRepository,
+    @InjectMetric(BET_VOLUME_TOTAL) private readonly betVolume: Counter<string>,
   ) {}
 
   async onApplicationBootstrap(): Promise<void> {
@@ -98,6 +102,8 @@ export class SagaTimeoutSweeper
           },
           txEm,
         );
+
+        this.betVolume.inc({ status: "refunded" }, Number(refunded.amount.toCents()));
       }
     });
   }

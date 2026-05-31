@@ -164,11 +164,13 @@ function buildHarness(): Harness {
   const outbox = new FakeOutboxRepository();
   const bets = new FakeBetRepo();
   const sagas = new FakeSagaRepo();
+  const noopCounter = { inc: () => undefined };
   const sweeper = new SagaTimeoutSweeper(
     em as unknown as never,
     outbox as unknown as never,
     sagas as unknown as BetSagaStateRepository,
     bets as unknown as BetRepository,
+    noopCounter as unknown as never,
   );
   return { sweeper, em, outbox, bets, sagas };
 }

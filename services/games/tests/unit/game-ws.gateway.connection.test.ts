@@ -56,7 +56,7 @@ function buildSocket(playerId: string | null = "player-alice") {
 describe("GameWsGateway.handleConnection", () => {
   test("joins lobby and user:{playerId} then emits round:snapshot", async () => {
     const snapshot = buildSnapshotStub();
-    const gateway = new GameWsGateway(snapshot);
+    const gateway = new GameWsGateway(snapshot, { inc: () => undefined, dec: () => undefined } as any);
     const socket = buildSocket("player-alice");
 
     await gateway.handleConnection(socket as never);
@@ -69,7 +69,7 @@ describe("GameWsGateway.handleConnection", () => {
 
   test("disconnects when playerId missing from socket.data", async () => {
     const snapshot = buildSnapshotStub();
-    const gateway = new GameWsGateway(snapshot);
+    const gateway = new GameWsGateway(snapshot, { inc: () => undefined, dec: () => undefined } as any);
     const socket = buildSocket(null);
 
     await gateway.handleConnection(socket as never);
@@ -85,7 +85,7 @@ describe("GameWsGateway.handleConnection", () => {
         throw new Error("repo failure");
       }),
     } as unknown as GetWsSnapshotUseCase;
-    const gateway = new GameWsGateway(snapshot);
+    const gateway = new GameWsGateway(snapshot, { inc: () => undefined, dec: () => undefined } as any);
     const socket = buildSocket("player-alice");
 
     await gateway.handleConnection(socket as never);

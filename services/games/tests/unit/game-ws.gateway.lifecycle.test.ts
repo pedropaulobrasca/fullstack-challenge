@@ -23,7 +23,7 @@ function buildGateway(): {
   const snapshot = {
     execute: () => Promise.resolve({} as never),
   } as unknown as GetWsSnapshotUseCase;
-  const gateway = new GameWsGateway(snapshot);
+  const gateway = new GameWsGateway(snapshot, { inc: () => undefined, dec: () => undefined } as any);
 
   const emitSpy = mock((..._args: unknown[]) => true);
   const roomChain = { emit: emitSpy };

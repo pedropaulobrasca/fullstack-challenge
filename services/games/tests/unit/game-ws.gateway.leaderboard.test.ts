@@ -38,7 +38,7 @@ class FakeServer {
 describe("GameWsGateway — leaderboard:updated WS emit", () => {
   test("emits payload that satisfies the canonical leaderboardUpdatedPayloadSchema", () => {
     const fakeSnapshot = {} as never;
-    const gateway = new GameWsGateway(fakeSnapshot);
+    const gateway = new GameWsGateway(fakeSnapshot, { inc: () => undefined, dec: () => undefined } as any);
     const server = new FakeServer();
     (gateway as unknown as { server: FakeServer }).server = server;
 
@@ -90,7 +90,7 @@ describe("GameWsGateway — leaderboard:updated WS emit", () => {
 
   test("masks every entry's playerId — raw UUIDs never leak over the wire", () => {
     const fakeSnapshot = {} as never;
-    const gateway = new GameWsGateway(fakeSnapshot);
+    const gateway = new GameWsGateway(fakeSnapshot, { inc: () => undefined, dec: () => undefined } as any);
     const server = new FakeServer();
     (gateway as unknown as { server: FakeServer }).server = server;
 
@@ -130,7 +130,7 @@ describe("GameWsGateway — leaderboard:updated WS emit", () => {
 
   test("preserves signed netProfit (negative cents serialized as negative MoneySnapshot.amount)", () => {
     const fakeSnapshot = {} as never;
-    const gateway = new GameWsGateway(fakeSnapshot);
+    const gateway = new GameWsGateway(fakeSnapshot, { inc: () => undefined, dec: () => undefined } as any);
     const server = new FakeServer();
     (gateway as unknown as { server: FakeServer }).server = server;
 
@@ -160,7 +160,7 @@ describe("GameWsGateway — leaderboard:updated WS emit", () => {
 
   test("does NOT include a netProfitCents key (locked-in regression guard)", () => {
     const fakeSnapshot = {} as never;
-    const gateway = new GameWsGateway(fakeSnapshot);
+    const gateway = new GameWsGateway(fakeSnapshot, { inc: () => undefined, dec: () => undefined } as any);
     const server = new FakeServer();
     (gateway as unknown as { server: FakeServer }).server = server;
 

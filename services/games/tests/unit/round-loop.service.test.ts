@@ -197,13 +197,16 @@ function buildHarness(): Harness {
   const outbox = {
     async add(): Promise<void> {},
   };
+  const noopCounter = { inc: () => undefined } as never;
+  const noopGauge = { set: () => undefined, inc: () => undefined, dec: () => undefined } as never;
   const crashUC = new CrashRoundUseCase(
     em as unknown as never,
     outbox as unknown as never,
     rounds,
     bets,
+    noopCounter,
   );
-  const settleUC = new SettleRoundUseCase(rounds, chain);
+  const settleUC = new SettleRoundUseCase(rounds, chain, bets, noopGauge);
   const emitter = new EventEmitter2();
   const emitSpy = mock((..._args: unknown[]) => true);
   emitter.emit = emitSpy as unknown as typeof emitter.emit;
