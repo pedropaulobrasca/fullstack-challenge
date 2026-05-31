@@ -323,7 +323,7 @@ Plans:
 - [x] 10-02-PLAN.md — Package legitimacy checkpoint + bun add (OTel + pino + @willsoto/nestjs-prometheus@^6.1.0 + @playwright/test); v11 hallucination corrected to actual npm latest 6.1.0
 - [x] 10-03-PLAN.md — OTel NodeSDK tracing.ts first-import + ObservabilityModule + nestjs-pino with traceId+correlationId enrichment (BOTH services)
 - [x] 10-04-PLAN.md — docker-compose Jaeger + Prometheus + Grafana with UID-pinned datasources + 3 dashboards + smoke probes 45-47
-- [ ] 10-05-PLAN.md — 5 custom Prometheus metrics (bet_volume + crash_rtp + multiplier_drift + ws_broadcast_latency + active_ws_connections) + /metrics endpoint
+- [x] 10-05-PLAN.md — 5 custom Prometheus metrics (bet_volume + crash_rtp + multiplier_drift + ws_broadcast_latency + active_ws_connections) + /metrics endpoint
 - [ ] 10-06-PLAN.md — D-03a Sheet/Dialog visibility fix + D-03b WS round:snapshot null relax + D-03c HistoryStrip key verify
 - [ ] 10-07-PLAN.md — Playwright 2 specs (cashout + crash) live against docker stack + FE data-testid hooks
 - [ ] 10-08-PLAN.md — GitHub Actions ci.yml (full docker:up + Playwright + Pitfall 8 disk cleanup + green CI checkpoint)
@@ -362,7 +362,7 @@ These are not numbered phases. Pull from this list during Phase 10 if time permi
 | 7. Frontend Vertical Slice | 9/9 | Complete | 2026-05-29 |
 | 8. Provably-Fair UX, History & Replay | 10/10 | Complete | 2026-05-30 |
 | 9. Auto Features & Leaderboard | 10/10 | Complete | 2026-05-30 |
-| 10. Quality Hardening & Docs | 3/9 | In progress | - |
+| 10. Quality Hardening & Docs | 5/9 | In progress | - |
 
 ---
 

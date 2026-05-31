@@ -124,7 +124,7 @@
 ### Observability (OBS)
 
 - [ ] **REQ-OBS-01**: Both services emit OpenTelemetry traces via `@opentelemetry/sdk-node` + `nestjs-otel`; spans propagate across HTTP, AMQP, and WebSocket boundaries via W3C TraceContext.
-- [ ] **REQ-OBS-02**: Both services expose Prometheus metrics at `/metrics` (req latency, error rate, AMQP consumer lag, WS connections, custom: bet volume, RTP, multiplier drift, WS broadcast latency).
+- [x] **REQ-OBS-02**: Both services expose Prometheus metrics at `/metrics` (req latency, error rate, AMQP consumer lag, WS connections, custom: bet volume, RTP, multiplier drift, WS broadcast latency). _[P10-05]_
 - [x] **REQ-OBS-03**: Docker compose includes Prometheus + Grafana with pre-provisioned dashboards (one for each service + one for the Crash Game custom metrics).
 - [ ] **REQ-OBS-04**: All logs are structured JSON via `pino` + `nestjs-pino` with `correlationId` + `traceId` enrichment.
 
@@ -216,7 +216,7 @@ Each v1 REQ-ID maps to exactly one phase in `ROADMAP.md`. v2 (REQ-STRETCH-*) liv
 ### Coverage summary
 
 - **v1 mapped**: 95 / 95 (100%)
-- **v1 complete**: 76 / 95 (Phase 1: REQ-AUTH-05 + REQ-DOC-03; Phase 2: REQ-WALL-05 + REQ-WALL-06 + REQ-SAGA-05 + REQ-SAGA-06; Phase 3: REQ-DOM-03 + REQ-AUTH-04 + REQ-WALL-01 + REQ-WALL-02 + REQ-WALL-03 + REQ-WALL-04 + REQ-WALL-07; Phase 4: REQ-DOM-01 + REQ-DOM-02 + REQ-DOM-04 + REQ-DOM-07 + REQ-DOM-08 + REQ-GAME-01 + REQ-GAME-02 + REQ-GAME-03 + REQ-GAME-04 + REQ-GAME-05 + REQ-GAME-08 + REQ-GAME-09 + REQ-FAIR-01 + REQ-FAIR-02 + REQ-FAIR-03 + REQ-FAIR-04 + REQ-FAIR-05 + REQ-TEST-01 + REQ-TEST-02; Phase 5: REQ-GAME-06 + REQ-GAME-07 + REQ-SAGA-01 + REQ-SAGA-02 + REQ-SAGA-03 + REQ-SAGA-04 + REQ-TEST-03 + REQ-TEST-04; Phase 6: REQ-WS-01 + REQ-WS-02 + REQ-WS-03 + REQ-WS-04 + REQ-WS-05 + REQ-WS-06 + REQ-WS-07; Phase 7: REQ-FE-01 + REQ-FE-11 + REQ-FE-12 + REQ-AUTH-01 + REQ-AUTH-02 + REQ-AUTH-03 + REQ-FE-07 + REQ-FE-08 + REQ-FE-04 + REQ-FE-05 + REQ-FE-06 + REQ-FE-02 + REQ-FE-03 + REQ-FE-13 + REQ-FE-14; Phase 8: REQ-FE-09 + REQ-FE-10 + REQ-REPLAY-01 + REQ-REPLAY-02 + REQ-REPLAY-03; Phase 9: REQ-AUTO-01 + REQ-AUTO-02 + REQ-AUTO-03 + REQ-AUTO-04 + REQ-AUTO-05 + REQ-LEAD-01 + REQ-LEAD-02 + REQ-LEAD-03 + REQ-LEAD-04)
+- **v1 complete**: 77 / 95 (Phase 1: REQ-AUTH-05 + REQ-DOC-03; Phase 2: REQ-WALL-05 + REQ-WALL-06 + REQ-SAGA-05 + REQ-SAGA-06; Phase 3: REQ-DOM-03 + REQ-AUTH-04 + REQ-WALL-01 + REQ-WALL-02 + REQ-WALL-03 + REQ-WALL-04 + REQ-WALL-07; Phase 4: REQ-DOM-01 + REQ-DOM-02 + REQ-DOM-04 + REQ-DOM-07 + REQ-DOM-08 + REQ-GAME-01 + REQ-GAME-02 + REQ-GAME-03 + REQ-GAME-04 + REQ-GAME-05 + REQ-GAME-08 + REQ-GAME-09 + REQ-FAIR-01 + REQ-FAIR-02 + REQ-FAIR-03 + REQ-FAIR-04 + REQ-FAIR-05 + REQ-TEST-01 + REQ-TEST-02; Phase 5: REQ-GAME-06 + REQ-GAME-07 + REQ-SAGA-01 + REQ-SAGA-02 + REQ-SAGA-03 + REQ-SAGA-04 + REQ-TEST-03 + REQ-TEST-04; Phase 6: REQ-WS-01 + REQ-WS-02 + REQ-WS-03 + REQ-WS-04 + REQ-WS-05 + REQ-WS-06 + REQ-WS-07; Phase 7: REQ-FE-01 + REQ-FE-11 + REQ-FE-12 + REQ-AUTH-01 + REQ-AUTH-02 + REQ-AUTH-03 + REQ-FE-07 + REQ-FE-08 + REQ-FE-04 + REQ-FE-05 + REQ-FE-06 + REQ-FE-02 + REQ-FE-03 + REQ-FE-13 + REQ-FE-14; Phase 8: REQ-FE-09 + REQ-FE-10 + REQ-REPLAY-01 + REQ-REPLAY-02 + REQ-REPLAY-03; Phase 9: REQ-AUTO-01 + REQ-AUTO-02 + REQ-AUTO-03 + REQ-AUTO-04 + REQ-AUTO-05 + REQ-LEAD-01 + REQ-LEAD-02 + REQ-LEAD-03 + REQ-LEAD-04; Phase 10 (partial, in-progress): REQ-OBS-02 + REQ-OBS-03)
 - **Orphans**: 0
 - **Duplicates**: 0
 - **Stretch (v2) deferred**: 8
@@ -347,7 +347,7 @@ Each v1 REQ-ID maps to exactly one phase in `ROADMAP.md`. v2 (REQ-STRETCH-*) liv
 |--------|-------|--------|
 | REQ-TEST-05 | Playwright E2E (login→bet→cashout, login→bet→crash) | Pending |
 | REQ-OBS-01 | OpenTelemetry traces across HTTP/AMQP/WS | Pending |
-| REQ-OBS-02 | Prometheus `/metrics` (latency, AMQP lag, RTP, WS latency, multiplier drift) | Pending |
+| REQ-OBS-02 | Prometheus `/metrics` (latency, AMQP lag, RTP, WS latency, multiplier drift) | Done (P10-05) |
 | REQ-OBS-03 | Prometheus + Grafana in docker-compose, pre-provisioned dashboards | Done (Phase 10 P10-04) |
 | REQ-OBS-04 | Structured JSON logs via `pino` + `nestjs-pino` with correlationId | Pending |
 | REQ-CI-01 | GitHub Actions runs unit + e2e on push + PR | Pending |
