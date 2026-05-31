@@ -820,7 +820,52 @@ probe_games_bet_ws_my_active() {
   fi
 }
 
-echo "Running Phase 1+2+3+4+5+6 smoke probes against local stack..."
+probe_jaeger_ui() {
+  local name="45: jaeger UI reachable (port 16686)"
+  local code
+  code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:16686/ || echo "000")
+  if [[ "${code}" == "200" ]]; then
+    record_pass "${name}"
+  else
+    record_fail "${name}" "expected HTTP 200, got ${code}"
+  fi
+}
+
+probe_prometheus_healthy() {
+  local name="46: prometheus /-/healthy (port 9090)"
+  local response
+  response=$(curl -s -w "\n%{http_code}" http://localhost:9090/-/healthy || echo $'\n000')
+  local code="${response##*$'\n'}"
+  local body="${response%$'\n'*}"
+  if [[ "${code}" != "200" ]]; then
+    record_fail "${name}" "expected 200, got ${code}"
+    return
+  fi
+  if echo "${body}" | grep -qiE "prometheus|healthy"; then
+    record_pass "${name}"
+  else
+    record_fail "${name}" "expected body to contain 'Prometheus' or 'Healthy', got '${body}'"
+  fi
+}
+
+probe_grafana_health() {
+  local name="47: grafana /api/health database ok (port 3001)"
+  local response
+  response=$(curl -s -w "\n%{http_code}" http://localhost:3001/api/health || echo $'\n000')
+  local code="${response##*$'\n'}"
+  local body="${response%$'\n'*}"
+  if [[ "${code}" != "200" ]]; then
+    record_fail "${name}" "expected 200, got ${code}"
+    return
+  fi
+  if echo "${body}" | grep -q '"database":[[:space:]]*"ok"'; then
+    record_pass "${name}"
+  else
+    record_fail "${name}" "expected body to contain \"database\":\"ok\", got '${body}'"
+  fi
+}
+
+echo "Running Phase 1+2+3+4+5+6+10 smoke probes against local stack..."
 echo
 
 probe_postgres
@@ -855,6 +900,9 @@ probe_games_ws_snapshot_on_connect
 probe_games_ws_tick_frequency
 probe_games_ws_lifecycle_sequence
 probe_games_bet_ws_my_active
+probe_jaeger_ui
+probe_prometheus_healthy
+probe_grafana_health
 
 TOTAL=$((PASS + FAIL))
 echo
