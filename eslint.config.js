@@ -13,6 +13,8 @@ export default [
       "test-results/",
       "**/migrations/",
       ".bun-cache/",
+      "**/*.gen.ts",
+      "**/*.gen.tsx",
     ],
   },
   {
@@ -49,15 +51,28 @@ export default [
       "**/src/config/**/*.ts",
       "**/mikro-orm.config.ts",
       "services/*/src/main.ts",
+      "services/*/src/tracing.ts",
+      "services/*/src/observability/pino-config.ts",
+      "services/*/src/domain/value-objects/bet-amount.ts",
+      "e2e/**/*.config.ts",
+      "*.config.ts",
     ],
     rules: {
       "no-restricted-properties": "off",
     },
   },
   {
-    files: ["**/tests/**/*.ts", "**/*.test.ts", "**/*.test.tsx"],
+    files: [
+      "**/tests/**/*.ts",
+      "**/tests/**/*.tsx",
+      "**/*.test.ts",
+      "**/*.test.tsx",
+      "**/*.spec.ts",
+      "**/*.spec.tsx",
+    ],
     rules: {
       "@crash/no-number-for-money": "off",
+      "no-restricted-properties": "off",
     },
   },
 ];
