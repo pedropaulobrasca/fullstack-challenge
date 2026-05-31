@@ -161,6 +161,26 @@ describe("invalid payload handling", () => {
   });
 });
 
+describe("round:snapshot null payload (D-03b, reconnect between rounds)", () => {
+  it("treats null payload as a silent no-op (no throw, no warn, no store mutation)", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+
+    const roundBefore = useRoundStore.getState();
+    const betBefore = useBetStore.getState().myBet;
+    const multBefore = useMultiplierStore.getState();
+
+    expect(() => dispatchWsEvent("round:snapshot", null)).not.toThrow();
+
+    expect(warn).not.toHaveBeenCalled();
+    expect(useRoundStore.getState().roundId).toBe(roundBefore.roundId);
+    expect(useRoundStore.getState().status).toBe(roundBefore.status);
+    expect(useBetStore.getState().myBet).toBe(betBefore);
+    expect(useMultiplierStore.getState().serverOffsetMs).toBe(multBefore.serverOffsetMs);
+
+    warn.mockRestore();
+  });
+});
+
 describe("round:settled clears a lost bet", () => {
   const settledPayload = {
     roundId: "r1",
