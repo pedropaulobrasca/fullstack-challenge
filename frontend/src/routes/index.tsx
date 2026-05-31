@@ -1,13 +1,16 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import { Trophy } from "lucide-react";
 import { enforceLogin } from "@/auth/oidc";
 import { CrashCurve } from "@/components/crash-curve";
 import { BetPanel } from "@/components/bet-panel";
 import { CashoutButton } from "@/components/cashout-button";
 import { Countdown } from "@/components/countdown";
 import { LiveFeed } from "@/components/live-feed";
+import { LeaderboardPanel } from "@/components/leaderboard-panel";
 import { HistoryStrip } from "@/components/history-strip";
 import { CurveSkeleton, HistorySkeleton } from "@/components/game-skeletons";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { CrashFlash } from "@/features/juice/crash-flash";
 import { celebrate } from "@/features/juice/celebrate";
 import { useWallet } from "@/features/wallet/use-wallet";
@@ -30,6 +33,7 @@ function GameRoute() {
   const celebrating = useBetStore((state) => state.celebrate);
   const clearCelebration = useBetStore((state) => state.clearCelebration);
   const connectionStatus = useConnectionStore((state) => state.status);
+  const [feedTab, setFeedTab] = useState<"live-feed" | "leaderboard">("live-feed");
 
   useEffect(() => {
     if (celebrating) {
@@ -83,7 +87,25 @@ function GameRoute() {
           data-region="feed-rail"
           className="order-3 flex min-h-40 flex-col lg:order-none lg:min-h-[520px]"
         >
-          <LiveFeed />
+          <Tabs
+            value={feedTab}
+            onValueChange={(value) => setFeedTab(value as "live-feed" | "leaderboard")}
+            className="flex h-full flex-col"
+          >
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="live-feed">Live Feed</TabsTrigger>
+              <TabsTrigger value="leaderboard">
+                <Trophy className="size-3.5" aria-hidden="true" />
+                Leaderboard
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="live-feed" className="min-h-0 flex-1">
+              <LiveFeed />
+            </TabsContent>
+            <TabsContent value="leaderboard" className="min-h-0 flex-1">
+              <LeaderboardPanel isActive={feedTab === "leaderboard"} />
+            </TabsContent>
+          </Tabs>
         </aside>
       </div>
     </div>

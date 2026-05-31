@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import { render, screen, act } from "@testing-library/react";
+import { render, screen, act, fireEvent } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const confettiMock = vi.fn();
@@ -161,7 +161,9 @@ describe("GameRoute right rail tabs (D-02)", () => {
     renderRoute();
     const leaderboardTrigger = screen.getByRole("tab", { name: /Leaderboard/i });
     await act(async () => {
-      leaderboardTrigger.click();
+      fireEvent.pointerDown(leaderboardTrigger, { button: 0 });
+      fireEvent.mouseDown(leaderboardTrigger, { button: 0 });
+      fireEvent.click(leaderboardTrigger);
     });
     expect(leaderboardTrigger).toHaveAttribute("data-state", "active");
     const panel = screen.getByTestId("leaderboard-panel");
