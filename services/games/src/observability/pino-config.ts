@@ -29,7 +29,7 @@ export function buildPinoOptions(cls: ClsService): PinoHttpOptions {
       remove: true,
     },
   };
-  if (!isProd) {
+  if (!isProd && process.env.PINO_PRETTY === "1") {
     base.transport = { target: "pino-pretty", options: { colorize: true } };
   }
   return base;
