@@ -1,18 +1,26 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { ModuleRef } from "@nestjs/core";
 import { EventEmitter2 } from "@nestjs/event-emitter";
+import { getToken } from "@willsoto/nestjs-prometheus";
+import type { Histogram } from "prom-client";
 import { RoundId } from "@crash/shared-kernel";
 import { env } from "../config/defaults";
 import type { RoundLoopService } from "./round-loop.service";
 import { ROUND_LOOP_SERVICE } from "./tokens";
 import { GAME_EVENTS, type RoundTickPayload } from "./game-events";
 import type { GameWsGateway } from "../presentation/gateways/game-ws.gateway";
+import { MULTIPLIER_DRIFT_SECONDS } from "../observability/metrics/multiplier-drift.metric";
+import { WS_BROADCAST_LATENCY_SECONDS } from "../observability/metrics/ws-broadcast-latency.metric";
 
 type DirectDeps = {
   roundLoop: RoundLoopService;
   gateway: GameWsGateway;
   eventEmitter: EventEmitter2;
 };
+
+type NoopObserver = { observe(value: number): void };
+
+const noopHistogram: NoopObserver = { observe: () => undefined };
 
 @Injectable()
 export class MultiplierBroadcastService {
@@ -26,9 +34,12 @@ export class MultiplierBroadcastService {
   private currentRoundId: string | null = null;
   private gatewayRef: GameWsGateway | null = null;
   private roundLoopRef: RoundLoopService | null = null;
+  private multiplierDriftRef: NoopObserver | null = null;
+  private wsBroadcastLatencyRef: NoopObserver | null = null;
   private readonly moduleRef: ModuleRef | null;
   private readonly direct: DirectDeps | null;
   private readonly eventEmitter: EventEmitter2;
+  private expectedNextTickAt: number = 0;
 
   constructor(moduleRef: ModuleRef, eventEmitter: EventEmitter2);
   constructor(
@@ -78,10 +89,47 @@ export class MultiplierBroadcastService {
     return this.roundLoopRef;
   }
 
+  private resolveMultiplierDrift(): NoopObserver {
+    if (this.multiplierDriftRef !== null) return this.multiplierDriftRef;
+    if (this.moduleRef === null) {
+      this.multiplierDriftRef = noopHistogram;
+      return this.multiplierDriftRef;
+    }
+    try {
+      const histogram = this.moduleRef.get<Histogram<string>>(
+        getToken(MULTIPLIER_DRIFT_SECONDS),
+        { strict: false },
+      );
+      this.multiplierDriftRef = histogram ?? noopHistogram;
+    } catch {
+      this.multiplierDriftRef = noopHistogram;
+    }
+    return this.multiplierDriftRef;
+  }
+
+  private resolveWsBroadcastLatency(): NoopObserver {
+    if (this.wsBroadcastLatencyRef !== null) return this.wsBroadcastLatencyRef;
+    if (this.moduleRef === null) {
+      this.wsBroadcastLatencyRef = noopHistogram;
+      return this.wsBroadcastLatencyRef;
+    }
+    try {
+      const histogram = this.moduleRef.get<Histogram<string>>(
+        getToken(WS_BROADCAST_LATENCY_SECONDS),
+        { strict: false },
+      );
+      this.wsBroadcastLatencyRef = histogram ?? noopHistogram;
+    } catch {
+      this.wsBroadcastLatencyRef = noopHistogram;
+    }
+    return this.wsBroadcastLatencyRef;
+  }
+
   start(roundId: string): void {
     if (this.running) return;
     this.running = true;
     this.currentRoundId = roundId;
+    this.expectedNextTickAt = Date.now() + this.intervalMs;
     this.scheduleNext();
   }
 
@@ -93,6 +141,7 @@ export class MultiplierBroadcastService {
       this.timer = null;
     }
     this.currentRoundId = null;
+    this.expectedNextTickAt = 0;
   }
 
   private scheduleNext(): void {
@@ -102,7 +151,15 @@ export class MultiplierBroadcastService {
 
   private fireTick(): void {
     if (!this.running) return;
-    const now = new Date();
+
+    const tickEntryMs = Date.now();
+    const driftSeconds =
+      this.expectedNextTickAt > 0
+        ? Math.max(0, (tickEntryMs - this.expectedNextTickAt) / 1000)
+        : 0;
+    this.resolveMultiplierDrift().observe(driftSeconds);
+
+    const now = new Date(tickEntryMs);
     const roundId = this.currentRoundId;
     try {
       const multiplier = this.resolveRoundLoop().getMultiplierAt(now);
@@ -110,11 +167,14 @@ export class MultiplierBroadcastService {
       if (roundId !== null && gateway !== null) {
         const multiplierNumber = multiplier.toNumber();
         const tickTime = now.getTime();
+        const emitStart = performance.now();
         gateway.server.to("lobby").volatile.emit("round:tick", {
           roundId,
           multiplier: multiplierNumber,
           t: tickTime,
         });
+        const emitDurationSeconds = (performance.now() - emitStart) / 1000;
+        this.resolveWsBroadcastLatency().observe(emitDurationSeconds);
         try {
           const payload: RoundTickPayload = {
             roundId: RoundId(roundId),
@@ -132,6 +192,7 @@ export class MultiplierBroadcastService {
     } catch {
       // Round transitioned out of RUNNING between schedule and fire — drop tick silently.
     } finally {
+      this.expectedNextTickAt = tickEntryMs + this.intervalMs;
       this.scheduleNext();
     }
   }
