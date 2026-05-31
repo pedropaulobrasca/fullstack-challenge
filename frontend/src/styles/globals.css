@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 @import "@fontsource/fira-code/400.css";
 @import "@fontsource/fira-code/600.css";
 @import "@fontsource/fira-sans/400.css";

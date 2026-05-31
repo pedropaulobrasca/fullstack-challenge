@@ -39,3 +39,21 @@ Items discovered during execution that are OUT OF SCOPE for the current task.
 **Why deferred:** Pre-existing — all current wallets integration tests are equally affected. Out of scope for 10-05. Live containers verified directly via `curl`.
 
 **Recommended fix:** Either gate `pino-pretty` transport behind `NODE_ENV !== "test"`, or move the `pretty` transport to a peer dependency of the wallets test boot helper.
+
+---
+
+## 2026-05-31 — Pre-existing FE runtime error: node:crypto externalized
+
+**Discovered during:** Plan 10-06 Task 1 (visual verification of D-03a fix via Playwright).
+
+**Symptom:** Fresh Playwright context navigates to http://localhost:3000, OIDC redirect completes, header renders (CRASH logo + Fairness badge + Reconnecting pill), but the rest of the React tree never mounts. Browser console:
+
+> Module "node:crypto" has been externalized for browser compatibility. Cannot access "node:crypto.createHash" in client code.
+
+**Where:** Some client-bundled module imports `node:crypto` directly (likely a Phase 8 fairness helper that should use `crypto.subtle` or the `provably-fair-browser` entry from `@crash/contracts`). Vite externalizes `node:` builtins for browser, causing a runtime throw the first time the path is exercised.
+
+**Impact on plan 10-06:** Blocks live click-through screenshot capture for D-03a (Sheet/Dialog visual confirm). The CSS fix itself is correct — verified at the build-artifact layer:
+- `globals.css` now contains `@import "tw-animate-css";` after `@import "tailwindcss";` (regression test: `src/styles/globals.css.test.ts`).
+- Compiled CSS served by Vite contains all four animation utilities the diagnosis cited (`animate-in`, `slide-in-from-right`, `fade-in-0`, `zoom-in-95`) and the `--tw-enter-*` CSS variables emitted by `tw-animate-css@1.4.0`.
+
+**Out of scope** for 10-06 (which addresses 3 polish defects, not Phase 8 SSR/browser-bundle hygiene). Should be addressed in plan 10-07 (Playwright E2E) or a follow-up fix plan — the bundler hygiene fix is "find the import and route it through `provably-fair-browser`."
