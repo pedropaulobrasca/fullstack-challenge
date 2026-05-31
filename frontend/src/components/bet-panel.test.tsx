@@ -73,7 +73,9 @@ describe("BetPanel — tab structure", () => {
 
   it("clicking Auto reveals the auto-bet form and unmounts the manual form", () => {
     renderPanel();
-    fireEvent.click(screen.getByRole("tab", { name: /auto/i }));
+    const autoTrigger = screen.getByRole("tab", { name: /auto/i });
+    fireEvent.keyDown(autoTrigger, { key: "ArrowRight" });
+    fireEvent.keyDown(autoTrigger, { key: "Enter" });
     expect(screen.getByLabelText("Target multiplier")).toBeInTheDocument();
     expect(screen.queryByLabelText("Bet amount")).not.toBeInTheDocument();
   });
