@@ -110,3 +110,10 @@ services:
           - GET
           - OPTIONS
         strip_path: false
+      - name: wallets-topup
+        paths:
+          - ~/wallets/me/topup$
+        methods:
+          - POST
+          - OPTIONS
+        strip_path: false
