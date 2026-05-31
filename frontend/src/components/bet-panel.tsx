@@ -16,8 +16,8 @@ export function BetPanel() {
   return (
     <Card className="flex flex-col gap-4 p-6">
       <Tabs defaultValue="manual" className="w-full">
-        <TabsList className="grid h-11 w-full grid-cols-2">
-          <TabsTrigger value="manual" className="min-h-11">
+        <TabsList className="grid h-12 w-full grid-cols-2 p-0.5">
+          <TabsTrigger value="manual" className="h-full">
             Manual
             {autoRunning ? (
               <Lock
@@ -26,7 +26,7 @@ export function BetPanel() {
               />
             ) : null}
           </TabsTrigger>
-          <TabsTrigger value="auto" className="min-h-11">
+          <TabsTrigger value="auto" className="h-full">
             <Bot aria-hidden="true" className="size-4" />
             Auto
             {autoRunning ? (
