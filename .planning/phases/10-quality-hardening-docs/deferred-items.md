@@ -53,3 +53,24 @@ Items discovered during execution that are OUT OF SCOPE for the current task.
 - All 71 backend + FE consumers re-routed to import identity types/funcs from `@crash/shared-kernel/identity`.
 
 **Verification:** Fresh Vite dev boot produces zero `externalized` / `node:crypto` log lines; `curl /` returns 200 with full SSR HTML; FE vitest suite 247/247 green; shared-kernel / games / wallets / frontend typechecks all clean.
+
+---
+
+## 2026-05-31 — Frontend vitest regression: 147 failing / 2 errors (out of scope for 10-07)
+
+**Discovered during:** Plan 10-07 Task 1 — running `cd frontend && bun test` to validate that adding `data-testid` attributes did not regress the unit suite.
+
+**Symptom:** `cd frontend && bun test` reports **80 pass / 147 fail / 2 errors / 227 tests across 37 files** on `main@7e3b807`. Failures pre-date plan 10-07 — the previously-recorded "247/247 green" figure (above, in the resolved `node:crypto` entry) no longer holds.
+
+**Verification that plan 10-07 introduced no regression:**
+- Baseline (no edits): `git stash && bun test` → 80 pass / 147 fail / 2 errors.
+- With 10-07 edits (testids + `bet.store.lastOutcome`): `bun test` → 80 pass / 147 fail / 2 errors.
+- Identical counts; my edits are byte-stable.
+
+**Failure categories observed (sample):**
+- `replay.store` selectors (e.g. `selectIsReplayOpen`) returning `false` where the test expected `true` — store-shape vs test-shape drift.
+- 2 suite-load errors — likely import/path drift.
+
+**Why deferred:** Plan 10-07 explicitly scopes Playwright E2E specs against the **live docker stack** for REQ-TEST-05. Vitest unit-suite repair is independent.
+
+**Recommended fix (future plan):** Triage the replay-store selectors first — a single shape fix likely cascades to many of the 147 fails. Then re-baseline.
