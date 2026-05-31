@@ -14,6 +14,7 @@ interface HttpResponseLike {
   status(code: number): HttpResponseLike;
 }
 import { ProvisionWalletUseCase } from "../../application/use-cases/provision-wallet.use-case";
+import { TopUpWalletUseCase } from "../../application/use-cases/top-up-wallet.use-case";
 import { WALLET_REPOSITORY } from "../../application/use-cases/tokens";
 import type { WalletRepository } from "../../domain/wallet.repository";
 import { WalletViewDto } from "../dtos/wallet-view.dto";
@@ -25,6 +26,7 @@ import { WalletView } from "../mappers/wallet-view.mapper";
 export class WalletsController {
   constructor(
     private readonly provision: ProvisionWalletUseCase,
+    private readonly topUp: TopUpWalletUseCase,
     @Inject(WALLET_REPOSITORY) private readonly walletRepo: WalletRepository,
   ) {}
 
@@ -49,6 +51,13 @@ export class WalletsController {
         message: "Wallet not provisioned for player; call POST /wallets first.",
       });
     }
+    return WalletView.from(wallet);
+  }
+
+  @Post("me/topup")
+  async topUpMe(@Req() req: AuthenticatedRequest): Promise<WalletViewDto> {
+    const playerId = PlayerId(req.user!.playerId);
+    const { wallet } = await this.topUp.execute(playerId);
     return WalletView.from(wallet);
   }
 }

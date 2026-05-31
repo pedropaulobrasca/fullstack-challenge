@@ -9,9 +9,19 @@ const bigIntFromString = z
   .regex(/^\d+$/)
   .transform((raw) => BigInt(raw));
 
+const booleanFromString = z
+  .union([z.boolean(), z.string()])
+  .transform((raw) => {
+    if (typeof raw === "boolean") return raw;
+    const normalized = raw.trim().toLowerCase();
+    return normalized === "true" || normalized === "1" || normalized === "yes";
+  });
+
 const walletsEnvSchema = sharedEnvSchema.extend({
   PORT: z.coerce.number().int().positive().default(4002),
   INITIAL_BALANCE_CENTS: bigIntFromString.default("100000"),
+  DEV_TOPUP_ENABLED: booleanFromString.default(true),
+  DEV_TOPUP_CENTS: bigIntFromString.default("100000"),
   OUTBOX_POLL_INTERVAL_MS: z.coerce.number().int().positive().default(1000),
   OUTBOX_POLL_BATCH_SIZE: z.coerce.number().int().positive().default(100),
   RMQ_DELIVERY_LIMIT_MAIN: z.coerce.number().int().positive().default(5),

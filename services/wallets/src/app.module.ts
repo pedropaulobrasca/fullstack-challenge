@@ -14,6 +14,7 @@ import { HealthController } from "./presentation/controllers/health.controller";
 import { WalletsDeadLetterConsumer } from "./infrastructure/messaging/wallets-dead-letter.consumer";
 import { JwtGuard } from "./presentation/guards/jwt.guard";
 import { ProvisionWalletUseCase } from "./application/use-cases/provision-wallet.use-case";
+import { TopUpWalletUseCase } from "./application/use-cases/top-up-wallet.use-case";
 import {
   TRANSACTION_REPOSITORY,
   WALLET_REPOSITORY,
@@ -85,6 +86,7 @@ import { ObservabilityModule } from "./observability/observability.module";
     WalletsDeadLetterConsumer,
     JwtGuard,
     ProvisionWalletUseCase,
+    TopUpWalletUseCase,
     { provide: WALLET_REPOSITORY, useClass: MikroWalletRepository },
     { provide: TRANSACTION_REPOSITORY, useClass: MikroTransactionRepository },
     WalletDebitHandler,
