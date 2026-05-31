@@ -66,7 +66,7 @@ function GameRoute() {
         {history.isLoading ? <HistorySkeleton /> : <HistoryStrip />}
       </section>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[320px_minmax(0,1fr)_320px]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[320px_minmax(0,1fr)_320px] lg:min-h-[calc(100vh-12rem)]">
         <aside
           data-region="bet-rail"
           className="sticky bottom-0 z-10 order-2 flex flex-col gap-4 border-t border-border bg-background py-3 lg:static lg:order-none lg:border-t-0 lg:bg-transparent lg:py-0"
@@ -78,7 +78,7 @@ function GameRoute() {
 
         <section
           data-region="curve-stage"
-          className="relative order-1 min-h-[40vh] overflow-hidden rounded-lg border border-border bg-card lg:order-none lg:min-h-[520px]"
+          className="relative order-1 min-h-[40vh] overflow-hidden rounded-lg border border-border bg-card lg:order-none lg:min-h-0 lg:h-full"
         >
           {hasRound ? (
             <>
@@ -92,7 +92,7 @@ function GameRoute() {
 
         <aside
           data-region="feed-rail"
-          className="order-3 flex min-h-40 flex-col lg:order-none lg:min-h-[520px]"
+          className="order-3 flex min-h-40 flex-col lg:order-none lg:min-h-0 lg:h-full"
         >
           <Tabs
             value={feedTab}
