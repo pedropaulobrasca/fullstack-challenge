@@ -16,7 +16,9 @@
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "bun test",
-    "smoke:health": "bash scripts/smoke-health.sh"
+    "smoke:health": "bash scripts/smoke-health.sh",
+    "docs:adr-index": "bun scripts/build-adr-index.ts",
+    "docs:adr-index:check": "bun scripts/build-adr-index.ts --check"
   },
   "devDependencies": {
     "@crash/eslint-plugin": "workspace:*",

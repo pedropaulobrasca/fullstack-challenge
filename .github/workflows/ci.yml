@@ -36,6 +36,9 @@ jobs:
       - name: Typecheck
         run: bun run typecheck
 
+      - name: ADR index sync check
+        run: bun run docs:adr-index:check
+
       - name: Unit tests
         run: bun test
 
