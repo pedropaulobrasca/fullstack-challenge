@@ -75,10 +75,8 @@ Items discovered during execution that are OUT OF SCOPE for the current task.
 
 **Recommended fix (future plan):** Triage the replay-store selectors first — a single shape fix likely cascades to many of the 147 fails. Then re-baseline.
 
-## 10-09: Pre-existing root tsconfig.json missing
+## 10-09: Pre-existing root tsconfig.json missing — RESOLVED (CI hotfix)
 
 - **Discovered:** plan 10-09 verification
-- **Issue:** root `package.json` defines `typecheck: tsc --noEmit -p tsconfig.json` but no `tsconfig.json` exists at repo root
-- **Impact:** `bun run typecheck` errors with TS5058 — CI typecheck step would fail
-- **Scope:** PRE-EXISTING from before plan 10-09 (verified by checking root for `tsconfig*.json` returns only `frontend/tsconfig.json`)
-- **Out of scope for 10-09** per execution flow scope boundary; flag for post-Phase-10 audit
+- **Issue:** root `package.json` defines `typecheck: tsc --noEmit -p tsconfig.json` but no `tsconfig.json` existed at repo root
+- **Resolution:** Added minimal noEmit `tsconfig.json` at repo root that typechecks `scripts/**/*.ts`. `bun run typecheck` exits 0.
