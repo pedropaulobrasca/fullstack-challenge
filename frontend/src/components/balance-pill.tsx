@@ -15,6 +15,7 @@ export function BalancePill() {
     <Badge
       variant="outline"
       data-slot="balance-pill"
+      data-testid="balance-pill"
       className="font-mono text-sm font-semibold tabular-nums"
     >
       {displayed.toString()}

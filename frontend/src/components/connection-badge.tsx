@@ -10,6 +10,7 @@ export function ConnectionBadge() {
     <Badge
       variant="outline"
       data-slot="connection-badge"
+      data-testid="connection-badge"
       data-status={connected ? "live" : "reconnecting"}
       className="gap-2 font-sans text-xs font-semibold"
     >

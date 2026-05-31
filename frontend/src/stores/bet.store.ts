@@ -8,6 +8,8 @@ export type MyBetStatus =
   | "LOST"
   | "REFUNDED";
 
+export type LastBetOutcome = "CASHED_OUT" | "LOST" | null;
+
 export type MyBet = {
   betId: string;
   roundId: string;
@@ -20,6 +22,7 @@ type BetState = {
   myBet: MyBet | null;
   pending: boolean;
   celebrate: boolean;
+  lastOutcome: LastBetOutcome;
   setMyBet: (bet: MyBet | null) => void;
   setStatus: (status: MyBetStatus) => void;
   setCashedOut: (params: { multiplier: number }) => void;
@@ -32,6 +35,7 @@ export const useBetStore = create<BetState>((set) => ({
   myBet: null,
   pending: false,
   celebrate: false,
+  lastOutcome: null,
   setMyBet: (bet) => set({ myBet: bet, pending: false }),
   setStatus: (status) =>
     set((state) =>
@@ -42,7 +46,7 @@ export const useBetStore = create<BetState>((set) => ({
   setCashedOut: ({ multiplier }) =>
     set((state) =>
       state.myBet === null
-        ? { celebrate: true }
+        ? { celebrate: true, lastOutcome: "CASHED_OUT" }
         : {
             myBet: {
               ...state.myBet,
@@ -50,6 +54,7 @@ export const useBetStore = create<BetState>((set) => ({
               cashoutMultiplier: multiplier,
             },
             celebrate: true,
+            lastOutcome: "CASHED_OUT",
           },
     ),
   resolveLostForRound: (roundId) =>
@@ -61,7 +66,7 @@ export const useBetStore = create<BetState>((set) => ({
       ) {
         return state;
       }
-      return { myBet: null };
+      return { myBet: null, lastOutcome: "LOST" };
     }),
   setPending: (pending) => set({ pending }),
   clearCelebration: () => set({ celebrate: false }),

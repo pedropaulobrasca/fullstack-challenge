@@ -25,6 +25,7 @@ export function CashoutButton() {
   return (
     <Button
       type="button"
+      data-testid="cashout-button"
       onClick={() => cashout.mutate()}
       disabled={cashout.isPending}
       className="min-h-11 w-full bg-accent font-semibold text-accent-foreground shadow-[0_0_24px_rgba(0,255,133,0.35)] hover:bg-accent/90"

@@ -30,6 +30,8 @@ function GameRoute() {
   useWallet();
   const history = useHistory();
   const hasRound = useRoundStore((state) => state.roundId !== null);
+  const roundStatus = useRoundStore((state) => state.status);
+  const lastBetOutcome = useBetStore((state) => state.lastOutcome);
   const celebrating = useBetStore((state) => state.celebrate);
   const clearCelebration = useBetStore((state) => state.clearCelebration);
   const connectionStatus = useConnectionStore((state) => state.status);
@@ -51,7 +53,12 @@ function GameRoute() {
   }, [connectionStatus]);
 
   return (
-    <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-6 px-4 pb-28 pt-6 lg:px-6 lg:pb-6">
+    <div
+      data-testid="game-root"
+      data-round-status={roundStatus}
+      data-last-bet-outcome={lastBetOutcome ?? "none"}
+      className="mx-auto flex w-full max-w-[1400px] flex-col gap-6 px-4 pb-28 pt-6 lg:px-6 lg:pb-6"
+    >
       <section
         data-region="history-strip"
         className="min-h-12 rounded-lg border border-border bg-card"

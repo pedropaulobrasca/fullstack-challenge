@@ -50,6 +50,7 @@ export function ManualTabContent() {
         <Label htmlFor="bet-amount">Bet amount</Label>
         <Input
           id="bet-amount"
+          data-testid="bet-amount-input"
           inputMode="decimal"
           value={raw}
           disabled={autoRunning}
@@ -66,6 +67,7 @@ export function ManualTabContent() {
       </div>
       <Button
         type="button"
+        data-testid="bet-place-button"
         variant="secondary"
         disabled={!canBet}
         onClick={() => {
