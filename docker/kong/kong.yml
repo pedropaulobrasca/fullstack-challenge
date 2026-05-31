@@ -43,6 +43,13 @@ services:
           - GET
           - OPTIONS
         strip_path: false
+      - name: games-leaderboard
+        paths:
+          - ~/games/leaderboard$
+        methods:
+          - GET
+          - OPTIONS
+        strip_path: false
       - name: games-verify
         paths:
           - ~/games/rounds/[^/]+/verify$
