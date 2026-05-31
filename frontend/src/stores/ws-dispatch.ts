@@ -74,6 +74,9 @@ function statusToRoundStatus(status: string): RoundStatus {
 const handlers: { [E in WsEvent]: (payload: unknown) => void } = {
   "round:snapshot": (raw) => {
     const payload = roundSnapshotPayloadSchema.parse(raw);
+    if (payload === null) {
+      return;
+    }
     const { round, myBet, serverTime } = payload;
     const status = statusToRoundStatus(round.status);
     const roundStartedAt =

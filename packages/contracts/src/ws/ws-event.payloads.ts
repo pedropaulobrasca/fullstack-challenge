@@ -43,7 +43,7 @@ const myBetEntrySchema = z
   })
   .strict();
 
-export const roundSnapshotPayloadSchema = z
+export const roundSnapshotObjectSchema = z
   .object({
     round: roundShapeSchema,
     activeBets: z.array(activeBetEntrySchema),
@@ -52,6 +52,9 @@ export const roundSnapshotPayloadSchema = z
   })
   .strict();
 
+export const roundSnapshotPayloadSchema = roundSnapshotObjectSchema.nullable();
+
+export type RoundSnapshotObject = z.infer<typeof roundSnapshotObjectSchema>;
 export type RoundSnapshotPayload = z.infer<typeof roundSnapshotPayloadSchema>;
 
 export const roundStartedPayloadSchema = z
