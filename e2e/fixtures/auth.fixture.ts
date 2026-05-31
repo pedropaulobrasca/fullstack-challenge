@@ -1,8 +1,11 @@
 import { mkdir } from "node:fs/promises";
 import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { chromium, type FullConfig } from "@playwright/test";
 
-export const STORAGE_STATE_PATH = join(__dirname, "../.auth/player.json");
+const FIXTURE_DIR = dirname(fileURLToPath(import.meta.url));
+
+export const STORAGE_STATE_PATH = join(FIXTURE_DIR, "../.auth/player.json");
 
 const KEYCLOAK_AUTH_URL_PATTERN =
   /\/realms\/crash-game\/protocol\/openid-connect\/auth/;

@@ -1,5 +1,9 @@
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { defineConfig, devices } from "@playwright/test";
 import { STORAGE_STATE_PATH } from "./fixtures/auth.fixture";
+
+const CONFIG_DIR = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   testDir: "./specs",
@@ -10,7 +14,7 @@ export default defineConfig({
   reporter: process.env.CI
     ? [["github"], ["html", { open: "never" }]]
     : "list",
-  globalSetup: require.resolve("./fixtures/auth.fixture"),
+  globalSetup: resolve(CONFIG_DIR, "fixtures/auth.fixture.ts"),
   use: {
     baseURL: "http://localhost:3000",
     trace: "on-first-retry",
