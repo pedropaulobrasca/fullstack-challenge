@@ -134,7 +134,7 @@
 - [x] **REQ-TEST-02**: Property-based tests via `fast-check` cover: any zero-net credit/debit sequence returns to original balance; no illegal Round FSM transition is reachable; Money rounding is loss-free across arbitrary multiplier × bet inputs.
 - [x] **REQ-TEST-03**: E2E API tests cover happy paths (bet → multiplier → cashout → balance updated; bet → crash → bet lost) and error scenarios (insufficient balance, double bet, bet during RUNNING phase, cashout without bet, cashout after crash).
 - [x] **REQ-TEST-04**: E2E saga recovery test: spawn the wallet service, place a bet, `kill -9` mid-saga, restart, assert the balance is consistent.
-- [ ] **REQ-TEST-05**: Playwright E2E covers the full player flow: login → wait for BETTING → place bet → wait for RUNNING → cashout → verify balance updated; second test covers login → bet → crash → verify bet lost.
+- [x] **REQ-TEST-05**: Playwright E2E covers the full player flow: login → wait for BETTING → place bet → wait for RUNNING → cashout → verify balance updated; second test covers login → bet → crash → verify bet lost. *(Closed: P10-07 e2e/specs/bet-cashout.spec.ts + e2e/specs/bet-crash.spec.ts; three consecutive end-to-end runs green against live docker:up + frontend dev server.)*
 
 ### CI / CD (CI)
 
@@ -345,7 +345,7 @@ Each v1 REQ-ID maps to exactly one phase in `ROADMAP.md`. v2 (REQ-STRETCH-*) liv
 #### Phase 10 — Quality Hardening & Docs (10 reqs)
 | REQ-ID | Title | Status |
 |--------|-------|--------|
-| REQ-TEST-05 | Playwright E2E (login→bet→cashout, login→bet→crash) | Pending |
+| REQ-TEST-05 | Playwright E2E (login→bet→cashout, login→bet→crash) | Done (P10-07) |
 | REQ-OBS-01 | OpenTelemetry traces across HTTP/AMQP/WS | Pending |
 | REQ-OBS-02 | Prometheus `/metrics` (latency, AMQP lag, RTP, WS latency, multiplier drift) | Done (P10-05) |
 | REQ-OBS-03 | Prometheus + Grafana in docker-compose, pre-provisioned dashboards | Done (Phase 10 P10-04) |
