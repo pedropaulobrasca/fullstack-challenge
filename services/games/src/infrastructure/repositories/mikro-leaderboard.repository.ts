@@ -94,6 +94,8 @@ export class MikroLeaderboardRepository implements LeaderboardRepository {
       playerId: row.playerId,
       rank: index + 1,
       netProfitCents: row.netProfitCents,
+      winCount: row.winCount,
+      totalBetCount: row.totalBetCount,
     }));
   }
 

@@ -189,12 +189,12 @@ describe("LeaderboardProjectorService — unit", () => {
 
   test("emits LEADERBOARD_UPDATED only when top-N ranks change", async () => {
     const before: LeaderboardSnapshotEntry[] = [
-      { playerId: "p1", rank: 1, netProfitCents: 5000n },
-      { playerId: "p2", rank: 2, netProfitCents: 2000n },
+      { playerId: "p1", rank: 1, netProfitCents: 5000n, winCount: 3, totalBetCount: 4 },
+      { playerId: "p2", rank: 2, netProfitCents: 2000n, winCount: 1, totalBetCount: 2 },
     ];
     const after: LeaderboardSnapshotEntry[] = [
-      { playerId: "p2", rank: 1, netProfitCents: 9000n },
-      { playerId: "p1", rank: 2, netProfitCents: 5000n },
+      { playerId: "p2", rank: 1, netProfitCents: 9000n, winCount: 2, totalBetCount: 3 },
+      { playerId: "p1", rank: 2, netProfitCents: 5000n, winCount: 3, totalBetCount: 4 },
     ];
     const { service, emitMock } = buildHarness([before, after]);
 
@@ -235,8 +235,8 @@ describe("LeaderboardProjectorService — unit", () => {
 
   test("does NOT emit LEADERBOARD_UPDATED when top-N order unchanged (throttle gate)", async () => {
     const same: LeaderboardSnapshotEntry[] = [
-      { playerId: "p1", rank: 1, netProfitCents: 5000n },
-      { playerId: "p2", rank: 2, netProfitCents: 2000n },
+      { playerId: "p1", rank: 1, netProfitCents: 5000n, winCount: 3, totalBetCount: 4 },
+      { playerId: "p2", rank: 2, netProfitCents: 2000n, winCount: 1, totalBetCount: 2 },
     ];
     const { service, emitMock } = buildHarness([same, same]);
 

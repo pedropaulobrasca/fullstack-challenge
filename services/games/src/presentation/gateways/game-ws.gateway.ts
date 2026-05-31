@@ -7,13 +7,14 @@ import {
   type OnGatewayDisconnect,
 } from "@nestjs/websockets";
 import type { Server, Socket } from "socket.io";
-import { PlayerId, maskPlayerId } from "@crash/shared-kernel";
+import { PlayerId } from "@crash/shared-kernel";
 import { env } from "../../config/defaults";
 import { GetWsSnapshotUseCase } from "../../application/use-cases/get-ws-snapshot.use-case";
 import {
   GAME_EVENTS,
   type LeaderboardUpdatedPayload,
 } from "../../application/game-events";
+import { leaderboardSnapshotEntryToWire } from "../../application/use-cases/get-leaderboard.use-case";
 import type {
   RoundStartedPayload,
   RoundRunningPayload,
@@ -89,11 +90,7 @@ export class GameWsGateway
 
   @OnEvent(GAME_EVENTS.LEADERBOARD_UPDATED)
   onLeaderboardUpdated(payload: LeaderboardUpdatedPayload): void {
-    const entries = payload.entries.map((entry) => ({
-      playerIdMasked: maskPlayerId(PlayerId(entry.playerId)),
-      rank: entry.rank,
-      netProfitCents: entry.netProfitCents.toString(),
-    }));
+    const entries = payload.entries.map(leaderboardSnapshotEntryToWire);
     this.server.to("lobby").emit("leaderboard:updated", {
       entries,
       updatedAt: payload.updatedAt,

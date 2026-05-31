@@ -12,6 +12,8 @@ export type LeaderboardSnapshotEntry = {
   playerId: string;
   rank: number;
   netProfitCents: bigint;
+  winCount: number;
+  totalBetCount: number;
 };
 
 export type ApplyCashedOutInput = {

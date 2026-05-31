@@ -1,14 +1,36 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { PlayerId } from "@crash/shared-kernel";
-import type { LeaderboardUpdatedPayload } from "@crash/contracts/ws";
+import type {
+  LeaderboardEntryWire,
+  LeaderboardUpdatedPayload,
+} from "@crash/contracts/ws";
 import { env } from "../../config/defaults";
 import { LEADERBOARD_REPOSITORY } from "../tokens";
-import type { LeaderboardRepository } from "../../domain/leaderboard.repository";
+import type {
+  LeaderboardRepository,
+  LeaderboardSnapshotEntry,
+} from "../../domain/leaderboard.repository";
 import { maskPlayerId } from "@crash/shared-kernel";
 
 export type GetLeaderboardInput = {
   window: "24h";
 };
+
+export function leaderboardSnapshotEntryToWire(
+  entry: LeaderboardSnapshotEntry,
+): LeaderboardEntryWire {
+  return {
+    playerIdMasked: maskPlayerId(PlayerId(entry.playerId)),
+    rank: entry.rank,
+    netProfit: {
+      amount: entry.netProfitCents.toString(),
+      currency: "CRD",
+      scale: 2,
+    },
+    winCount: entry.winCount,
+    totalBetCount: entry.totalBetCount,
+  };
+}
 
 @Injectable()
 export class GetLeaderboardUseCase {
@@ -22,17 +44,15 @@ export class GetLeaderboardUseCase {
       windowHours: env.LEADERBOARD_WINDOW_HOURS,
     });
 
-    const entries = rows.map((row, index) => ({
-      playerIdMasked: maskPlayerId(PlayerId(row.playerId)),
-      rank: index + 1,
-      netProfit: {
-        amount: row.netProfitCents.toString(),
-        currency: "CRD",
-        scale: 2,
-      },
-      winCount: row.winCount,
-      totalBetCount: row.totalBetCount,
-    }));
+    const entries = rows.map((row, index) =>
+      leaderboardSnapshotEntryToWire({
+        playerId: row.playerId,
+        rank: index + 1,
+        netProfitCents: row.netProfitCents,
+        winCount: row.winCount,
+        totalBetCount: row.totalBetCount,
+      }),
+    );
 
     return {
       entries,
