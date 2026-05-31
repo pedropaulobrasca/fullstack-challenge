@@ -19,6 +19,14 @@ const walletsEnvSchema = sharedEnvSchema.extend({
   KEYCLOAK_ISSUER: z.string().url(),
   KEYCLOAK_JWKS_URI: z.string().url(),
   KEYCLOAK_AUDIENCE: z.string().min(1),
+  OTEL_EXPORTER_OTLP_ENDPOINT: z
+    .string()
+    .url()
+    .default("http://jaeger:4318/v1/traces"),
+  OTEL_SERVICE_NAME: z.string().min(1).default("wallets-service"),
+  LOG_LEVEL: z
+    .enum(["trace", "debug", "info", "warn", "error", "fatal"])
+    .default("info"),
 });
 
 export const env = Object.freeze(walletsEnvSchema.parse(process.env));

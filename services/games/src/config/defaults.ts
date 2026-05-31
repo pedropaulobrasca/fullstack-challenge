@@ -40,6 +40,15 @@ export const gamesEnvSchema = sharedEnvSchema.extend({
     .string()
     .regex(/^\/.+$/, "WS_PATH must start with '/' and be non-empty")
     .default("/ws"),
+  OTEL_EXPORTER_OTLP_ENDPOINT: z
+    .string()
+    .url()
+    .default("http://jaeger:4318/v1/traces"),
+  OTEL_SERVICE_NAME: z.string().min(1).default("games-service"),
+  LOG_LEVEL: z
+    .enum(["trace", "debug", "info", "warn", "error", "fatal"])
+    .default("info"),
+  CRASH_RTP_WINDOW_ROUNDS: z.coerce.number().int().positive().default(100),
 });
 
 export const env = Object.freeze(gamesEnvSchema.parse(process.env));
