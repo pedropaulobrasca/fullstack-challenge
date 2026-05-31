@@ -206,7 +206,7 @@ describe("round:settled clears a lost bet", () => {
     expect(useBetStore.getState().myBet).toBeNull();
   });
 
-  it("does not clobber a bet that was already cashed out", () => {
+  it("clears a cashed-out bet on round:settled but preserves lastOutcome", () => {
     useBetStore.setState({
       myBet: {
         betId: "mine",
@@ -215,13 +215,15 @@ describe("round:settled clears a lost bet", () => {
         status: "CASHED_OUT",
         cashoutMultiplier: 2.5,
       },
+      lastOutcome: "CASHED_OUT",
       pending: false,
       celebrate: false,
     });
 
     dispatchWsEvent("round:settled", settledPayload);
 
-    expect(useBetStore.getState().myBet?.status).toBe("CASHED_OUT");
+    expect(useBetStore.getState().myBet).toBeNull();
+    expect(useBetStore.getState().lastOutcome).toBe("CASHED_OUT");
   });
 
   it("does not clear a freshly-placed bet for a different (next) round", () => {

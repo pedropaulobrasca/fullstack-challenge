@@ -59,14 +59,12 @@ export const useBetStore = create<BetState>((set) => ({
     ),
   resolveLostForRound: (roundId) =>
     set((state) => {
-      if (
-        state.myBet === null ||
-        state.myBet.roundId !== roundId ||
-        state.myBet.status !== "ACTIVE"
-      ) {
+      if (state.myBet === null || state.myBet.roundId !== roundId) {
         return state;
       }
-      return { myBet: null, lastOutcome: "LOST" };
+      const lastOutcome =
+        state.myBet.status === "ACTIVE" ? "LOST" : state.lastOutcome;
+      return { myBet: null, lastOutcome };
     }),
   setPending: (pending) => set({ pending }),
   clearCelebration: () => set({ celebrate: false }),
