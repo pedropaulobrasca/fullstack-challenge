@@ -1,4 +1,4 @@
-import { describe, expect, test, afterAll } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
@@ -25,8 +25,5 @@ describe("OTel init-order Footgun #1", () => {
   test("tracing module loads without throwing and exposes a started sdk", async () => {
     const mod = await import("../../../src/tracing");
     expect(mod.sdk).toBeDefined();
-    afterAll(async () => {
-      await mod.sdk.shutdown().catch(() => undefined);
-    });
   });
 });
