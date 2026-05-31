@@ -1,5 +1,6 @@
 import type { ZodType } from "zod";
 import { Money } from "@crash/shared-kernel";
+import { leaderboardUpdatedPayloadSchema } from "@crash/contracts/ws";
 import {
   roundSnapshotPayloadSchema,
   roundStartedPayloadSchema,
@@ -33,6 +34,7 @@ export const WS_EVENTS = [
   "bet:my_active",
   "bet:my_refunded",
   "bet:my_cashed_out",
+  "leaderboard:updated",
 ] as const;
 
 export type WsEvent = (typeof WS_EVENTS)[number];
@@ -49,6 +51,7 @@ const schemaByEvent: Record<WsEvent, ZodType> = {
   "bet:my_active": betMyActivePayloadSchema,
   "bet:my_refunded": betMyRefundedPayloadSchema,
   "bet:my_cashed_out": betMyCashedOutPayloadSchema,
+  "leaderboard:updated": leaderboardUpdatedPayloadSchema,
 };
 
 function toMs(iso: string): number | null {
@@ -197,6 +200,7 @@ const handlers: { [E in WsEvent]: (payload: unknown) => void } = {
     useWalletStore.getState().credit(payout.toSnapshot());
     requestWalletRefetch();
   },
+  "leaderboard:updated": () => {},
 };
 
 type WsSubscriber = (payload: unknown) => void;
@@ -213,6 +217,7 @@ const subscribers: { [E in WsEvent]: Set<WsSubscriber> } = {
   "bet:my_active": new Set(),
   "bet:my_refunded": new Set(),
   "bet:my_cashed_out": new Set(),
+  "leaderboard:updated": new Set(),
 };
 
 export function subscribeWsEvent(
