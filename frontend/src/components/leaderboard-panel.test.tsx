@@ -253,7 +253,7 @@ describe("LeaderboardPanel", () => {
       );
     const client = freshClient();
     render(<LeaderboardPanel isActive={true} />, { wrapper: wrapWithClient(client) });
-    await screen.findByText(otherMasked);
+    await screen.findByText(new RegExp(otherMasked));
     const button = screen.getByRole("button", { name: /Refresh leaderboard/i });
     await act(async () => {
       fireEvent.click(button);
@@ -273,7 +273,7 @@ describe("LeaderboardPanel", () => {
     );
     const client = freshClient();
     render(<LeaderboardPanel isActive={true} />, { wrapper: wrapWithClient(client) });
-    await screen.findByText(otherMasked);
+    await screen.findByText(new RegExp(otherMasked));
     const newMasked = "aaaaaaaa";
     act(() => {
       dispatchWsEvent("leaderboard:updated", {
@@ -289,6 +289,6 @@ describe("LeaderboardPanel", () => {
         updatedAt: "2026-05-30T12:01:00.000Z",
       });
     });
-    await screen.findByText(newMasked);
+    await screen.findByText(new RegExp(newMasked));
   });
 });
