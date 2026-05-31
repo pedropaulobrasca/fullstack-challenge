@@ -80,3 +80,35 @@ Items discovered during execution that are OUT OF SCOPE for the current task.
 - **Discovered:** plan 10-09 verification
 - **Issue:** root `package.json` defines `typecheck: tsc --noEmit -p tsconfig.json` but no `tsconfig.json` existed at repo root
 - **Resolution:** Added minimal noEmit `tsconfig.json` at repo root that typechecks `scripts/**/*.ts`. `bun run typecheck` exits 0.
+
+---
+
+## 2026-05-31 — Games unit baseline: 4 clock-mock fails (pre-existing)
+
+**Discovered during:** CI green-run hotfix (post plan 10-09).
+
+**Status:** Baseline. The 5th fail (pino-pretty transport) was fixed alongside the CI hotfix; the remaining 4 pre-date Phase 10 and depend on fake-timer / DI-mock refactors.
+
+**Currently failing in `cd services/games && bun test tests/unit`:**
+
+1. `RoundLoopService > no open round → bootstrap starts a new BETTING round`
+2. `RoundLoopService > recovery from BETTING with bettingEndsAt in the past → transitions to RUNNING`
+3. `RoundLoopService > OnApplicationShutdown clears the pending timer and halts scheduling`
+4. `RoundLoopService > bootstrap → startNewRound emits round.started with payload matching the new round`
+5. `GetWsSnapshotUseCase > snapshot during BETTING with no bets`
+
+(Counts can fluctuate 4–5 depending on a flaky bootstrap timer race; the steady-state is 4.)
+
+**Root cause hypothesis:** `RoundLoopService` constructor scheduling interacts with `bun:test`'s default timer model. The bootstrap path retries on a 1000ms timer, and the tests don't advance fake timers consistently. `GetWsSnapshotUseCase` failure is a mock-shape drift — `bets.getRollingRtp` is undefined on the test double, surfacing as a warning that the test then asserts against.
+
+**Why deferred:** Out of scope for the CI hotfix (fix typecheck + lint + 1 pino test). Repairing the clock model requires touching the RoundLoopService DI test rig, which is its own focused refactor.
+
+**Recommended fix (future plan):** Stub `Date.now` + use `bun:test` `setSystemTime` consistently across the 4 RoundLoopService tests; extend the bets repo mock with `getRollingRtp` for the snapshot test.
+
+---
+
+## 2026-05-31 — Pino-pretty transport test alignment — RESOLVED (CI hotfix)
+
+- **Discovered:** CI hotfix run.
+- **Issue:** `services/games/tests/unit/observability/pino-config.test.ts` asserted `transport === { target: "pino-pretty" }` whenever `NODE_ENV !== "production"`, but commit `9404baa` (Phase 10-05) gated the transport behind `PINO_PRETTY=1` to stop `bun test` from crashing on missing worker resolution.
+- **Resolution:** Test now asserts the env-gated behavior — pretty transport iff `NODE_ENV !== "production" && PINO_PRETTY === "1"`. Three explicit cases (gated-on, gated-off, prod-overrides-flag). All 6 pino-config assertions pass.

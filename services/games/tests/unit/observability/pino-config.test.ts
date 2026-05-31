@@ -23,13 +23,20 @@ function fakeActiveSpan(ctx: SpanContextShape | undefined) {
 
 const originalGetActiveSpan = otelApi.trace.getActiveSpan;
 const originalNodeEnv = process.env.NODE_ENV;
+const originalPinoPretty = process.env.PINO_PRETTY;
 
 beforeEach(() => {
   process.env.NODE_ENV = "development";
+  delete process.env.PINO_PRETTY;
 });
 
 afterEach(() => {
   process.env.NODE_ENV = originalNodeEnv;
+  if (originalPinoPretty === undefined) {
+    delete process.env.PINO_PRETTY;
+  } else {
+    process.env.PINO_PRETTY = originalPinoPretty;
+  }
   (otelApi.trace as { getActiveSpan: typeof originalGetActiveSpan }).getActiveSpan =
     originalGetActiveSpan;
 });
@@ -62,8 +69,9 @@ describe("buildPinoOptions.customProps", () => {
 });
 
 describe("buildPinoOptions.transport (Pitfall 2 — no pino-pretty in production)", () => {
-  test("transport is pino-pretty in non-production", () => {
+  test("transport is pino-pretty in non-production when PINO_PRETTY=1", () => {
     process.env.NODE_ENV = "development";
+    process.env.PINO_PRETTY = "1";
     const opts = buildPinoOptions(clsStub(undefined));
     expect(opts.transport).toEqual({
       target: "pino-pretty",
@@ -71,8 +79,15 @@ describe("buildPinoOptions.transport (Pitfall 2 — no pino-pretty in production
     });
   });
 
-  test("transport is undefined in production", () => {
+  test("transport is undefined in non-production when PINO_PRETTY is unset", () => {
+    process.env.NODE_ENV = "development";
+    const opts = buildPinoOptions(clsStub(undefined));
+    expect(opts.transport).toBeUndefined();
+  });
+
+  test("transport is undefined in production even when PINO_PRETTY=1", () => {
     process.env.NODE_ENV = "production";
+    process.env.PINO_PRETTY = "1";
     const opts = buildPinoOptions(clsStub(undefined));
     expect(opts.transport).toBeUndefined();
   });
