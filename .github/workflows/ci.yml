@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  full-stack:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Free disk space
+        run: |
+          df -h /
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/share/boost "$AGENT_TOOLSDIRECTORY"
+          docker image prune -af
+          df -h /
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: .bun-version
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Lint
+        run: bun run lint
+
+      - name: Typecheck
+        run: bun run typecheck
+
+      - name: Unit tests
+        run: bun test
+
+      - name: Boot full docker stack
+        run: bun run docker:up
+        env:
+          OTEL_EXPORTER_OTLP_ENDPOINT: http://localhost:4318/v1/traces
+
+      - name: Smoke probes (1-47)
+        run: bash scripts/smoke-health.sh
+
+      - name: Integration tests (INTEGRATION=1)
+        run: |
+          INTEGRATION=1 bun --cwd services/games test tests/integration
+          INTEGRATION=1 bun --cwd services/wallets test tests/integration
+
+      - name: Install Playwright browsers
+        run: cd frontend && bunx playwright install --with-deps chromium
+
+      - name: Playwright E2E
+        run: bunx playwright test --config=e2e/playwright.config.ts
+
+      - name: Tear down stack
+        if: always()
+        run: bun run docker:down
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: |
+            e2e/playwright-report/
+            e2e/test-results/
+          retention-days: 14
