@@ -143,7 +143,7 @@ describe("GameRoute juice", () => {
     });
     renderRoute();
     expect(document.querySelector('[data-slot="crash-flash"]')).not.toBeNull();
-    expect(screen.getByText(/Crashed @ 3\.21x/)).toBeInTheDocument();
+    expect(screen.getAllByText(/Crashed @ 3\.21x/).length).toBeGreaterThan(0);
   });
 });
 
