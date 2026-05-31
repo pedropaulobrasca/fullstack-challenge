@@ -14,9 +14,17 @@ export function FeedRow({ entry }: FeedRowProps) {
       : null,
   );
   const displayAmount = ownAmount ?? entry.amount;
-  const amountLabel = displayAmount
-    ? Money.fromSnapshot(displayAmount).toString()
-    : null;
+  const isMaskedZero =
+    !entry.isOwn &&
+    displayAmount !== undefined &&
+    displayAmount !== null &&
+    BigInt(displayAmount.amount) === 0n;
+  const amountLabel =
+    displayAmount && !isMaskedZero
+      ? Money.fromSnapshot(displayAmount).toString()
+      : null;
+  const showPlaceholder =
+    entry.kind === "placed" && !entry.isOwn && isMaskedZero;
 
   return (
     <div
@@ -38,6 +46,9 @@ export function FeedRow({ entry }: FeedRowProps) {
           <span>{entry.multiplier.toFixed(2)}x</span>
         ) : null}
         {amountLabel ? <span>{amountLabel}</span> : null}
+        {showPlaceholder ? (
+          <span className="text-muted-foreground">Bet placed</span>
+        ) : null}
       </span>
     </div>
   );
