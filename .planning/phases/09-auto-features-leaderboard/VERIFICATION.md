@@ -1,9 +1,12 @@
 ---
 phase: 09-auto-features-leaderboard
-verified: 2026-05-30T22:45:00Z
-status: gaps_found
-score: 4/5 must-haves verified
+verified: 2026-05-30T22:45:00Z → 2026-05-30T23:30:00Z (gap closed)
+status: passed
+score: 5/5 must-haves verified (SC4 wire-format gap closed in `dff428f`)
 overrides_applied: 0
+re_verification:
+  previous_status: gaps_found
+  note: "SC4 leaderboard:updated WS payload was emitting `{playerIdMasked, rank, netProfitCents}` while shared schema required `{playerIdMasked, rank, netProfit: MoneySnapshot, winCount, totalBetCount}` — FE safeParse silently dropped every emission. Fix `dff428f` extended LeaderboardSnapshotEntry (winCount + totalBetCount), reused `leaderboardSnapshotEntryToWire` from `GetLeaderboardUseCase` in `GameWsGateway.onLeaderboardUpdated`, added schema-conformance contract gate inside gateway test. games 281/8 + contracts 44/44 + FE 244/244 + tsc/lint clean. Live SC4 smoke gate (rank reorder in-flight) deferred to docker rebuild + manual observation."
 gaps:
   - truth: "Leaderboard side-panel updates live via WS leaderboard:updated when ranks shift (REQ-LEAD-04 / SC4)"
     status: failed
