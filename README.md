@@ -10,11 +10,16 @@ Multiplayer real-time Crash game submitted as the Jungle Gaming fullstack techni
 git clone https://github.com/pedropaulobrasca/fullstack-challenge.git
 cd fullstack-challenge
 bun install
-bun run docker:up
-cd frontend && bun run dev
+cp frontend/.env.example frontend/.env       # frontend reads VITE_* from here
+bun run docker:up                             # full backend stack + healthchecks (~2 min on a cold pull)
+cd frontend && bun run dev                    # MUST bind to :3000 — see note below
 ```
 
-That is the complete bootstrap. `bun run docker:up` brings up the full stack (Postgres, RabbitMQ, Keycloak, Kong, the games and wallets services, Jaeger, Prometheus, Grafana) and blocks until every healthcheck passes. The frontend dev server runs on `http://localhost:3000` and the demo user `player` / `player123` is pre-seeded in the Keycloak `crash-game` realm; logging in auto-provisions a wallet at `1000.00 CRD`.
+Open **http://localhost:3000** and log in as **`player` / `player123`**. The Keycloak `crash-game` realm is auto-imported with the demo user pre-seeded; logging in auto-provisions a wallet at `1000.00 CRD`.
+
+`bun run docker:up` brings up the full backend stack (Postgres, RabbitMQ, Keycloak, Kong, the games and wallets services, Jaeger, Prometheus, Grafana) and blocks until every healthcheck passes. The frontend dev server is a separate `bun run dev` in the `frontend/` workspace (intentional — the FE is dev-served by Vite, not containerised, so HMR works during arguição).
+
+> **Port 3000 is not optional.** The Keycloak realm whitelists `http://localhost:3000/*` for OIDC redirect URIs and web origins. If something else holds port 3000, Vite silently falls back to 3001/3002/… and Keycloak rejects the redirect with `Authentication is currently unavailable`. Stop the conflicting process (`lsof -ti:3000 | xargs kill`) and re-run `bun run dev`. Do NOT change the FE port without also editing `docker/keycloak/realm-crash-game.json` + `docker compose restart keycloak`.
 
 | Surface | URL | Purpose |
 |---------|-----|---------|
@@ -306,7 +311,9 @@ The full Open Configuration surface (initial balance, betting window, growth rat
 ## Troubleshooting
 
 - **`bun run docker:up` hangs or fails the first time** — pull images explicitly first: `docker compose pull`, then retry. On macOS the first pull is ~10GB; if disk space is tight, run `bun run docker:prune` to clear old layers (Pitfall 8).
-- **Port 3000 already in use** — the frontend dev server listens on `:3000`. Grafana listens on `:3001` to avoid the collision. If you have another process on `:3000`, stop it before `bun run dev`.
+- **`Authentication is currently unavailable. Please try again later.`** — the Keycloak realm whitelists OIDC redirect URIs at `http://localhost:3000/*` only. If Vite couldn't bind to `:3000` (another process held it — including a stale earlier `bun run dev` instance), it silently fell back to `:3001`, `:3002`, etc., so Keycloak rejects the redirect. Fix: `lsof -ti:3000 | xargs kill -9 && cd frontend && bun run dev`. Confirm with `ps aux | grep "vite dev"` — you should see exactly one process. Then clear browser storage for `localhost` (oidc-spa caches the failed redirect) and reload.
+- **Port 3000 already in use** — same root cause as the auth-unavailable error above. Vite must bind to `:3000` for Keycloak to accept the redirect. Grafana lives on `:3001` and Jaeger on `:16686` to avoid the collision. Do NOT let Vite pick a fallback port — kill the conflict instead.
+- **`bun run dev` exits with `VITE_KEYCLOAK_ISSUER is required`** — you skipped `cp frontend/.env.example frontend/.env`. The Vite config zod-parses all `VITE_*` env vars at boot and refuses to start without them. Copy the example file and re-run.
 - **Jaeger shows no spans for `games-service` or `wallets-service`** — confirm `import "./tracing"` is the literal first line of `services/games/src/main.ts` and `services/wallets/src/main.ts`. The OTel NodeSDK must initialize before any instrumented module loads (Footgun #1 — ADR-035). Run `head -1 services/games/src/main.ts` and verify the import.
 - **Grafana panels empty** — open http://localhost:9090/targets and confirm both services are UP. If a target is DOWN, the service may not have exposed `/metrics` yet — check `curl -s http://localhost:4001/metrics | head` and `curl -s http://localhost:4002/metrics | head`.
 - **Playwright OIDC redirect fails** — the realm import sets `redirectUris` and `webOrigins` to `http://localhost:3000/*`. If the FE is running on a different host or port, update `docker/keycloak/realm-crash-game.json` and `docker compose restart keycloak` (Pitfall 5).
