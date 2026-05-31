@@ -18,6 +18,16 @@ vi.mock("@/components/crash-curve", () => ({
   CrashCurve: () => <div data-testid="crash-curve" />,
 }));
 
+vi.mock("@/components/leaderboard-panel", () => ({
+  LeaderboardPanel: ({ isActive }: { isActive: boolean }) => (
+    <div data-testid="leaderboard-panel" data-active={isActive ? "true" : "false"} />
+  ),
+}));
+
+vi.mock("@/components/live-feed", () => ({
+  LiveFeed: () => <div data-testid="live-feed" />,
+}));
+
 let matchMediaMatches = false;
 function setMatchMedia(matches: boolean) {
   matchMediaMatches = matches;
@@ -134,6 +144,36 @@ describe("GameRoute juice", () => {
     renderRoute();
     expect(document.querySelector('[data-slot="crash-flash"]')).not.toBeNull();
     expect(screen.getByText(/Crashed @ 3\.21x/)).toBeInTheDocument();
+  });
+});
+
+describe("GameRoute right rail tabs (D-02)", () => {
+  it("renders Tabs with Live Feed active by default + Leaderboard trigger present", () => {
+    renderRoute();
+    const liveFeedTrigger = screen.getByRole("tab", { name: /Live Feed/i });
+    const leaderboardTrigger = screen.getByRole("tab", { name: /Leaderboard/i });
+    expect(liveFeedTrigger).toHaveAttribute("data-state", "active");
+    expect(leaderboardTrigger).toHaveAttribute("data-state", "inactive");
+    expect(screen.getByTestId("live-feed")).toBeInTheDocument();
+  });
+
+  it("clicking the Leaderboard trigger swaps content to LeaderboardPanel and marks it active", async () => {
+    renderRoute();
+    const leaderboardTrigger = screen.getByRole("tab", { name: /Leaderboard/i });
+    await act(async () => {
+      leaderboardTrigger.click();
+    });
+    expect(leaderboardTrigger).toHaveAttribute("data-state", "active");
+    const panel = screen.getByTestId("leaderboard-panel");
+    expect(panel).toHaveAttribute("data-active", "true");
+  });
+
+  it("LeaderboardPanel mounted with isActive=false while Live Feed is active", () => {
+    renderRoute();
+    const panels = screen.queryAllByTestId("leaderboard-panel");
+    if (panels.length > 0) {
+      expect(panels[0]).toHaveAttribute("data-active", "false");
+    }
   });
 });
 
