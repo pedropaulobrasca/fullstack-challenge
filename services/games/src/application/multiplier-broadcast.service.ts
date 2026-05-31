@@ -12,12 +12,6 @@ import type { GameWsGateway } from "../presentation/gateways/game-ws.gateway";
 import { MULTIPLIER_DRIFT_SECONDS } from "../observability/metrics/multiplier-drift.metric";
 import { WS_BROADCAST_LATENCY_SECONDS } from "../observability/metrics/ws-broadcast-latency.metric";
 
-type DirectDeps = {
-  roundLoop: RoundLoopService;
-  gateway: GameWsGateway;
-  eventEmitter: EventEmitter2;
-};
-
 type NoopObserver = { observe(value: number): void };
 
 const noopHistogram: NoopObserver = { observe: () => undefined };
@@ -36,52 +30,34 @@ export class MultiplierBroadcastService {
   private roundLoopRef: RoundLoopService | null = null;
   private multiplierDriftRef: NoopObserver | null = null;
   private wsBroadcastLatencyRef: NoopObserver | null = null;
-  private readonly moduleRef: ModuleRef | null;
-  private readonly direct: DirectDeps | null;
-  private readonly eventEmitter: EventEmitter2;
   private expectedNextTickAt: number = 0;
 
-  constructor(moduleRef: ModuleRef, eventEmitter: EventEmitter2);
   constructor(
-    roundLoop: RoundLoopService,
-    gateway: GameWsGateway,
-    eventEmitter: EventEmitter2,
-  );
-  constructor(
-    a: ModuleRef | RoundLoopService,
-    b: EventEmitter2 | GameWsGateway,
-    c?: EventEmitter2,
-  ) {
-    if (c === undefined) {
-      this.moduleRef = a as ModuleRef;
-      this.direct = null;
-      this.eventEmitter = b as EventEmitter2;
-    } else {
-      this.moduleRef = null;
-      this.direct = {
-        roundLoop: a as RoundLoopService,
-        gateway: b as GameWsGateway,
-        eventEmitter: c,
-      };
-      this.eventEmitter = c;
-    }
+    private readonly moduleRef: ModuleRef,
+    private readonly eventEmitter: EventEmitter2,
+  ) {}
+
+  setTestDeps(deps: {
+    roundLoop: RoundLoopService;
+    gateway: GameWsGateway;
+    multiplierDrift?: NoopObserver;
+    wsBroadcastLatency?: NoopObserver;
+  }): void {
+    this.roundLoopRef = deps.roundLoop;
+    this.gatewayRef = deps.gateway;
+    this.multiplierDriftRef = deps.multiplierDrift ?? noopHistogram;
+    this.wsBroadcastLatencyRef = deps.wsBroadcastLatency ?? noopHistogram;
   }
 
   private resolveGateway(): GameWsGateway | null {
-    if (this.direct !== null) return this.direct.gateway;
     if (this.gatewayRef !== null) return this.gatewayRef;
-    if (this.moduleRef === null) return null;
     const { GameWsGateway } = require("../presentation/gateways/game-ws.gateway");
     this.gatewayRef = this.moduleRef.get(GameWsGateway, { strict: false });
     return this.gatewayRef;
   }
 
   private resolveRoundLoop(): RoundLoopService {
-    if (this.direct !== null) return this.direct.roundLoop;
     if (this.roundLoopRef !== null) return this.roundLoopRef;
-    if (this.moduleRef === null) {
-      throw new Error("MultiplierBroadcastService has no resolution path");
-    }
     this.roundLoopRef = this.moduleRef.get<RoundLoopService>(
       ROUND_LOOP_SERVICE,
       { strict: false },
@@ -91,10 +67,6 @@ export class MultiplierBroadcastService {
 
   private resolveMultiplierDrift(): NoopObserver {
     if (this.multiplierDriftRef !== null) return this.multiplierDriftRef;
-    if (this.moduleRef === null) {
-      this.multiplierDriftRef = noopHistogram;
-      return this.multiplierDriftRef;
-    }
     try {
       const histogram = this.moduleRef.get<Histogram<string>>(
         getToken(MULTIPLIER_DRIFT_SECONDS),
@@ -109,10 +81,6 @@ export class MultiplierBroadcastService {
 
   private resolveWsBroadcastLatency(): NoopObserver {
     if (this.wsBroadcastLatencyRef !== null) return this.wsBroadcastLatencyRef;
-    if (this.moduleRef === null) {
-      this.wsBroadcastLatencyRef = noopHistogram;
-      return this.wsBroadcastLatencyRef;
-    }
     try {
       const histogram = this.moduleRef.get<Histogram<string>>(
         getToken(WS_BROADCAST_LATENCY_SECONDS),

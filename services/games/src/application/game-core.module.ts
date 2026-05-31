@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 import { MikroOrmModule } from "@mikro-orm/nestjs";
+import { ObservabilityModule } from "../observability/observability.module";
 import { SeedChainEntitySchema } from "../infrastructure/persistence/seed-chain.entity";
 import { RoundEntitySchema } from "../infrastructure/persistence/round.entity";
 import { BetEntitySchema } from "../infrastructure/persistence/bet.entity";
@@ -49,6 +50,7 @@ import { WalletDebitRejectedHandler } from "./handlers/wallet-debit-rejected.han
       BetSagaStateEntitySchema,
       Leaderboard24hEntitySchema,
     ]),
+    ObservabilityModule,
   ],
   providers: [
     { provide: SEED_CHAIN_REPOSITORY, useClass: MikroSeedChainRepository },

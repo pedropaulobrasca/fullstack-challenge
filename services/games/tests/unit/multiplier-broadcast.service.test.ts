@@ -3,9 +3,11 @@ import { setupGamesTestEnv } from "../setup";
 
 setupGamesTestEnv();
 
+import { EventEmitter2 } from "@nestjs/event-emitter";
 import { MultiplierBroadcastService } from "../../src/application/multiplier-broadcast.service";
 import type { RoundLoopService } from "../../src/application/round-loop.service";
 import type { GameWsGateway } from "../../src/presentation/gateways/game-ws.gateway";
+import type { ModuleRef } from "@nestjs/core";
 
 type EmitFn = ReturnType<typeof mock>;
 
@@ -39,10 +41,14 @@ function buildService(
       return multiplierFactory();
     }),
   };
-  const service = new MultiplierBroadcastService(
-    roundLoop as unknown as RoundLoopService,
+  const moduleRef = {
+    get: () => undefined,
+  } as unknown as ModuleRef;
+  const service = new MultiplierBroadcastService(moduleRef, new EventEmitter2());
+  service.setTestDeps({
+    roundLoop: roundLoop as unknown as RoundLoopService,
     gateway,
-  );
+  });
   return { service, roundLoop, volatileEmit, toRoom };
 }
 
