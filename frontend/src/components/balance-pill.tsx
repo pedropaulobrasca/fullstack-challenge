@@ -7,18 +7,15 @@ export function BalancePill() {
   const targetCents = balance === null ? 0n : BigInt(balance.amount);
   const displayed = useCountUp(targetCents);
 
-  if (balance === null) {
-    return null;
-  }
-
   return (
     <Badge
       variant="outline"
       data-slot="balance-pill"
       data-testid="balance-pill"
+      data-loading={balance === null ? "true" : "false"}
       className="font-mono text-sm font-semibold tabular-nums"
     >
-      {displayed.toString()}
+      {balance === null ? "— CRD" : displayed.toString()}
     </Badge>
   );
 }
