@@ -125,7 +125,7 @@
 
 - [ ] **REQ-OBS-01**: Both services emit OpenTelemetry traces via `@opentelemetry/sdk-node` + `nestjs-otel`; spans propagate across HTTP, AMQP, and WebSocket boundaries via W3C TraceContext.
 - [ ] **REQ-OBS-02**: Both services expose Prometheus metrics at `/metrics` (req latency, error rate, AMQP consumer lag, WS connections, custom: bet volume, RTP, multiplier drift, WS broadcast latency).
-- [ ] **REQ-OBS-03**: Docker compose includes Prometheus + Grafana with pre-provisioned dashboards (one for each service + one for the Crash Game custom metrics).
+- [x] **REQ-OBS-03**: Docker compose includes Prometheus + Grafana with pre-provisioned dashboards (one for each service + one for the Crash Game custom metrics).
 - [ ] **REQ-OBS-04**: All logs are structured JSON via `pino` + `nestjs-pino` with `correlationId` + `traceId` enrichment.
 
 ### Tests (TEST)
@@ -348,7 +348,7 @@ Each v1 REQ-ID maps to exactly one phase in `ROADMAP.md`. v2 (REQ-STRETCH-*) liv
 | REQ-TEST-05 | Playwright E2E (login→bet→cashout, login→bet→crash) | Pending |
 | REQ-OBS-01 | OpenTelemetry traces across HTTP/AMQP/WS | Pending |
 | REQ-OBS-02 | Prometheus `/metrics` (latency, AMQP lag, RTP, WS latency, multiplier drift) | Pending |
-| REQ-OBS-03 | Prometheus + Grafana in docker-compose, pre-provisioned dashboards | Pending |
+| REQ-OBS-03 | Prometheus + Grafana in docker-compose, pre-provisioned dashboards | Done (Phase 10 P10-04) |
 | REQ-OBS-04 | Structured JSON logs via `pino` + `nestjs-pino` with correlationId | Pending |
 | REQ-CI-01 | GitHub Actions runs unit + e2e on push + PR | Pending |
 | REQ-CI-02 | CI runs `bun run docker:up` on fresh clone + Playwright | Pending |
