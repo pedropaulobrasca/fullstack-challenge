@@ -17,6 +17,10 @@ export type FeedEntry = {
 type FeedState = {
   entries: FeedEntry[];
   push: (entry: FeedEntry) => void;
+  markOwn: (
+    betId: string,
+    amount: { amount: string; currency: string; scale: number },
+  ) => void;
   clear: () => void;
 };
 
@@ -28,5 +32,13 @@ export const useFeedStore = create<FeedState>((set) => ({
       const next = [entry, ...state.entries];
       return { entries: next.slice(0, cap) };
     }),
+  markOwn: (betId, amount) =>
+    set((state) => ({
+      entries: state.entries.map((entry) =>
+        entry.betId === betId
+          ? { ...entry, isOwn: true, amount }
+          : entry,
+      ),
+    })),
   clear: () => set({ entries: [] }),
 }));

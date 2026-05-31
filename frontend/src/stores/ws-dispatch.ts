@@ -172,17 +172,19 @@ const handlers: { [E in WsEvent]: (payload: unknown) => void } = {
   },
   "bet:my_active": (raw) => {
     const payload = betMyActivePayloadSchema.parse(raw);
+    const amount = {
+      amount: payload.amount.amount,
+      currency: payload.amount.currency,
+      scale: payload.amount.scale,
+    };
     useBetStore.getState().setMyBet({
       betId: payload.betId,
       roundId: payload.roundId,
-      amount: {
-        amount: payload.amount.amount,
-        currency: payload.amount.currency,
-        scale: payload.amount.scale,
-      },
+      amount,
       status: "ACTIVE",
       cashoutMultiplier: null,
     });
+    useFeedStore.getState().markOwn(payload.betId, amount);
   },
   "bet:my_refunded": (raw) => {
     const payload = betMyRefundedPayloadSchema.parse(raw);
