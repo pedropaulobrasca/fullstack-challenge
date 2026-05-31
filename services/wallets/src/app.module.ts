@@ -22,6 +22,7 @@ import { MikroWalletRepository } from "./infrastructure/repositories/mikro-walle
 import { MikroTransactionRepository } from "./infrastructure/repositories/mikro-transaction.repository";
 import { WalletDebitHandler } from "./application/handlers/wallet-debit.handler";
 import { WalletCreditHandler } from "./application/handlers/wallet-credit.handler";
+import { ObservabilityModule } from "./observability/observability.module";
 
 @Module({
   imports: [
@@ -77,6 +78,7 @@ import { WalletCreditHandler } from "./application/handlers/wallet-credit.handle
         },
       }),
     }),
+    ObservabilityModule,
   ],
   controllers: [WalletsController, HealthController],
   providers: [

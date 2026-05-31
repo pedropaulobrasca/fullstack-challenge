@@ -22,6 +22,7 @@ import { JwtGuard } from "./presentation/guards/jwt.guard";
 import { JwtVerifierService } from "./presentation/auth/jwt-verifier.service";
 import { GameWsGateway } from "./presentation/gateways/game-ws.gateway";
 import { GameCoreModule } from "./application/game-core.module";
+import { ObservabilityModule } from "./observability/observability.module";
 
 @Module({
   imports: [
@@ -79,6 +80,7 @@ import { GameCoreModule } from "./application/game-core.module";
       }),
     }),
     GameCoreModule,
+    ObservabilityModule,
   ],
   controllers: [
     GamesController,
