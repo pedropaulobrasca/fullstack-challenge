@@ -62,9 +62,9 @@ export function drawCurve(
   ctx.beginPath();
   ctx.moveTo(baseX, baseY);
   for (let i = 1; i <= CURVE_SAMPLES; i++) {
-    const t = (i / CURVE_SAMPLES) * progress;
-    const x = baseX + (t / Math.max(progress, Number.EPSILON)) * usableWidth * progress;
-    const y = baseY - Math.pow(t, 1.4) * usableHeight * (progress > 0 ? 1 / progress : 0);
+    const s = i / CURVE_SAMPLES;
+    const x = baseX + s * usableWidth;
+    const y = baseY - Math.pow(s, 1.4) * usableHeight * progress;
     ctx.lineTo(x, y);
   }
 
