@@ -4,7 +4,7 @@ import type { LeaderboardUpdatedPayload } from "@crash/contracts/ws";
 import { env } from "../../config/defaults";
 import { LEADERBOARD_REPOSITORY } from "../tokens";
 import type { LeaderboardRepository } from "../../domain/leaderboard.repository";
-import { maskPlayerId } from "./mask-player-id";
+import { maskPlayerId } from "@crash/shared-kernel";
 
 export type GetLeaderboardInput = {
   window: "24h";

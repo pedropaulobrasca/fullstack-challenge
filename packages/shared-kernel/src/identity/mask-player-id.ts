@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import type { PlayerId } from "@crash/shared-kernel";
+import type { PlayerId } from "./branded-id";
 
 export function maskPlayerId(playerId: PlayerId): string {
   return createHash("sha256")

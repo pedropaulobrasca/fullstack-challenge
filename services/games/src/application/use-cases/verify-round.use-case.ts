@@ -11,7 +11,7 @@ import { BET_REPOSITORY, ROUND_REPOSITORY } from "../tokens";
 import type { RoundRepository } from "../../domain/round.repository";
 import type { BetRepository } from "../../domain/bet.repository";
 import type { RoundBetView } from "../../presentation/dtos/round-bet-view.dto";
-import { maskPlayerId } from "./mask-player-id";
+import { maskPlayerId } from "@crash/shared-kernel";
 
 export type VerifyRoundView = {
   roundId: string;

@@ -8,9 +8,8 @@ import {
   buildQuorumArgs,
 } from "@crash/messaging-spine";
 import { moneySnapshotSchema } from "@crash/contracts";
-import { PlayerId } from "@crash/shared-kernel";
+import { PlayerId, maskPlayerId } from "@crash/shared-kernel";
 import { env } from "../../config/defaults";
-import { maskPlayerId } from "../../application/use-cases/mask-player-id";
 import { GameWsGateway } from "../../presentation/gateways/game-ws.gateway";
 
 const betActiveInboundSchema = z

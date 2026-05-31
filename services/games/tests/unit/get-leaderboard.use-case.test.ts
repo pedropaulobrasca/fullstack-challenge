@@ -1,12 +1,11 @@
 import { describe, expect, test } from "bun:test";
 import { GetLeaderboardUseCase } from "../../src/application/use-cases/get-leaderboard.use-case";
-import { maskPlayerId } from "../../src/application/use-cases/mask-player-id";
 import type {
   LeaderboardRepository,
   LeaderboardRow,
   LeaderboardSnapshotEntry,
 } from "../../src/domain/leaderboard.repository";
-import { PlayerId } from "@crash/shared-kernel";
+import { PlayerId, maskPlayerId } from "@crash/shared-kernel";
 
 class StubLeaderboardRepository implements LeaderboardRepository {
   constructor(private readonly rows: LeaderboardRow[]) {}

@@ -6,7 +6,7 @@ import type { BetRepository } from "../../domain/bet.repository";
 import type { Round } from "../../domain/round.aggregate";
 import type { Bet } from "../../domain/bet.aggregate";
 import type { RoundSnapshotPayload } from "../../presentation/dtos/ws-event.payloads";
-import { maskPlayerId } from "./mask-player-id";
+import { maskPlayerId } from "@crash/shared-kernel";
 
 export interface Clock {
   now(): Date;

@@ -7,14 +7,13 @@ import {
   type OnGatewayDisconnect,
 } from "@nestjs/websockets";
 import type { Server, Socket } from "socket.io";
-import { PlayerId } from "@crash/shared-kernel";
+import { PlayerId, maskPlayerId } from "@crash/shared-kernel";
 import { env } from "../../config/defaults";
 import { GetWsSnapshotUseCase } from "../../application/use-cases/get-ws-snapshot.use-case";
 import {
   GAME_EVENTS,
   type LeaderboardUpdatedPayload,
 } from "../../application/game-events";
-import { maskPlayerId } from "../../application/use-cases/mask-player-id";
 import type {
   RoundStartedPayload,
   RoundRunningPayload,
