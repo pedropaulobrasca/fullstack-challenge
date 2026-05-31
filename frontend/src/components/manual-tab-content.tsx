@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Lock } from "lucide-react";
+import { Loader2, Lock } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -77,17 +77,22 @@ export function ManualTabContent() {
         }}
         className="min-h-11 w-full border"
       >
-        {myBet !== null
-          ? "Bet placed — wait for round"
-          : status === "BETTING"
-            ? parsed.ok
-              ? "Place Bet"
-              : "Enter bet amount"
-            : status === "RUNNING"
-              ? "Round running — wait next"
-              : status === "CRASHED" || status === "SETTLED"
-                ? "Round ended — wait next"
-                : "Waiting for next round"}
+        {pending ? (
+          <>
+            <Loader2 aria-hidden="true" className="size-4 motion-safe:animate-spin" />
+            Placing bet…
+          </>
+        ) : myBet !== null
+            ? "Bet placed — wait for round"
+            : status === "BETTING"
+              ? parsed.ok
+                ? "Place Bet"
+                : "Enter bet amount"
+              : status === "RUNNING"
+                ? "Round running — wait next"
+                : status === "CRASHED" || status === "SETTLED"
+                  ? "Round ended — wait next"
+                  : "Waiting for next round"}
       </Button>
     </div>
   );
