@@ -113,7 +113,7 @@
 - [x] **REQ-LEAD-01**: System maintains a 24h rolling leaderboard of top players by net profit (sum of payouts − sum of bets, last 24h window).
 - [x] **REQ-LEAD-02**: System populates the leaderboard via a projector consuming `game.events` (light CQRS — no event sourcing) into a denormalized `leaderboard_24h` read model.
 - [x] **REQ-LEAD-03**: System exposes `GET /games/leaderboard?window=24h` returning the top N players (default 10) with `playerId` (masked), net profit, win count.
-- [ ] **REQ-LEAD-04**: Frontend renders the leaderboard in a side panel with live updates via WS (`leaderboard:updated` event when ranks change).
+- [x] **REQ-LEAD-04**: Frontend renders the leaderboard in a side panel with live updates via WS (`leaderboard:updated` event when ranks change).
 
 ### Deterministic Replay (REPLAY)
 
@@ -339,8 +339,8 @@ Each v1 REQ-ID maps to exactly one phase in `ROADMAP.md`. v2 (REQ-STRETCH-*) liv
 | REQ-AUTO-05 | Auto tab in bet panel with Start/Stop | Pending |
 | REQ-LEAD-01 | 24h rolling leaderboard by net profit | Done (P09-06) |
 | REQ-LEAD-02 | Projector consuming `game.events` (light CQRS) | Done (P09-06) |
-| REQ-LEAD-03 | `GET /games/leaderboard?window=24h` | Done (P09-07) |
-| REQ-LEAD-04 | Side-panel leaderboard with `leaderboard:updated` WS | Pending |
+| REQ-LEAD-03 | `GET /games/leaderboard?window=24h` | Done (P09-07 server endpoint, P09-09 FE consumer) |
+| REQ-LEAD-04 | Side-panel leaderboard with `leaderboard:updated` WS | Done (P09-09) |
 
 #### Phase 10 — Quality Hardening & Docs (10 reqs)
 | REQ-ID | Title | Status |
