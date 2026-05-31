@@ -138,8 +138,8 @@
 
 ### CI / CD (CI)
 
-- [ ] **REQ-CI-01**: GitHub Actions runs unit + e2e tests on every push to main and every pull request.
-- [ ] **REQ-CI-02**: CI runs `bun run docker:up` on a fresh clone, waits for healthchecks, runs E2E + Playwright against the live stack, then tears down — proving the zero-step bootstrap claim.
+- [x] **REQ-CI-01**: GitHub Actions runs unit + e2e tests on every push to main and every pull request. _(P10-08: `.github/workflows/ci.yml` triggers on push to main + pull_request with concurrency cancel-per-ref; green-run attestation deferred to user push.)_
+- [x] **REQ-CI-02**: CI runs `bun run docker:up` on a fresh clone, waits for healthchecks, runs E2E + Playwright against the live stack, then tears down — proving the zero-step bootstrap claim. _(P10-08: workflow runs free-disk-space → setup-bun → bun install → lint → typecheck → unit → docker:up → smoke-health.sh (47 probes) → INTEGRATION=1 games+wallets → chromium install → 2 Playwright specs → always() docker:down → failure() artifact upload; `.auth/` never referenced; green-run attestation deferred to user push.)_
 - [ ] **REQ-CI-03**: README has CI status badges (build, tests, coverage).
 
 ### Documentation (DOC)
@@ -350,8 +350,8 @@ Each v1 REQ-ID maps to exactly one phase in `ROADMAP.md`. v2 (REQ-STRETCH-*) liv
 | REQ-OBS-02 | Prometheus `/metrics` (latency, AMQP lag, RTP, WS latency, multiplier drift) | Done (P10-05) |
 | REQ-OBS-03 | Prometheus + Grafana in docker-compose, pre-provisioned dashboards | Done (Phase 10 P10-04) |
 | REQ-OBS-04 | Structured JSON logs via `pino` + `nestjs-pino` with correlationId | Pending |
-| REQ-CI-01 | GitHub Actions runs unit + e2e on push + PR | Pending |
-| REQ-CI-02 | CI runs `bun run docker:up` on fresh clone + Playwright | Pending |
+| REQ-CI-01 | GitHub Actions runs unit + e2e on push + PR | Done (Phase 10 P10-08) — workflow-file level; green-run defers to user push |
+| REQ-CI-02 | CI runs `bun run docker:up` on fresh clone + Playwright | Done (Phase 10 P10-08) — workflow-file level; green-run defers to user push |
 | REQ-CI-03 | README status badges (build, tests, coverage) | Pending |
 | REQ-DOC-01 | README: setup, decisions, trade-offs, diagrams, troubleshooting | Pending |
 | REQ-DOC-02 | ADRs in `.planning/adrs/` surfaced in README | Pending |

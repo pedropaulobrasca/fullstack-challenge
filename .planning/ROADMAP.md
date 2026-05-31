@@ -326,7 +326,7 @@ Plans:
 - [x] 10-05-PLAN.md — 5 custom Prometheus metrics (bet_volume + crash_rtp + multiplier_drift + ws_broadcast_latency + active_ws_connections) + /metrics endpoint
 - [x] 10-06-PLAN.md — D-03a Sheet/Dialog visibility fix + D-03b WS round:snapshot null relax + D-03c HistoryStrip key verify
 - [x] 10-07-PLAN.md — Playwright 2 specs (cashout + crash) live against docker stack + FE data-testid hooks
-- [ ] 10-08-PLAN.md — GitHub Actions ci.yml (full docker:up + Playwright + Pitfall 8 disk cleanup + green CI checkpoint)
+- [x] 10-08-PLAN.md — GitHub Actions ci.yml (full docker:up + Playwright + Pitfall 8 disk cleanup; workflow file landed at 4881da3, green-run user-push checkpoint deferred)
 - [ ] 10-09-PLAN.md — README sections + mermaid diagrams + ADR catalogue generator + ADR-035..037 + STATE/ROADMAP/REQUIREMENTS rotation
 
 
