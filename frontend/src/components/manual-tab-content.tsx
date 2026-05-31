@@ -77,7 +77,17 @@ export function ManualTabContent() {
         }}
         className="min-h-11 w-full border"
       >
-        {myBet !== null ? "Bet Active" : "Place Bet"}
+        {myBet !== null
+          ? "Bet placed — wait for round"
+          : status === "BETTING"
+            ? parsed.ok
+              ? "Place Bet"
+              : "Enter bet amount"
+            : status === "RUNNING"
+              ? "Round running — wait next"
+              : status === "CRASHED" || status === "SETTLED"
+                ? "Round ended — wait next"
+                : "Waiting for next round"}
       </Button>
     </div>
   );
