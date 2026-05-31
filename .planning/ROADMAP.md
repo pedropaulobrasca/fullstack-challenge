@@ -311,9 +311,24 @@ Plans:
 **Parallelizable with**: None (final integration phase)
 **UI hint**: no
 **Key decisions to make** (ADRs):
-  - ADR-028: OpenTelemetry SDK + `nestjs-otel` bridge + Prometheus exporter (full stack chosen over commercial APM)
-  - ADR-029: ADR catalogue index lives in README (over `.planning/adrs/INDEX.md` only)
-  - ADR-030: CI runs the full `docker:up` stack on every push (over mocked-deps unit-only pipeline) to enforce the zero-step bootstrap claim
+  - ADR-035 (anticipated 028): OpenTelemetry SDK + `nestjs-otel` bridge + Prometheus exporter (full stack chosen over commercial APM)
+  - ADR-036 (anticipated 029): ADR catalogue index lives in README (over `.planning/adrs/INDEX.md` only)
+  - ADR-037 (anticipated 030): CI runs the full `docker:up` stack on every push (over mocked-deps unit-only pipeline) to enforce the zero-step bootstrap claim
+
+  > **ADR-renumber note**: anticipated ADR-028..030 labels are stale (Phase 5/6/7/8/9 ADRs consumed 019..034 before Phase 10 closed); reconciled to next-free ADR-035..037 in plan 10-09 per the renumber precedent set Phase 7/8/9.
+
+**Plans:** 9 plans
+Plans:
+- [ ] 10-01-PLAN.md — Playwright scaffolds + env-var typing + Keycloak realm verify + D-03a live diagnose checkpoint
+- [ ] 10-02-PLAN.md — Package legitimacy checkpoint + bun add (OTel + pino + @willsoto/nestjs-prometheus + @playwright/test)
+- [ ] 10-03-PLAN.md — OTel NodeSDK tracing.ts first-import + ObservabilityModule + nestjs-pino with traceId+correlationId enrichment (BOTH services)
+- [ ] 10-04-PLAN.md — docker-compose Jaeger + Prometheus + Grafana with UID-pinned datasources + 3 dashboards + smoke probes 45-47
+- [ ] 10-05-PLAN.md — 5 custom Prometheus metrics (bet_volume + crash_rtp + multiplier_drift + ws_broadcast_latency + active_ws_connections) + /metrics endpoint
+- [ ] 10-06-PLAN.md — D-03a Sheet/Dialog visibility fix + D-03b WS round:snapshot null relax + D-03c HistoryStrip key verify
+- [ ] 10-07-PLAN.md — Playwright 2 specs (cashout + crash) live against docker stack + FE data-testid hooks
+- [ ] 10-08-PLAN.md — GitHub Actions ci.yml (full docker:up + Playwright + Pitfall 8 disk cleanup + green CI checkpoint)
+- [ ] 10-09-PLAN.md — README sections + mermaid diagrams + ADR catalogue generator + ADR-035..037 + STATE/ROADMAP/REQUIREMENTS rotation
+
 
 ---
 
