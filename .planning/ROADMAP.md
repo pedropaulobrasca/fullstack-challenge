@@ -293,7 +293,7 @@ Plans:
 - [x] 09-05-PLAN.md — MultiplierBroadcastService ROUND_TICK emit + AutoCashoutTickService + SC1 disconnect-safety E2E
 - [x] 09-06-PLAN.md — LeaderboardProjectorService (@IdempotentSubscribe) + WS leaderboard:updated @OnEvent + SC5 chaos test
 - [x] 09-07-PLAN.md — LeaderboardController GET /games/leaderboard + @crash/contracts/ws leaderboardUpdatedPayloadSchema
-- [ ] 09-08-PLAN.md — FE auto-bet store + driver + strategy + AutoBetForm + tabbed BetPanel (shadcn radio-group install)
+- [x] 09-08-PLAN.md — FE auto-bet store + driver + strategy + AutoBetForm + tabbed BetPanel (shadcn radio-group install)
 - [ ] 09-09-PLAN.md — FE LeaderboardPanel + useLeaderboard + tabbed right rail (Live Feed | Leaderboard)
 - [ ] 09-10-PLAN.md — ADR-032 + ADR-033 + ADR-034 + STATE/ROADMAP/REQUIREMENTS rotation
 
@@ -346,7 +346,7 @@ These are not numbered phases. Pull from this list during Phase 10 if time permi
 | 6. WebSocket Gateway & Multiplier Sync | 10/10 | Complete | 2026-05-28 |
 | 7. Frontend Vertical Slice | 9/9 | Complete | 2026-05-29 |
 | 8. Provably-Fair UX, History & Replay | 10/10 | Complete | 2026-05-30 |
-| 9. Auto Features & Leaderboard | 7/10 | In progress | 2026-05-30 (P09-06 LeaderboardProjectorService + WS leaderboard:updated + SC5 chaos) |
+| 9. Auto Features & Leaderboard | 8/10 | In progress | 2026-05-30 (P09-08 FE auto-bet stack: store + strategy + driver + tabbed BetPanel + 5-field form) |
 | 10. Quality Hardening & Docs | 0/0 | Not started | - |
 
 ---
