@@ -100,12 +100,15 @@ export class WsBridgeConsumer {
   private onBetActive(rawPayload: unknown): void {
     const payload = betActiveInboundSchema.parse(rawPayload);
     const playerIdMasked = maskPlayerId(PlayerId(payload.playerId));
+    const maskedAmount = payload.amount
+      ? { amount: "0", currency: payload.amount.currency, scale: payload.amount.scale }
+      : FALLBACK_MONEY;
 
     this.gateway.server.to("lobby").emit("bet:placed", {
       roundId: payload.roundId,
       betId: payload.betId,
       playerIdMasked,
-      amount: payload.amount ?? FALLBACK_MONEY,
+      amount: maskedAmount,
     });
 
     this.gateway.server.to(`user:${payload.playerId}`).emit("bet:my_active", {

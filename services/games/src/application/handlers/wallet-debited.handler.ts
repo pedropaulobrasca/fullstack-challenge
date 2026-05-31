@@ -84,6 +84,7 @@ export class WalletDebitedHandler {
               betId: saga.betId as unknown as string,
               playerId: payload.playerId,
               roundId: confirmed.roundId as unknown as string,
+              amount: confirmed.amount.toSnapshot(),
             },
           }),
           {
