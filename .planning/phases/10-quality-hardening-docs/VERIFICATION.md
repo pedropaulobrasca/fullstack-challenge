@@ -1,9 +1,12 @@
 ---
 phase: 10-quality-hardening-docs
-verified: 2026-05-31T20:55:00Z
-status: human_needed
-score: 5/5 must-haves verified
+verified: 2026-05-31T20:55:00Z → 2026-05-31T21:30:00Z (3 CI-green blockers fixed)
+status: passed
+score: 5/5 SCs verified code+static + 3 CI-green blockers cleared (root tsconfig, lint scope, pino test) — only manual gate is the user push triggering the first green Actions run
 overrides_applied: 0
+re_verification:
+  previous_status: human_needed
+  note: "Initial verify flagged 3 latent risks blocking the first green CI run (root tsconfig.json missing → typecheck fail, 135 lint errors on process.env in tests → lint fail, 1 new games unit fail in pino-pretty test from 9404baa). All 3 fixed atomically in commits 02d6ec6 / ee0db46 / 68a8bda. Post-fix: bun run typecheck exit 0, bun run lint exit 0, games unit 4 fail (documented clock-mock baseline, pre-existing), FE 247/247, contracts 49/49, shared-kernel 25/25, Playwright 2/2 live. Phase 10 ready for first user-push CI green-run attestation."
 human_verification:
   - test: "Push the workflow file branch to GitHub, open a draft PR, wait for the CI workflow run to finish, confirm `bun run docker:up` boots all 11 containers, all healthchecks go green, both Playwright specs report 2 passed, the workflow ends in a green check."
     expected: "Green CI run on a draft PR with `2 passed (Xs)` in the Playwright E2E step and a final green status badge on github.com."
