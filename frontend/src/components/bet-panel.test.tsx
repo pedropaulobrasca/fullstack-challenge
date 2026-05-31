@@ -66,9 +66,7 @@ describe("BetPanel — tab structure", () => {
   it("Manual tab default shows the Phase 7 bet form", () => {
     renderPanel();
     expect(screen.getByLabelText("Bet amount")).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /place bet/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByTestId("bet-place-button")).toBeInTheDocument();
   });
 
   it("clicking Auto reveals the auto-bet form and unmounts the manual form", () => {
