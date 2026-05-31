@@ -14,7 +14,8 @@ if (process.env.INTEGRATION !== "1") {
 import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, beforeEach, describe, expect, test } from "bun:test";
 import { createTestGamesApp } from "./_helpers/app-factory";
-import { Money, PlayerId } from "@crash/shared-kernel";
+import { Money } from "@crash/shared-kernel";
+import { PlayerId } from "@crash/shared-kernel/identity";
 import { MikroLeaderboardRepository } from "../../src/infrastructure/repositories/mikro-leaderboard.repository";
 
 let booted: Awaited<ReturnType<typeof createTestGamesApp>>;

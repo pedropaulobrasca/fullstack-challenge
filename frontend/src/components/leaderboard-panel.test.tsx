@@ -2,8 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render, screen, fireEvent, act } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import React, { type PropsWithChildren } from "react";
-import { PlayerId, maskPlayerId } from "@crash/shared-kernel";
-
+import { PlayerId, maskPlayerId } from "@crash/shared-kernel/identity";
 vi.mock("@/lib/config", () => ({
   getConfig: () => ({
     rest: { base: "http://api.test" },

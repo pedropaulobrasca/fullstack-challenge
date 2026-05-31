@@ -1,5 +1,5 @@
 import { DomainError } from "@crash/shared-kernel";
-import type { BetId, RoundId } from "@crash/shared-kernel";
+import type { BetId, RoundId } from "@crash/shared-kernel/identity";
 import type { RoundStatus } from "./value-objects/round-status";
 import type { BetStatus } from "./value-objects/bet-status";
 import type { BetSagaStatus } from "./bet-saga-state.aggregate";

@@ -3,7 +3,7 @@ import { ModuleRef } from "@nestjs/core";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { getToken } from "@willsoto/nestjs-prometheus";
 import type { Histogram } from "prom-client";
-import { RoundId } from "@crash/shared-kernel";
+import { RoundId } from "@crash/shared-kernel/identity";
 import { env } from "../config/defaults";
 import type { RoundLoopService } from "./round-loop.service";
 import { ROUND_LOOP_SERVICE } from "./tokens";

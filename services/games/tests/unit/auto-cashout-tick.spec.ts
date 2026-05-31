@@ -9,7 +9,8 @@ import { setupGamesTestEnv } from "../setup";
 
 setupGamesTestEnv();
 
-import { BetId, Money, PlayerId, RoundId } from "@crash/shared-kernel";
+import { Money } from "@crash/shared-kernel";
+import { BetId, PlayerId, RoundId } from "@crash/shared-kernel/identity";
 import { Multiplier } from "../../src/domain/value-objects/multiplier";
 import { Bet } from "../../src/domain/bet.aggregate";
 import type { BetRepository } from "../../src/domain/bet.repository";

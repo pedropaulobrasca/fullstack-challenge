@@ -1,4 +1,4 @@
-import type { BetId } from "@crash/shared-kernel";
+import type { BetId } from "@crash/shared-kernel/identity";
 import type { BetSagaState, BetSagaStatus, BetSagaStateCreateInput } from "./bet-saga-state.aggregate";
 
 export interface BetSagaStateRepository {

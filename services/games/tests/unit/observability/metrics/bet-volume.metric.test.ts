@@ -6,7 +6,8 @@ import { setupGamesTestEnv } from "../../../setup";
 setupGamesTestEnv();
 
 import { randomUUID } from "node:crypto";
-import { BetId, Money, PlayerId, RoundId } from "@crash/shared-kernel";
+import { Money } from "@crash/shared-kernel";
+import { BetId, PlayerId, RoundId } from "@crash/shared-kernel/identity";
 import type { Bet, BetProps } from "../../../../src/domain/bet.aggregate";
 import type { BetRepository } from "../../../../src/domain/bet.repository";
 import type { RoundRepository } from "../../../../src/domain/round.repository";

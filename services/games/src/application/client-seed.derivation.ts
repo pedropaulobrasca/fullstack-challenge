@@ -1,7 +1,6 @@
 import { createHash } from "node:crypto";
 import { GENESIS_CLIENT_SEED } from "@crash/contracts";
-import type { RoundId } from "@crash/shared-kernel";
-
+import type { RoundId } from "@crash/shared-kernel/identity";
 export type PreviousRoundClose = {
   id: RoundId;
   crashedAt: Date;

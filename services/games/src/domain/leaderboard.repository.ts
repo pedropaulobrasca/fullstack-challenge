@@ -1,5 +1,5 @@
-import type { Money, PlayerId } from "@crash/shared-kernel";
-
+import type { Money } from "@crash/shared-kernel";
+import type { PlayerId } from "@crash/shared-kernel/identity";
 export type LeaderboardRow = {
   playerId: string;
   netProfitCents: bigint;

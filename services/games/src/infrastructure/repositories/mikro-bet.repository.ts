@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { EntityManager } from "@mikro-orm/postgresql";
-import { BetId, Money, PlayerId, RoundId } from "@crash/shared-kernel";
+import { Money } from "@crash/shared-kernel";
+import { BetId, PlayerId, RoundId } from "@crash/shared-kernel/identity";
 import { Bet, type BetProps } from "../../domain/bet.aggregate";
 import type { BetRepository } from "../../domain/bet.repository";
 import { Multiplier } from "../../domain/value-objects/multiplier";

@@ -3,7 +3,8 @@ setupGamesTestEnv();
 
 import { expect, test } from "bun:test";
 import fc from "fast-check";
-import { BetId, Money, PlayerId, RoundId } from "@crash/shared-kernel";
+import { Money } from "@crash/shared-kernel";
+import { BetId, PlayerId, RoundId } from "@crash/shared-kernel/identity";
 import { Bet } from "../../src/domain/bet.aggregate";
 import { Multiplier } from "../../src/domain/value-objects/multiplier";
 

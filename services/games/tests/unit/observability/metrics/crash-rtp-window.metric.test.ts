@@ -6,7 +6,7 @@ import { setupGamesTestEnv } from "../../../setup";
 setupGamesTestEnv();
 
 import { randomUUID } from "node:crypto";
-import { RoundId } from "@crash/shared-kernel";
+import { RoundId } from "@crash/shared-kernel/identity";
 import type { RoundRepository } from "../../../../src/domain/round.repository";
 import type { SeedChainRepository } from "../../../../src/domain/seed-chain.repository";
 import type { BetRepository } from "../../../../src/domain/bet.repository";

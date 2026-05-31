@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { EntityManager } from "@mikro-orm/postgresql";
-import { RoundId } from "@crash/shared-kernel";
+import { RoundId } from "@crash/shared-kernel/identity";
 import { Round, type RoundProps } from "../../domain/round.aggregate";
 import type { RoundRepository } from "../../domain/round.repository";
 import { CrashPoint } from "../../domain/value-objects/crash-point";

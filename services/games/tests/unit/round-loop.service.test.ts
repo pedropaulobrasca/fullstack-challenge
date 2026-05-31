@@ -3,7 +3,7 @@ import "../setup";
 import { randomUUID } from "node:crypto";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { generateSeedChain, FORMULA_VERSION } from "@crash/contracts";
-import { RoundId, type BetId, type PlayerId } from "@crash/shared-kernel";
+import { RoundId, type BetId, type PlayerId } from "@crash/shared-kernel/identity";
 import { RoundLoopService } from "../../src/application/round-loop.service";
 import { StartNewRoundUseCase } from "../../src/application/use-cases/start-new-round.use-case";
 import { TransitionToRunningUseCase } from "../../src/application/use-cases/transition-to-running.use-case";

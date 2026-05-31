@@ -1,4 +1,5 @@
-import type { BetId, Money, PlayerId, RoundId } from "@crash/shared-kernel";
+import type { Money } from "@crash/shared-kernel";
+import type { BetId, PlayerId, RoundId } from "@crash/shared-kernel/identity";
 import { Multiplier } from "./value-objects/multiplier";
 import type { BetStatus } from "./value-objects/bet-status";
 import { IllegalBetTransitionError } from "./errors";

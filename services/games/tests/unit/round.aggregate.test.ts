@@ -3,7 +3,7 @@ setupGamesTestEnv();
 
 import { describe, expect, test } from "bun:test";
 import { randomUUID } from "node:crypto";
-import { RoundId } from "@crash/shared-kernel";
+import { RoundId } from "@crash/shared-kernel/identity";
 import { Round } from "../../src/domain/round.aggregate";
 import { CrashPoint } from "../../src/domain/value-objects/crash-point";
 import {

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { RefreshCw, AlertCircle } from "lucide-react";
-import { PlayerId, maskPlayerId } from "@crash/shared-kernel";
+import { PlayerId, maskPlayerId } from "@crash/shared-kernel/identity";
 import type { LeaderboardEntryWire } from "@crash/contracts/ws";
 import { getConfig } from "@/lib/config";
 import { useOidc } from "@/auth/oidc";

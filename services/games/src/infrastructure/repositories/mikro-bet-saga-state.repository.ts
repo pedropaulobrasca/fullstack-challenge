@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { EntityManager } from "@mikro-orm/postgresql";
-import { BetId } from "@crash/shared-kernel";
+import { BetId } from "@crash/shared-kernel/identity";
 import {
   BetSagaState,
   type BetSagaStatus,

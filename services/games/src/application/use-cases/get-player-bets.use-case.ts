@@ -1,5 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
-import type { MoneySnapshot, PlayerId } from "@crash/shared-kernel";
+import type { MoneySnapshot } from "@crash/shared-kernel";
+import type { PlayerId } from "@crash/shared-kernel/identity";
 import { BET_REPOSITORY } from "../tokens";
 import type { BetRepository } from "../../domain/bet.repository";
 import type { BetStatus } from "../../domain/value-objects/bet-status";

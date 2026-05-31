@@ -9,8 +9,7 @@ import {
   Res,
   UseGuards,
 } from "@nestjs/common";
-import { PlayerId } from "@crash/shared-kernel";
-
+import { PlayerId } from "@crash/shared-kernel/identity";
 interface HttpResponseLike {
   status(code: number): HttpResponseLike;
 }

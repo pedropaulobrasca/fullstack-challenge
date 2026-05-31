@@ -6,7 +6,7 @@ import {
   Param,
   Query,
 } from "@nestjs/common";
-import { RoundId } from "@crash/shared-kernel";
+import { RoundId } from "@crash/shared-kernel/identity";
 import { GetCurrentRoundUseCase } from "../../application/use-cases/get-current-round.use-case";
 import { GetRoundHistoryUseCase } from "../../application/use-cases/get-round-history.use-case";
 import { VerifyRoundUseCase } from "../../application/use-cases/verify-round.use-case";

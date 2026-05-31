@@ -9,8 +9,7 @@ import type { Bet } from "../../domain/bet.aggregate";
 import type { Round } from "../../domain/round.aggregate";
 import type { RoundStatus } from "../../domain/value-objects/round-status";
 import type { BetStatus } from "../../domain/value-objects/bet-status";
-import { maskPlayerId } from "@crash/shared-kernel";
-
+import { maskPlayerId } from "@crash/shared-kernel/identity";
 export type CurrentRoundBetView = {
   betId: string;
   playerIdMasked: string;

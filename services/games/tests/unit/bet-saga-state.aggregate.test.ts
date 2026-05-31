@@ -2,7 +2,7 @@ import { setupGamesTestEnv } from "../setup";
 setupGamesTestEnv();
 
 import { describe, expect, test } from "bun:test";
-import { BetId } from "@crash/shared-kernel";
+import { BetId } from "@crash/shared-kernel/identity";
 import { BetSagaState } from "../../src/domain/bet-saga-state.aggregate";
 import { IllegalBetSagaTransitionError } from "../../src/domain/errors";
 

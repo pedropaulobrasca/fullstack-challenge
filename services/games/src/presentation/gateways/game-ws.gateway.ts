@@ -9,7 +9,7 @@ import {
 import type { Server, Socket } from "socket.io";
 import { InjectMetric } from "@willsoto/nestjs-prometheus";
 import type { Gauge } from "prom-client";
-import { PlayerId } from "@crash/shared-kernel";
+import { PlayerId } from "@crash/shared-kernel/identity";
 import { env } from "../../config/defaults";
 import { GetWsSnapshotUseCase } from "../../application/use-cases/get-ws-snapshot.use-case";
 import {

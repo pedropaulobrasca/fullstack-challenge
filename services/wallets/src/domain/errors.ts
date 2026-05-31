@@ -1,7 +1,7 @@
 // Domain layer: zero infra imports — do not add @nestjs/*, @mikro-orm/*, or zod here.
 import { DomainError } from "@crash/shared-kernel";
-import type { MoneySnapshot, PlayerId, WalletId } from "@crash/shared-kernel";
-
+import type { MoneySnapshot } from "@crash/shared-kernel";
+import type { PlayerId, WalletId } from "@crash/shared-kernel/identity";
 export class InsufficientFundsError extends DomainError {
   readonly code = "INSUFFICIENT_FUNDS";
   readonly playerId: PlayerId;

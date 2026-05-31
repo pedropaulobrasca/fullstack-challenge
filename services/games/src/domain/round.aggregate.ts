@@ -1,4 +1,4 @@
-import type { RoundId } from "@crash/shared-kernel";
+import type { RoundId } from "@crash/shared-kernel/identity";
 import type { RoundStatus } from "./value-objects/round-status";
 import { CrashPoint } from "./value-objects/crash-point";
 import { isValidSeedHex } from "./value-objects/seed";

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { createHash } from "node:crypto";
-import { maskPlayerId, PlayerId } from "../../src";
+import { maskPlayerId, PlayerId } from "../../src/identity";
 
 const FIXTURE_UUID = "3f29b1a2-4d5e-6f7a-8b9c-0d1e2f3a4b5c";
 

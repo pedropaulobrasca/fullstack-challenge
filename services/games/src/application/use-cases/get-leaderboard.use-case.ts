@@ -1,5 +1,5 @@
 import { Inject, Injectable } from "@nestjs/common";
-import { PlayerId } from "@crash/shared-kernel";
+import { PlayerId } from "@crash/shared-kernel/identity";
 import type {
   LeaderboardEntryWire,
   LeaderboardUpdatedPayload,
@@ -10,8 +10,7 @@ import type {
   LeaderboardRepository,
   LeaderboardSnapshotEntry,
 } from "../../domain/leaderboard.repository";
-import { maskPlayerId } from "@crash/shared-kernel";
-
+import { maskPlayerId } from "@crash/shared-kernel/identity";
 export type GetLeaderboardInput = {
   window: "24h";
 };

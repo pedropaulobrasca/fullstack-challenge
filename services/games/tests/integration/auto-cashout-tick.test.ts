@@ -20,7 +20,7 @@ if (process.env.INTEGRATION !== "1") {
 
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { EventEmitter2 } from "@nestjs/event-emitter";
-import { PlayerId, RoundId } from "@crash/shared-kernel";
+import { PlayerId, RoundId } from "@crash/shared-kernel/identity";
 import {
   createTestGamesApp,
   truncateGamesTables,

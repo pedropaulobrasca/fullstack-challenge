@@ -3,7 +3,8 @@ import { EntityManager } from "@mikro-orm/postgresql";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { ClsService } from "nestjs-cls";
 import type { ConsumeMessage } from "amqplib";
-import { Money, PlayerId } from "@crash/shared-kernel";
+import { Money } from "@crash/shared-kernel";
+import { PlayerId } from "@crash/shared-kernel/identity";
 import {
   EXCHANGES,
   IdempotentSubscribe,

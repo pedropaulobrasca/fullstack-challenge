@@ -2,7 +2,8 @@
 // Exception: the atomic UPDATE methods accept an opaque `txEm` token typed as
 // `unknown` so the application/handler layer can thread its transactional
 // EntityManager through without leaking @mikro-orm/* into the domain.
-import type { Money, PlayerId, WalletId } from "@crash/shared-kernel";
+import type { Money } from "@crash/shared-kernel";
+import type { PlayerId, WalletId } from "@crash/shared-kernel/identity";
 import type { Wallet } from "./wallet.aggregate";
 
 export type ApplyDebitResult =

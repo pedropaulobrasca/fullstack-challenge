@@ -3,7 +3,7 @@ import { setupGamesTestEnv } from "../setup";
 
 setupGamesTestEnv();
 
-import { RoundId } from "@crash/shared-kernel";
+import { RoundId } from "@crash/shared-kernel/identity";
 import type { RoundRepository } from "../../src/domain/round.repository";
 import type { BetRepository } from "../../src/domain/bet.repository";
 import type { Round } from "../../src/domain/round.aggregate";

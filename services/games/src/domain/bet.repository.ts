@@ -1,4 +1,4 @@
-import type { BetId, PlayerId, RoundId } from "@crash/shared-kernel";
+import type { BetId, PlayerId, RoundId } from "@crash/shared-kernel/identity";
 import type { Bet, BetProps } from "./bet.aggregate";
 import type { BetStatus } from "./value-objects/bet-status";
 

@@ -1,4 +1,4 @@
-import type { BetId } from "@crash/shared-kernel";
+import type { BetId } from "@crash/shared-kernel/identity";
 import { IllegalBetSagaTransitionError } from "./errors";
 
 export type BetSagaStatus =

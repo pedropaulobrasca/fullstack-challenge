@@ -4,7 +4,7 @@ setupGamesTestEnv();
 import { expect, test } from "bun:test";
 import fc from "fast-check";
 import { randomUUID } from "node:crypto";
-import { RoundId } from "@crash/shared-kernel";
+import { RoundId } from "@crash/shared-kernel/identity";
 import { Round } from "../../src/domain/round.aggregate";
 import { CrashPoint } from "../../src/domain/value-objects/crash-point";
 import type { RoundStatus } from "../../src/domain/value-objects/round-status";

@@ -1,5 +1,5 @@
 import { Money, NegativeMoneyError } from "@crash/shared-kernel";
-import type { CorrelationId, PlayerId, WalletId } from "@crash/shared-kernel";
+import type { CorrelationId, PlayerId, WalletId } from "@crash/shared-kernel/identity";
 import { InsufficientFundsError } from "./errors";
 import { Transaction } from "./transaction.aggregate";
 

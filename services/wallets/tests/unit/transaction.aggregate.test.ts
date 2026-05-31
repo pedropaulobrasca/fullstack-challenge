@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { CorrelationId, Money, WalletId } from "@crash/shared-kernel";
+import { Money } from "@crash/shared-kernel";
+import { CorrelationId, WalletId } from "@crash/shared-kernel/identity";
 import { Transaction } from "../../src/domain/transaction.aggregate";
 
 const buildValidParams = () => ({

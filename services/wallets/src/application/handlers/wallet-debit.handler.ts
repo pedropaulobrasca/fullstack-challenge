@@ -2,12 +2,8 @@ import { Inject, Injectable, Logger } from "@nestjs/common";
 import { EntityManager } from "@mikro-orm/postgresql";
 import { ClsService } from "nestjs-cls";
 import type { ConsumeMessage } from "amqplib";
-import {
-  CorrelationId,
-  Money,
-  PlayerId,
-  WalletId,
-} from "@crash/shared-kernel";
+import { Money } from "@crash/shared-kernel";
+import { CorrelationId, PlayerId, WalletId } from "@crash/shared-kernel/identity";
 import { walletDebitPayloadSchema } from "@crash/contracts";
 import {
   buildEnvelope,

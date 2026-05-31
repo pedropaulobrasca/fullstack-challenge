@@ -3,7 +3,8 @@ import { setupGamesTestEnv } from "../setup";
 
 setupGamesTestEnv();
 
-import { Money, PlayerId, BetId, RoundId } from "@crash/shared-kernel";
+import { Money } from "@crash/shared-kernel";
+import { PlayerId, BetId, RoundId } from "@crash/shared-kernel/identity";
 import type { BetRepository } from "../../src/domain/bet.repository";
 import type { Bet } from "../../src/domain/bet.aggregate";
 

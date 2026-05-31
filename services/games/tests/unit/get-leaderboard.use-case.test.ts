@@ -5,8 +5,7 @@ import type {
   LeaderboardRow,
   LeaderboardSnapshotEntry,
 } from "../../src/domain/leaderboard.repository";
-import { PlayerId, maskPlayerId } from "@crash/shared-kernel";
-
+import { PlayerId, maskPlayerId } from "@crash/shared-kernel/identity";
 class StubLeaderboardRepository implements LeaderboardRepository {
   constructor(private readonly rows: LeaderboardRow[]) {}
   lastSize = 0;

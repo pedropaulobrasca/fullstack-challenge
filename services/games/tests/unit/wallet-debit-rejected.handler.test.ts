@@ -4,7 +4,8 @@ import { setupGamesTestEnv } from "../setup";
 setupGamesTestEnv();
 
 import { randomUUID } from "node:crypto";
-import { BetId, Money, PlayerId, RoundId } from "@crash/shared-kernel";
+import { Money } from "@crash/shared-kernel";
+import { BetId, PlayerId, RoundId } from "@crash/shared-kernel/identity";
 import type { DomainEventEnvelope } from "@crash/shared-kernel/events";
 import type { BetRepository } from "../../src/domain/bet.repository";
 import type { BetSagaStateRepository } from "../../src/domain/bet-saga-state.repository";

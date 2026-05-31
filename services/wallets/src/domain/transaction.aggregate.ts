@@ -1,12 +1,6 @@
 import { DomainError } from "@crash/shared-kernel";
-import type {
-  CorrelationId,
-  Money,
-  MoneySnapshot,
-  TransactionId,
-  WalletId,
-} from "@crash/shared-kernel";
-
+import type { Money, MoneySnapshot } from "@crash/shared-kernel";
+import type { CorrelationId, TransactionId, WalletId } from "@crash/shared-kernel/identity";
 export type TransactionKind = "DEBIT" | "CREDIT";
 
 export type TransactionProps = {

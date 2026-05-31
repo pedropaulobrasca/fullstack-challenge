@@ -9,7 +9,7 @@
     "./money": "./src/money/index.ts",
     "./errors": "./src/errors/index.ts",
     "./events": "./src/events/index.ts",
-    "./identity": "./src/identity/branded-id.ts",
+    "./identity": "./src/identity/index.ts",
     "./config/env-schema": "./src/config/env-schema.ts"
   },
   "scripts": {

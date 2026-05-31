@@ -1,6 +1,7 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { EntityManager } from "@mikro-orm/postgresql";
-import { Money, PlayerId, WalletId } from "@crash/shared-kernel";
+import { Money } from "@crash/shared-kernel";
+import { PlayerId, WalletId } from "@crash/shared-kernel/identity";
 import { env } from "../../config/defaults";
 import { Wallet } from "../../domain/wallet.aggregate";
 import type { WalletRepository } from "../../domain/wallet.repository";

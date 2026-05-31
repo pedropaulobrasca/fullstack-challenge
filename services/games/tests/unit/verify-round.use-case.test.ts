@@ -4,7 +4,8 @@ import { setupGamesTestEnv } from "../setup";
 setupGamesTestEnv();
 
 import { BadRequestException, NotFoundException } from "@nestjs/common";
-import { BetId, Money, PlayerId, RoundId } from "@crash/shared-kernel";
+import { Money } from "@crash/shared-kernel";
+import { BetId, PlayerId, RoundId } from "@crash/shared-kernel/identity";
 import { deriveCrashPoint } from "@crash/contracts";
 import { env } from "../../src/config/defaults";
 import type { RoundRepository } from "../../src/domain/round.repository";

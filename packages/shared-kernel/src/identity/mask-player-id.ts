@@ -1,9 +1,6 @@
-import { createHash } from "node:crypto";
 import type { PlayerId } from "./branded-id";
+import { sha256Hex } from "./sha256";
 
 export function maskPlayerId(playerId: PlayerId): string {
-  return createHash("sha256")
-    .update(playerId as unknown as string)
-    .digest("hex")
-    .substring(0, 8);
+  return sha256Hex(playerId as unknown as string).substring(0, 8);
 }

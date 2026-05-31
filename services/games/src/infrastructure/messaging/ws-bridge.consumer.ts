@@ -8,7 +8,7 @@ import {
   buildQuorumArgs,
 } from "@crash/messaging-spine";
 import { moneySnapshotSchema } from "@crash/contracts";
-import { PlayerId, maskPlayerId } from "@crash/shared-kernel";
+import { PlayerId, maskPlayerId } from "@crash/shared-kernel/identity";
 import { env } from "../../config/defaults";
 import { GameWsGateway } from "../../presentation/gateways/game-ws.gateway";
 

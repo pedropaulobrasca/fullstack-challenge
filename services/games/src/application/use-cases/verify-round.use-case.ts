@@ -4,15 +4,14 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
-import type { RoundId } from "@crash/shared-kernel";
+import type { RoundId } from "@crash/shared-kernel/identity";
 import { deriveCrashPoint, FORMULA_VERSION } from "@crash/contracts";
 import { env } from "../../config/defaults";
 import { BET_REPOSITORY, ROUND_REPOSITORY } from "../tokens";
 import type { RoundRepository } from "../../domain/round.repository";
 import type { BetRepository } from "../../domain/bet.repository";
 import type { RoundBetView } from "../../presentation/dtos/round-bet-view.dto";
-import { maskPlayerId } from "@crash/shared-kernel";
-
+import { maskPlayerId } from "@crash/shared-kernel/identity";
 export type VerifyRoundView = {
   roundId: string;
   nonce: string;

@@ -1,5 +1,6 @@
 import { beforeAll, beforeEach, describe, expect, test } from "bun:test";
-import { Money, PlayerId } from "@crash/shared-kernel";
+import { Money } from "@crash/shared-kernel";
+import { PlayerId } from "@crash/shared-kernel/identity";
 import type {
   ApplyCreditResult,
   ApplyDebitResult,

@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { CorrelationId, Money, PlayerId, WalletId } from "@crash/shared-kernel";
+import { Money } from "@crash/shared-kernel";
+import { CorrelationId, PlayerId, WalletId } from "@crash/shared-kernel/identity";
 import { Wallet } from "../../src/domain/wallet.aggregate";
 import { InsufficientFundsError } from "../../src/domain/errors";
 

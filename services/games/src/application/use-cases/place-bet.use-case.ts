@@ -6,7 +6,8 @@ import {
   EXCHANGES,
   OutboxRepository,
 } from "@crash/messaging-spine";
-import { BetId, type Money, type PlayerId } from "@crash/shared-kernel";
+import type { Money } from "@crash/shared-kernel";
+import { BetId, type PlayerId } from "@crash/shared-kernel/identity";
 import { Bet } from "../../domain/bet.aggregate";
 import type { BetRepository } from "../../domain/bet.repository";
 import type { BetSagaStateRepository } from "../../domain/bet-saga-state.repository";

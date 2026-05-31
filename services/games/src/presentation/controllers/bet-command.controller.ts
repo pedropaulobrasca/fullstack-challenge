@@ -8,7 +8,8 @@ import {
   Req,
   UseGuards,
 } from "@nestjs/common";
-import { Money, PlayerId } from "@crash/shared-kernel";
+import { Money } from "@crash/shared-kernel";
+import { PlayerId } from "@crash/shared-kernel/identity";
 import { env } from "../../config/defaults";
 import { PlaceBetUseCase } from "../../application/use-cases/place-bet.use-case";
 import { CashOutUseCase } from "../../application/use-cases/cash-out.use-case";

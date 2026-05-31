@@ -8,7 +8,8 @@ import {
 } from "@crash/messaging-spine";
 import { InjectMetric } from "@willsoto/nestjs-prometheus";
 import type { Counter } from "prom-client";
-import type { Money, PlayerId } from "@crash/shared-kernel";
+import type { Money } from "@crash/shared-kernel";
+import type { PlayerId } from "@crash/shared-kernel/identity";
 import {
   BET_CASHED_OUT_EVENT_TYPE,
   type BetCashedOutEventV1,

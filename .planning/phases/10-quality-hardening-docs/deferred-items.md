@@ -42,18 +42,14 @@ Items discovered during execution that are OUT OF SCOPE for the current task.
 
 ---
 
-## 2026-05-31 — Pre-existing FE runtime error: node:crypto externalized
+## 2026-05-31 — RESOLVED — FE runtime error: node:crypto externalized
 
-**Discovered during:** Plan 10-06 Task 1 (visual verification of D-03a fix via Playwright).
+**Status:** Fixed. The leak was `@crash/shared-kernel` root barrel re-exporting `identity/mask-player-id.ts`, which imported `node:crypto`. The frontend (`leaderboard-panel.tsx`) imported `maskPlayerId` from the root barrel, dragging `node:crypto` into the browser bundle; Vite externalized it and the React tree crashed at first call.
 
-**Symptom:** Fresh Playwright context navigates to http://localhost:3000, OIDC redirect completes, header renders (CRASH logo + Fairness badge + Reconnecting pill), but the rest of the React tree never mounts. Browser console:
+**Fix applied:**
+- Subpath isolation: `@crash/shared-kernel/identity` now exposes branded IDs + `maskPlayerId`. Root barrel exposes only `money` / `errors` / `events` / `config/env-schema` (all browser-safe).
+- `maskPlayerId` rewritten to an isomorphic pure-JS SHA-256 (`src/identity/sha256.ts`) so the same implementation runs in Node and browser without `node:crypto`. The existing cross-environment determinism gate test still passes against the `node:crypto.createHash` reference.
+- Regression test `packages/shared-kernel/tests/root-barrel-browser-safe.test.ts` walks the static import graph reachable from the root barrel and fails if any file reaches `node:crypto`, `node:fs`, `createHash`, `createHmac`, etc.
+- All 71 backend + FE consumers re-routed to import identity types/funcs from `@crash/shared-kernel/identity`.
 
-> Module "node:crypto" has been externalized for browser compatibility. Cannot access "node:crypto.createHash" in client code.
-
-**Where:** Some client-bundled module imports `node:crypto` directly (likely a Phase 8 fairness helper that should use `crypto.subtle` or the `provably-fair-browser` entry from `@crash/contracts`). Vite externalizes `node:` builtins for browser, causing a runtime throw the first time the path is exercised.
-
-**Impact on plan 10-06:** Blocks live click-through screenshot capture for D-03a (Sheet/Dialog visual confirm). The CSS fix itself is correct — verified at the build-artifact layer:
-- `globals.css` now contains `@import "tw-animate-css";` after `@import "tailwindcss";` (regression test: `src/styles/globals.css.test.ts`).
-- Compiled CSS served by Vite contains all four animation utilities the diagnosis cited (`animate-in`, `slide-in-from-right`, `fade-in-0`, `zoom-in-95`) and the `--tw-enter-*` CSS variables emitted by `tw-animate-css@1.4.0`.
-
-**Out of scope** for 10-06 (which addresses 3 polish defects, not Phase 8 SSR/browser-bundle hygiene). Should be addressed in plan 10-07 (Playwright E2E) or a follow-up fix plan — the bundler hygiene fix is "find the import and route it through `provably-fair-browser`."
+**Verification:** Fresh Vite dev boot produces zero `externalized` / `node:crypto` log lines; `curl /` returns 200 with full SSR HTML; FE vitest suite 247/247 green; shared-kernel / games / wallets / frontend typechecks all clean.

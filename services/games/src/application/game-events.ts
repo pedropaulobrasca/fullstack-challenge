@@ -1,4 +1,4 @@
-import type { RoundId } from "@crash/shared-kernel";
+import type { RoundId } from "@crash/shared-kernel/identity";
 import type {
   RoundStartedPayload,
   RoundRunningPayload,

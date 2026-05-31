@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { Inject, Injectable } from "@nestjs/common";
 import { FORMULA_VERSION } from "@crash/contracts";
-import { RoundId } from "@crash/shared-kernel";
+import { RoundId } from "@crash/shared-kernel/identity";
 import { env } from "../../config/defaults";
 import { Round } from "../../domain/round.aggregate";
 import type { RoundRepository } from "../../domain/round.repository";

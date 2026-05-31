@@ -18,7 +18,7 @@ import {
   pollRound,
   truncateGamesTables,
 } from "./_helpers/app-factory";
-import { RoundId } from "@crash/shared-kernel";
+import { RoundId } from "@crash/shared-kernel/identity";
 import { MikroBetRepository } from "../../src/infrastructure/repositories/mikro-bet.repository";
 
 let booted: Awaited<ReturnType<typeof createTestGamesApp>>;

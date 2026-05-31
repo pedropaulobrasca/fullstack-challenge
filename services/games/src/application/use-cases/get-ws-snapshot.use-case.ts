@@ -1,13 +1,12 @@
 import { Inject, Injectable } from "@nestjs/common";
-import type { PlayerId } from "@crash/shared-kernel";
+import type { PlayerId } from "@crash/shared-kernel/identity";
 import { BET_REPOSITORY, ROUND_REPOSITORY } from "../tokens";
 import type { RoundRepository } from "../../domain/round.repository";
 import type { BetRepository } from "../../domain/bet.repository";
 import type { Round } from "../../domain/round.aggregate";
 import type { Bet } from "../../domain/bet.aggregate";
 import type { RoundSnapshotPayload } from "../../presentation/dtos/ws-event.payloads";
-import { maskPlayerId } from "@crash/shared-kernel";
-
+import { maskPlayerId } from "@crash/shared-kernel/identity";
 export interface Clock {
   now(): Date;
 }
@@ -44,7 +43,7 @@ export class GetWsSnapshotUseCase {
     };
   }
 
-  private toRoundShape(round: Round): RoundSnapshotPayload["round"] {
+  private toRoundShape(round: Round): NonNullable<RoundSnapshotPayload>["round"] {
     const serverSeed = round.status === "SETTLED" ? round.serverSeed : null;
     return {
       id: round.id as unknown as string,
@@ -61,7 +60,7 @@ export class GetWsSnapshotUseCase {
     };
   }
 
-  private toMyBetShape(bet: Bet): NonNullable<RoundSnapshotPayload["myBet"]> {
+  private toMyBetShape(bet: Bet): NonNullable<NonNullable<RoundSnapshotPayload>["myBet"]> {
     return {
       betId: bet.id as unknown as string,
       amount: bet.amount.toSnapshot(),

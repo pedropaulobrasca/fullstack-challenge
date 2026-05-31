@@ -6,7 +6,7 @@ import {
   Req,
   UseGuards,
 } from "@nestjs/common";
-import { PlayerId } from "@crash/shared-kernel";
+import { PlayerId } from "@crash/shared-kernel/identity";
 import { GetPlayerBetsUseCase } from "../../application/use-cases/get-player-bets.use-case";
 import { PlayerBetsDto, playerBetsQuerySchema } from "../dtos/player-bets.dto";
 import { JwtGuard, type AuthenticatedRequest } from "../guards/jwt.guard";

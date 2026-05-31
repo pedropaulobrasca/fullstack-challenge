@@ -2,7 +2,8 @@ import { setupGamesTestEnv } from "../setup";
 setupGamesTestEnv();
 
 import { describe, expect, test } from "bun:test";
-import { BetId, Money, PlayerId, RoundId } from "@crash/shared-kernel";
+import { Money } from "@crash/shared-kernel";
+import { BetId, PlayerId, RoundId } from "@crash/shared-kernel/identity";
 import { Bet } from "../../src/domain/bet.aggregate";
 import { Multiplier } from "../../src/domain/value-objects/multiplier";
 import { IllegalBetTransitionError } from "../../src/domain/errors";
