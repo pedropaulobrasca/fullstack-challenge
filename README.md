@@ -2,41 +2,41 @@
 
 # 🚀 Crash
 
-**Multiplayer real-time crash game — provably fair, server-authoritative, fully observable.**
+**Jogo de crash multiplayer em tempo real — provably fair, server-authoritative e totalmente observável.**
 
 [![CI](https://github.com/pedropaulobrasca/fullstack-challenge/actions/workflows/ci.yml/badge.svg)](https://github.com/pedropaulobrasca/fullstack-challenge/actions/workflows/ci.yml)
 &nbsp;·&nbsp; Bun · NestJS 11 · TanStack Start · PostgreSQL 18 · RabbitMQ · Keycloak · Socket.IO
 
 <br/>
 
-<img src="docs/screenshots/game.png" alt="Crash game — live rocket curve climbing with bet panel, history strip and live feed" width="900" />
+<img src="docs/screenshots/game.png" alt="Jogo Crash — foguete subindo ao vivo com painel de aposta, histórico e feed" width="900" />
 
 </div>
 
 <br/>
 
-A rocket climbs, the multiplier rises, and you cash out before it crashes. Place a bet, watch a 60fps Canvas curve render the live multiplier, and pull out (or lose) in real time. Every round is **provably fair** — you can re-derive the crash point from any shell with `openssl`, no server trust required. Money never touches `number`: every amount is a `Money` value object (bigint cents, Dinero v2). The multiplier is server-authoritative; clients interpolate locally and reconcile to 30 Hz server ticks.
+Um foguete sobe, o multiplicador cresce, e você saca antes de explodir. Faça uma aposta, veja a curva em Canvas 60fps renderizar o multiplicador ao vivo, e retire (ou perca) em tempo real. Toda rodada é **provably fair** — você consegue re-derivar o ponto de crash em qualquer shell com `openssl`, sem precisar confiar no servidor. Dinheiro nunca usa `number`: todo valor é um value object `Money` (cents em bigint, Dinero v2). O multiplicador é server-authoritative; o cliente interpola localmente e reconcilia com os ticks do servidor a 30 Hz.
 
 ---
 
-## ⚡ Quick Start
+## ⚡ Início rápido
 
 ```bash
 git clone https://github.com/pedropaulobrasca/fullstack-challenge.git
 cd fullstack-challenge
 bun install
 cp frontend/.env.example frontend/.env
-bun run docker:up          # full stack + healthchecks (~2 min cold pull)
-cd frontend && bun run dev  # serves on :3000 — required for OIDC
+bun run docker:up          # stack completa + healthchecks (~2 min no primeiro pull)
+cd frontend && bun run dev  # serve em :3000 — obrigatório para o OIDC
 ```
 
-Open **[localhost:3000](http://localhost:3000)** → log in as **`player` / `player123`** → a wallet auto-provisions with **1000 CRD**.
+Abra **[localhost:3000](http://localhost:3000)** → entre como **`player` / `player123`** → a carteira provisiona automático com **1000 CRD**.
 
-> ⚠️ **Port 3000 is required.** Keycloak whitelists `localhost:3000` for OIDC redirects. If Vite falls back to another port you'll see *"Authentication is currently unavailable"* — free port 3000 (`lsof -ti:3000 | xargs kill`) and retry.
+> ⚠️ **A porta 3000 é obrigatória.** O Keycloak só libera `localhost:3000` para o redirect do OIDC. Se o Vite cair em outra porta você verá *"Authentication is currently unavailable"* — libere a porta 3000 (`lsof -ti:3000 | xargs kill`) e rode de novo.
 
-| Surface | URL |
+| Superfície | URL |
 |---|---|
-| 🎮 Game | [localhost:3000](http://localhost:3000) |
+| 🎮 Jogo | [localhost:3000](http://localhost:3000) |
 | 🔭 Jaeger (traces) | [localhost:16686](http://localhost:16686) |
 | 📊 Grafana (dashboards) | [localhost:3001](http://localhost:3001) |
 | 📈 Prometheus | [localhost:9090](http://localhost:9090) |
@@ -44,31 +44,31 @@ Open **[localhost:3000](http://localhost:3000)** → log in as **`player` / `pla
 
 ---
 
-## ✨ Highlights
+## ✨ Destaques
 
 |  |  |
 |---|---|
-| 🚀 **Aviator-style live curve** | 60fps Canvas 2D rocket with exhaust trail + starfield. Client computes the multiplier locally and reconciles to server ticks via EWMA — never snaps. |
-| 🔒 **Provably fair** | Bustabit-style HMAC-SHA-256 hash chain, committed before each round. Re-verify any round in your own shell or in-browser via `crypto.subtle`. |
-| ⚙️ **Auto-bet + leaderboard** | Server-enforced auto-cashout (survives disconnect), Martingale/Fixed strategies with stop-loss/win, live 24h leaderboard via light CQRS. |
-| 🧱 **DDD + saga** | Two NestJS services, hand-rolled transactional outbox/inbox, RabbitMQ quorum queues + DLX, orchestrated bet saga across HTTP/AMQP/WS. |
-| 🔭 **Full observability** | OpenTelemetry traces across HTTP→AMQP→WS, Prometheus custom domain metrics, pre-provisioned Grafana, structured pino logs — all on first `docker:up`. |
-| ✅ **CI proves it** | GitHub Actions boots the entire `docker:up` stack on a fresh clone and runs unit + integration + Playwright E2E end-to-end. |
+| 🚀 **Curva estilo Aviator** | Foguete em Canvas 2D a 60fps com rastro de propulsão + campo de estrelas. O cliente calcula o multiplicador localmente e reconcilia com os ticks do servidor via EWMA — sem saltos. |
+| 🔒 **Provably fair** | Cadeia de hash HMAC-SHA-256 estilo Bustabit, comprometida antes de cada rodada. Re-verifique qualquer rodada no seu próprio shell ou no browser via `crypto.subtle`. |
+| ⚙️ **Auto-bet + leaderboard** | Auto-cashout forçado pelo servidor (sobrevive a desconexão), estratégias Martingale/Fixed com stop-loss/win, leaderboard 24h ao vivo via light CQRS. |
+| 🧱 **DDD + saga** | Dois serviços NestJS, outbox/inbox transacional feito à mão, filas quorum + DLX no RabbitMQ, saga de aposta orquestrada cruzando HTTP/AMQP/WS. |
+| 🔭 **Observabilidade completa** | Traces OpenTelemetry de HTTP→AMQP→WS, métricas de domínio no Prometheus, Grafana pré-provisionado, logs estruturados pino — tudo já no primeiro `docker:up`. |
+| ✅ **CI comprova** | O GitHub Actions sobe toda a stack `docker:up` num clone limpo e roda testes unit + integração + Playwright E2E de ponta a ponta. |
 
 <table>
 <tr>
 <td width="50%"><img src="docs/screenshots/landing.png" alt="Landing page" /><div align="center"><sub><b>Landing</b></sub></div></td>
-<td width="50%"><img src="docs/screenshots/wallet.png" alt="Wallet page with balance, deposit and transactions" /><div align="center"><sub><b>Wallet</b></sub></div></td>
+<td width="50%"><img src="docs/screenshots/wallet.png" alt="Carteira com saldo, depósito e transações" /><div align="center"><sub><b>Carteira</b></sub></div></td>
 </tr>
 <tr>
-<td width="50%"><img src="docs/screenshots/fair.png" alt="Provably-fair verification page" /><div align="center"><sub><b>Provably Fair</b></sub></div></td>
-<td width="50%"><img src="docs/screenshots/game.png" alt="Live game" /><div align="center"><sub><b>Live game</b></sub></div></td>
+<td width="50%"><img src="docs/screenshots/fair.png" alt="Página de verificação provably-fair" /><div align="center"><sub><b>Provably Fair</b></sub></div></td>
+<td width="50%"><img src="docs/screenshots/game.png" alt="Jogo ao vivo" /><div align="center"><sub><b>Jogo ao vivo</b></sub></div></td>
 </tr>
 </table>
 
 ---
 
-## 🏗️ Architecture
+## 🏗️ Arquitetura
 
 ```mermaid
 graph TB
@@ -87,16 +87,16 @@ graph TB
   Kong -->|"/wallets/*"| Wallets
   Games -->|"@MikroORM"| PG
   Wallets -->|"@MikroORM"| PG
-  Games <-->|"bet saga (envelope + traceparent)"| RMQ
+  Games <-->|"saga de aposta (envelope + traceparent)"| RMQ
   Wallets <-->|"wallet.command / wallet.event"| RMQ
   Games -.->|"OTLP + /metrics"| Obs
   Wallets -.->|"OTLP + /metrics"| Obs
 ```
 
-Two backend services share a Postgres instance and a RabbitMQ broker. Kong is the single ingress for HTTP + WebSocket. Keycloak holds the OIDC realm; both services validate JWTs against cached JWKS. The bet saga is orchestrated by `games-service` — `POST /games/bet` returns `202 Accepted` the instant the outbox row commits, and the player learns the terminal state over WebSocket. A single `trace_id` ties the whole saga together in Jaeger.
+Dois serviços de backend compartilham uma instância Postgres e um broker RabbitMQ. O Kong é o único ingress para HTTP + WebSocket. O Keycloak guarda o realm OIDC; ambos os serviços validam JWT contra o JWKS em cache. A saga de aposta é orquestrada pelo `games-service` — `POST /games/bet` retorna `202 Accepted` no instante em que a linha do outbox commita, e o jogador descobre o estado final via WebSocket. Um único `trace_id` amarra a saga inteira no Jaeger.
 
 <details>
-<summary><b>Saga flow sequence diagram</b></summary>
+<summary><b>Diagrama de sequência da saga</b></summary>
 
 ```mermaid
 sequenceDiagram
@@ -106,14 +106,14 @@ sequenceDiagram
   participant RMQ as RabbitMQ
   participant Wallets as wallets-service
 
-  Note over FE,Wallets: One trace_id across the entire bet saga
+  Note over FE,Wallets: Um trace_id em toda a saga de aposta
   FE->>Kong: POST /games/bet [traceparent: 00-abc..-01]
-  Kong->>Games: forward [traceparent extracted by http instr]
-  Games->>Games: span "PlaceBetUseCase.execute" (parent: HTTP)
-  Games->>RMQ: publish wallet.command.debit (traceparent in headers)
-  Games-->>FE: 202 Accepted (response sent before await)
+  Kong->>Games: forward [traceparent extraído pela instrumentação http]
+  Games->>Games: span "PlaceBetUseCase.execute" (pai: HTTP)
+  Games->>RMQ: publish wallet.command.debit (traceparent no header)
+  Games-->>FE: 202 Accepted (resposta enviada antes do await)
   RMQ->>Wallets: deliver wallet.command.debit
-  Wallets->>Wallets: span "DebitWalletUseCase" (parent: AMQP)
+  Wallets->>Wallets: span "DebitWalletUseCase" (pai: AMQP)
   Wallets->>RMQ: publish wallet.event.debited
   RMQ->>Games: deliver wallet.event.debited
   Games->>Games: span "WalletDebitedHandler.handle"
@@ -123,107 +123,107 @@ sequenceDiagram
 
 ---
 
-## 🔒 Provably Fair — verify from any shell
+## 🔒 Provably Fair — verifique de qualquer shell
 
-Every settled round can be re-derived independently with `openssl` + `python3` — no app, no server trust. This worked example hardcodes the canonical fixture (`serverSeed = 0x0…01`, `clientSeed = "test"`, `nonce = 0`) so you can confirm the toolchain produces **`2.94`** on any machine:
+Toda rodada liquidada pode ser re-derivada de forma independente com `openssl` + `python3` — sem app, sem confiar no servidor. Este exemplo usa a fixture canônica (`serverSeed = 0x0…01`, `clientSeed = "test"`, `nonce = 0`) pra você confirmar que a toolchain produz **`2.94`** em qualquer máquina:
 
 ```bash
 SERVER_SEED="0000000000000000000000000000000000000000000000000000000000000001"
 CLIENT_SEED="test"; NONCE="0"
 
-# Step A — seedHash commitment (server hex-DECODES the seed before hashing)
+# Passo A — commitment do seedHash (o servidor hex-DECODIFICA a seed antes de hashear)
 echo -n "$SERVER_SEED" | xxd -r -p | openssl dgst -sha256
 # → ec4916dd28fc4c10d78e287ca5d9cc51ee1ae73cbfde08c6b37324cbfaac8bc5
 
-# Step B — crash point (HMAC key = the hex string as UTF-8 bytes, NOT decoded)
+# Passo B — ponto de crash (chave do HMAC = a string hex como bytes UTF-8, NÃO decodificada)
 HMAC=$(echo -n "$CLIENT_SEED:$NONCE" | openssl dgst -sha256 -hmac "$SERVER_SEED" -hex | awk '{print $NF}')
 python3 -c "H=int('${HMAC:0:13}',16); E=2**52; print('crashPoint =', 1.00 if H%101==0 else max(1.0,((100*E-H)//(E-H))/100))"
 # → crashPoint = 2.94
 ```
 
-The same `2.94` is locked in source by the contracts test suite and the determinism E2E. To verify a **live** round, `curl $BASE/games/rounds/$ID/verify` and feed `serverSeed`/`clientSeed`/`nonce` into the same two steps. The in-app **Fairness drawer** + `/verify/:roundId` route run this identical algorithm in-browser via `crypto.subtle`.
+O mesmo `2.94` está travado em código pela suíte de testes do contracts e pelo E2E de determinismo. Para verificar uma rodada **ao vivo**, faça `curl $BASE/games/rounds/$ID/verify` e alimente `serverSeed`/`clientSeed`/`nonce` nos mesmos dois passos. O **drawer de Fairness** + a rota `/verify/:roundId` no app rodam esse mesmo algoritmo no browser via `crypto.subtle`.
 
 <details>
-<summary><b>The #1 gotcha: two encodings of the same hex string</b></summary>
+<summary><b>A pegadinha nº1: duas codificações da mesma string hex</b></summary>
 
-The 64-char `serverSeed` is fed to SHA-256 **two different ways**:
-- **Commitment (Step A)** — `createHash("sha256").update(seed, "hex")` → hex-**decode** to 32 bytes first (`xxd -r -p`).
-- **Crash HMAC (Step B)** — `createHmac("sha256", seed)` → the string key is consumed as its **UTF-8 bytes** (all 64 chars). Do **not** hex-decode it; do **not** use `-macopt hexkey:` (that yields `3.02` instead of `2.94` for this fixture).
+A `serverSeed` de 64 chars é entregue ao SHA-256 de **duas formas diferentes**:
+- **Commitment (Passo A)** — `createHash("sha256").update(seed, "hex")` → hex-**decodifica** para 32 bytes primeiro (`xxd -r -p`).
+- **HMAC do crash (Passo B)** — `createHmac("sha256", seed)` → a chave string é consumida como seus **bytes UTF-8** (os 64 chars). **Não** hex-decodifique; **não** use `-macopt hexkey:` (isso dá `3.02` no lugar de `2.94` nesta fixture).
 
-Reversing these two encodings is the #1 cause of `matches: false` on an otherwise correct implementation. Busybox without `xxd`? Swap Step A for `python3 -c "import sys,binascii; sys.stdout.buffer.write(binascii.unhexlify(sys.stdin.read().strip()))"`.
+Inverter essas duas codificações é a causa nº1 de `matches: false` numa implementação correta. Busybox sem `xxd`? Troque o Passo A por `python3 -c "import sys,binascii; sys.stdout.buffer.write(binascii.unhexlify(sys.stdin.read().strip()))"`.
 </details>
 
 ---
 
-## 🔭 Observability
+## 🔭 Observabilidade
 
-`bun run docker:up` brings up the full triad — no extra setup:
+`bun run docker:up` sobe o tripé completo — sem setup extra:
 
-- **Jaeger** ([:16686](http://localhost:16686)) — search `games-service`; a placed bet shows one trace spanning the HTTP controller → `wallet.command.debit` AMQP round-trip → `WalletDebitedHandler` → WS `bet:my_active` emit.
-- **Prometheus** ([:9090](http://localhost:9090)) — custom domain metrics: `bet_volume_total{status}`, `crash_rtp_window`, `multiplier_drift_seconds`, `ws_broadcast_latency_seconds`, `active_ws_connections`.
-- **Grafana** ([:3001](http://localhost:3001), anonymous Viewer) — 3 pre-provisioned dashboards (games, wallets, crash-domain).
-- **Logs** — structured `pino` JSON enriched with `traceId` + `spanId` + `correlationId`; grep one `correlationId` to follow a bet across both services.
+- **Jaeger** ([:16686](http://localhost:16686)) — busque `games-service`; uma aposta mostra um trace cruzando o controller HTTP → round-trip AMQP `wallet.command.debit` → `WalletDebitedHandler` → emit WS `bet:my_active`.
+- **Prometheus** ([:9090](http://localhost:9090)) — métricas de domínio customizadas: `bet_volume_total{status}`, `crash_rtp_window`, `multiplier_drift_seconds`, `ws_broadcast_latency_seconds`, `active_ws_connections`.
+- **Grafana** ([:3001](http://localhost:3001), Viewer anônimo) — 3 dashboards pré-provisionados (games, wallets, crash-domain).
+- **Logs** — JSON estruturado via `pino` enriquecido com `traceId` + `spanId` + `correlationId`; um grep num `correlationId` segue uma aposta pelos dois serviços.
 
 ---
 
 <details>
 <summary><b>📜 Scripts</b></summary>
 
-| Script | Purpose |
+| Script | Propósito |
 |--------|---------|
-| `bun run docker:up` | Bring up the full stack and block until every healthcheck passes. |
-| `bun run docker:down` | Stop the stack, keep volumes. |
-| `bun run docker:prune` | Full reset — remove containers, volumes, local images. |
-| `bun run smoke:health` | 47 infra-liveness probes (`scripts/smoke-health.sh`). |
-| `bun run lint` / `bun run typecheck` / `bun test` | Workspace lint / typecheck / unit tests. |
-| `bun run docs:adr-index` | Regenerate the ADR catalogue table below. |
+| `bun run docker:up` | Sobe a stack completa e bloqueia até todo healthcheck passar. |
+| `bun run docker:down` | Para a stack, mantém os volumes. |
+| `bun run docker:prune` | Reset total — remove containers, volumes e imagens locais. |
+| `bun run smoke:health` | 47 probes de liveness de infra (`scripts/smoke-health.sh`). |
+| `bun run lint` / `bun run typecheck` / `bun test` | Lint / typecheck / testes unit do workspace. |
+| `bun run docs:adr-index` | Regenera a tabela de ADRs abaixo. |
 
-Per service (`services/games` or `services/wallets`): `bun run start:dev`, `bun test tests/unit`, `INTEGRATION=1 bun test tests/integration`.
+Por serviço (`services/games` ou `services/wallets`): `bun run start:dev`, `bun test tests/unit`, `INTEGRATION=1 bun test tests/integration`.
 </details>
 
 <details>
-<summary><b>⚙️ Environment variables</b></summary>
+<summary><b>⚙️ Variáveis de ambiente</b></summary>
 
-Every business constant lives in env — nothing hardcoded. Defaults in each service's `.env.example`; full table in `.planning/REQUIREMENTS.md` § "Open Configuration Values". Phase 10 observability additions:
+Toda constante de negócio vive em env — nada hardcoded. Defaults no `.env.example` de cada serviço; tabela completa em `.planning/REQUIREMENTS.md` § "Open Configuration Values". Adições de observabilidade da Phase 10:
 
-| Variable | Default | Description |
+| Variável | Default | Descrição |
 |----------|---------|-------------|
-| `OTEL_EXPORTER_OTLP_ENDPOINT` | `http://jaeger:4318/v1/traces` | OTLP HTTP trace export (ADR-035). |
-| `OTEL_SERVICE_NAME` | `games-service` / `wallets-service` | Resource name in Jaeger. |
-| `LOG_LEVEL` | `info` | Pino level. |
-| `PINO_PRETTY` | `0` | `1` enables pretty transport in dev. |
-| `CRASH_RTP_WINDOW_ROUNDS` | `1000` | Rolling window for the `crash_rtp_window` gauge. |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | `http://jaeger:4318/v1/traces` | Endpoint OTLP HTTP de export de traces (ADR-035). |
+| `OTEL_SERVICE_NAME` | `games-service` / `wallets-service` | Nome do recurso no Jaeger. |
+| `LOG_LEVEL` | `info` | Nível do pino. |
+| `PINO_PRETTY` | `0` | `1` habilita o transport pretty em dev. |
+| `CRASH_RTP_WINDOW_ROUNDS` | `1000` | Janela móvel do gauge `crash_rtp_window`. |
 </details>
 
 <details>
 <summary><b>🛟 Troubleshooting</b></summary>
 
-- **`Authentication is currently unavailable`** — Vite didn't bind to `:3000`; Keycloak only whitelists that port. `lsof -ti:3000 | xargs kill -9 && cd frontend && bun run dev`, then clear `localhost` browser storage and reload.
-- **`bun run dev` exits with `VITE_KEYCLOAK_ISSUER is required`** — you skipped `cp frontend/.env.example frontend/.env`.
-- **`docker:up` hangs/fails first time** — `docker compose pull` first (~10GB cold); `bun run docker:prune` if disk is tight.
-- **Jaeger shows no spans** — confirm `import "./tracing"` is the literal first line of each service's `main.ts` (OTel init-order, ADR-035): `head -1 services/games/src/main.ts`.
-- **Grafana panels empty** — [localhost:9090/targets](http://localhost:9090/targets) should show both services UP; else `curl -s http://localhost:4001/metrics | head`.
-- **Balance stuck at `0.00`** — the wallet auto-provisions on first authenticated `POST /wallets` (the FE issues it after login). Manual: password-grant a token then `curl -X POST -H "Authorization: Bearer $TOKEN" http://localhost:8000/wallets`.
+- **`Authentication is currently unavailable`** — o Vite não conseguiu a porta `:3000`; o Keycloak só libera essa porta. `lsof -ti:3000 | xargs kill -9 && cd frontend && bun run dev`, depois limpe o storage de `localhost` no browser e recarregue.
+- **`bun run dev` sai com `VITE_KEYCLOAK_ISSUER is required`** — você pulou o `cp frontend/.env.example frontend/.env`.
+- **`docker:up` trava/falha na primeira vez** — `docker compose pull` antes (~10GB no frio); `bun run docker:prune` se o disco estiver apertado.
+- **Jaeger sem spans** — confirme que `import "./tracing"` é a primeira linha literal do `main.ts` de cada serviço (ordem de init do OTel, ADR-035): `head -1 services/games/src/main.ts`.
+- **Painéis do Grafana vazios** — [localhost:9090/targets](http://localhost:9090/targets) deve mostrar os dois serviços UP; senão `curl -s http://localhost:4001/metrics | head`.
+- **Saldo travado em `0.00`** — a carteira provisiona no primeiro `POST /wallets` autenticado (o FE dispara após o login). Manual: pegue um token via password-grant e `curl -X POST -H "Authorization: Bearer $TOKEN" http://localhost:8000/wallets`.
 </details>
 
 <details>
-<summary><b>🗂️ Project structure</b></summary>
+<summary><b>🗂️ Estrutura do projeto</b></summary>
 
 ```
 fullstack-challenge/
 ├── docker-compose.yml        # Postgres, RabbitMQ, Keycloak, Kong, games, wallets, Jaeger, Prometheus, Grafana
 ├── packages/
-│   ├── shared-kernel/        # Money VO, errors, event envelope, branded IDs, env schema
-│   ├── contracts/            # Wire schemas + browser-safe provably-fair subpath
-│   ├── messaging-spine/      # Hand-rolled outbox/inbox + @IdempotentSubscribe + DLX
-│   └── eslint-plugin/        # Custom @crash/no-number-for-money rule
+│   ├── shared-kernel/        # Money VO, erros, envelope de evento, IDs brandeados, schema de env
+│   ├── contracts/            # Schemas de wire + subpath provably-fair browser-safe
+│   ├── messaging-spine/      # Outbox/inbox à mão + @IdempotentSubscribe + topologia DLX
+│   └── eslint-plugin/        # Regra custom @crash/no-number-for-money
 ├── services/
-│   ├── games/                # Round loop, bets, provably-fair, WS gateway, leaderboard projector
-│   └── wallets/              # Wallet + transaction aggregates, AMQP debit/credit consumers
-├── frontend/                 # TanStack Start — game, bet panel, fairness drawer, replay, leaderboard, site pages
+│   ├── games/                # Round loop, apostas, provably-fair, gateway WS, projetor de leaderboard
+│   └── wallets/              # Agregados de carteira + transação, consumidores AMQP de débito/crédito
+├── frontend/                 # TanStack Start — jogo, painel de aposta, drawer de fairness, replay, leaderboard, páginas do site
 ├── scripts/                  # smoke-health.sh (47 probes) + build-adr-index.ts
-├── .github/workflows/ci.yml  # Full-stack CI (ADR-037)
-└── .planning/                # PROJECT / REQUIREMENTS / ROADMAP + 37 ADRs + per-phase plans
+├── .github/workflows/ci.yml  # CI full-stack (ADR-037)
+└── .planning/                # PROJECT / REQUIREMENTS / ROADMAP + 37 ADRs + planos por fase
 ```
 </details>
 
@@ -231,10 +231,10 @@ fullstack-challenge/
 
 ## 📐 Architecture Decision Records
 
-37 decisions, one file each in `.planning/adrs/`. Table auto-generated by `scripts/build-adr-index.ts` and CI-gated via `bun run docs:adr-index:check` (ADR-036).
+37 decisões, um arquivo cada em `.planning/adrs/`. Tabela auto-gerada pelo `scripts/build-adr-index.ts` e validada no CI via `bun run docs:adr-index:check` (ADR-036).
 
 <details>
-<summary><b>Show all 37 ADRs</b></summary>
+<summary><b>Ver os 37 ADRs</b></summary>
 
 <!-- ADR-INDEX:START -->
 | # | Title | Phase | Date | Status |
@@ -282,5 +282,5 @@ fullstack-challenge/
 ---
 
 <div align="center">
-<sub>Built across 10 GSD phases · Demo user <code>player / player123</code> · all decisions defensible in <code>.planning/</code></sub>
+<sub>Construído em 10 fases GSD · usuário demo <code>player / player123</code> · todas as decisões defensáveis em <code>.planning/</code></sub>
 </div>
