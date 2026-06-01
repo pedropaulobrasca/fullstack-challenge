@@ -1,4 +1,10 @@
-import { createRootRoute, HeadContent, Outlet, Scripts } from "@tanstack/react-router";
+import {
+  createRootRoute,
+  HeadContent,
+  Outlet,
+  Scripts,
+  useRouterState,
+} from "@tanstack/react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 import { Toaster } from "@/components/ui/sonner";
@@ -26,6 +32,10 @@ export const Route = createRootRoute({
 
 function RootComponent() {
   const [queryClient] = useState(() => new QueryClient());
+  const pathname = useRouterState({
+    select: (state) => state.location.pathname,
+  });
+  const showGameHeader = pathname === "/";
   return (
     <html lang="en" className="dark">
       <head>
@@ -37,7 +47,7 @@ function RootComponent() {
             <GameSession />
           </OidcProvider>
           <div className="flex min-h-screen flex-col">
-            <AppHeader />
+            {showGameHeader ? <AppHeader /> : null}
             <main className="flex-1">
               <Outlet />
             </main>
