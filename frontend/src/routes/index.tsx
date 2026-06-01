@@ -57,7 +57,7 @@ function GameRoute() {
       data-testid="game-root"
       data-round-status={roundStatus}
       data-last-bet-outcome={lastBetOutcome ?? "none"}
-      className="mx-auto flex w-full max-w-[1400px] flex-col gap-6 px-4 pb-28 pt-6 lg:px-6 lg:pb-6"
+      className="mx-auto flex w-full max-w-[1400px] flex-col gap-6 px-4 pb-28 pt-6 lg:h-[calc(100dvh-4rem)] lg:overflow-hidden lg:px-6 lg:pb-6"
     >
       <section
         data-region="history-strip"
@@ -66,10 +66,10 @@ function GameRoute() {
         {history.isLoading ? <HistorySkeleton /> : <HistoryStrip />}
       </section>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[320px_minmax(0,1fr)_320px] lg:min-h-[calc(100vh-12rem)]">
+      <div className="grid grid-cols-1 gap-6 lg:min-h-0 lg:flex-1 lg:grid-cols-[320px_minmax(0,1fr)_320px]">
         <aside
           data-region="bet-rail"
-          className="sticky bottom-0 z-10 order-2 flex flex-col gap-4 border-t border-border bg-background py-3 lg:static lg:order-none lg:border-t-0 lg:bg-transparent lg:py-0"
+          className="sticky bottom-0 z-10 order-2 flex flex-col gap-4 border-t border-border bg-background py-3 lg:static lg:order-none lg:min-h-0 lg:overflow-y-auto lg:border-t-0 lg:bg-transparent lg:py-0"
         >
           <Countdown />
           <BetPanel />
