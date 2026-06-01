@@ -16,7 +16,9 @@ import { ConnectionBadge } from "@/components/connection-badge";
 import { FairnessBadge } from "@/components/fairness-badge";
 import { VerificationDrawer } from "@/components/verification-drawer";
 import { ReplayModal } from "@/components/replay-modal";
+import { Topbar } from "@/components/site/Topbar";
 import appCss from "@/styles/globals.css?url";
+import "@/styles/crash-site.css";
 
 export const Route = createRootRoute({
   head: () => ({
@@ -47,7 +49,18 @@ function RootComponent() {
             <GameSession />
           </OidcProvider>
           <div className="flex min-h-screen flex-col">
-            {showGameHeader ? <AppHeader /> : null}
+            {showGameHeader ? (
+              <Topbar
+                active="play"
+                right={
+                  <div className="flex items-center gap-3">
+                    <FairnessBadge />
+                    <ConnectionBadge />
+                    <BalancePill />
+                  </div>
+                }
+              />
+            ) : null}
             <main className="flex-1">
               <Outlet />
             </main>
@@ -66,19 +79,4 @@ function GameSession() {
   useGameSocket();
   useAutoBetDriver();
   return null;
-}
-
-function AppHeader() {
-  return (
-    <header className="flex items-center justify-between border-b border-border bg-card px-6 py-4">
-      <div className="flex items-center gap-3">
-        <span className="font-mono text-lg font-semibold tracking-tight text-foreground">CRASH</span>
-        <FairnessBadge />
-      </div>
-      <div className="flex items-center gap-4">
-        <ConnectionBadge />
-        <BalancePill />
-      </div>
-    </header>
-  );
 }

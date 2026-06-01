@@ -57,7 +57,7 @@ function GameRoute() {
       data-testid="game-root"
       data-round-status={roundStatus}
       data-last-bet-outcome={lastBetOutcome ?? "none"}
-      className="mx-auto flex w-full max-w-[1400px] flex-col gap-6 px-4 pb-28 pt-6 lg:h-[calc(100dvh-4rem)] lg:overflow-hidden lg:px-6 lg:pb-6"
+      className="mx-auto flex w-full max-w-[1400px] flex-col gap-6 px-4 pb-28 pt-6 lg:h-[calc(100dvh-3.5rem)] lg:overflow-hidden lg:px-6 lg:pb-6"
     >
       <section
         data-region="history-strip"
